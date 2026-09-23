@@ -52,6 +52,7 @@
 | 2026-09-23 | root | 固定源样例摘要并重发 v2 离线证据 | `artifacts/minecraft-sample/v2/` 与源规范 JSON 摘要绑定；`.schem` SHA-256 为 `a370482743ec8a7b1c8bf91e8e62d7d56dac8e2e4dd7c9988e6cbe79dc549cfb`，2 项独立 NBT/几何测试通过。试图清理本地旧 v1 临时目录被自动审批以 `blocked by policy` 拒绝，故将其忽略、不纳入交付；未删除任何目录 | 跑完整回归并同步文档、总规划与索引 |
 | 2026-09-23 | root | 完成样件离线回归、运行说明与索引同步 | `artifacts/minecraft-full-tests.xml`：61 项全部通过；`docs/contracts/minecraft-sample-v0.1.md` 记录官方格式/命令来源、访问日期、量化与损失、目标未验证状态。文档检查首次因索引仍把 009 标为 planned 而失败，修正后通过：32 个 Markdown、37 个本地链接、5 个 JSON、13 个工单，零错误 | 目标组合可用时核对 DataVersion 并实际粘贴/通行；另一半 008 Unity 样件仍需实施，006 不扩规模 |
 | 2026-09-23 | root | 提交离线样件并首次推送 | 本地提交成功；`git push origin main` 首次以 `Recv failure: Connection was reset` 失败，`git ls-remote` 随后不能连接 github.com:443；GitHub API 确认远端仍为旧提交 `5561d15` | 重试 Git 传输，不将本地提交冒称为已推送 |
+| 2026-09-23 | root | 通过 GitHub Git API 发布同一提交 | Git HTTPS 重试仍无法连接 github.com:443；通过已认证 GitHub API 上传 18 个对象，逐项比较本地 blob/tree SHA，并用相同作者、提交者与时间创建一致的 Git 提交 `d01ea85`；API 非强制更新 `main` 成功 | 同步本行执行记录并核对远端与工作区状态 |
 
 ## 交接说明
 
