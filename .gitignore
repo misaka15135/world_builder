@@ -16,5 +16,6 @@ artifacts/pytest-*/
 artifacts/benchmark-pilot-v1/*/
 artifacts/benchmark-pilot-v2/*/
 artifacts/benchmark-pilot-v3/*/
+artifacts/minecraft-sample/v1/
 
 # Keep small, reviewable reports, registrations, snapshots and hardware evidence.

@@ -15,14 +15,14 @@
 | 006 | [最小分层生成闭环](006_generation_vertical_slice.md) | in_progress | root | 005 |
 | 007 | [本地三维查看与增量编辑](007_local_viewer_editor.md) | planned | 待认领 | 005；最终联调需要 006 |
 | 008 | [Unity 场景导出与加载验证](008_unity_export.md) | planned | 待认领 | 005；完整验收 006、007 |
-| 009 | [Minecraft Java 区域导出](009_minecraft_schematic_export.md) | planned | 待认领 | 005；完整验收 006、007 |
+| 009 | [Minecraft Java 区域导出](009_minecraft_schematic_export.md) | in_progress | root | 005；完整验收 006、007 |
 | 010 | [Minecraft Java 独立世界导出](010_minecraft_world_export.md) | planned | 待认领 | 009 |
 | 011 | [IFC 建筑概念模型验证](011_ifc_concept_export.md) | planned | 待认领 | 005、006；游戏首版之后 |
 | 012 | [大区域与资源扩展验证](012_large_world_benchmarks.md) | planned | 待认领 | 006、007、008、009 |
 
 下一个可分配编号：013。编号由协调者串行分配，避免并行碰撞。
 
-当前状态：001—005 done。006 in_progress：已交付 128 m 固定规格生成/存档恢复、有限楼梯修复、可替换的模型规格合同、已接受响应回放和自包含 ZIP64 世界包交换；59 项测试通过，v3 小范围输入首次 15/30、最终 30/30。后续验证真实模型服务并扩展几何和修复范围。007—012 尚未开始，完整城邦扩规模前仍需 008/009 的样件转换。010 为必要性待明确的可选后续路线。
+当前状态：001—005 done。006 in_progress：已交付 128 m 固定规格生成/存档恢复、有限楼梯修复、可替换的模型规格合同、已接受响应回放和自包含 ZIP64 世界包交换；59 项既有测试通过，v3 小范围输入首次 15/30、最终 30/30。009 in_progress：手工两层建筑的 Sponge v3 离线文件和损失报告已生成，实际 Minecraft/WorldEdit 加载尚未验证。007、008、010—012 未开始，完整城邦扩规模前仍需 008/009 的目标软件样件验证。010 为必要性待明确的可选后续路线。
 
 ## 执行约定
 

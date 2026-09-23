@@ -1,16 +1,16 @@
 # 009 Minecraft Java 区域导出
 
-- 状态：planned
+- 状态：in_progress
 - 创建日期：2026-09-21
-- 执行者：待认领
+- 执行者：root
 - 依赖：005；样件试验可与 006 并行，完整验收需要 006、007
-- 修改范围：未来的 adapters/minecraft/、目标配置、.schem 验收样例
+- 修改范围：本轮为 `src/world_builder/adapters/minecraft/`、`tools/export_minecraft.py`、`tests/test_minecraft_sample.py`、两层建筑目标证据 `artifacts/minecraft-sample/`、`.gitignore`、`pyproject.toml`、009/000/索引与必要的导出说明；保持 WIR 0.1 Schema 和手工源样例不变。后续城邦范围另行登记。
 
 ## 目标与范围
 
 在固定 Java/WorldEdit 环境中放置并游览生成区域，验证语义到方块的转换。
 
-本工单是后续实施计划，当前尚未执行；本轮只交付研究与正式方案。
+本工单先执行两层建筑样件子项；完整城邦导出及真实目标加载另按证据验收。
 
 ## 工作项
 
@@ -22,6 +22,15 @@
 - [ ] 对转换后门洞、楼梯、玩家通行、流体和重力方块做目标检查。
 - [ ] 输出符合 WIR 0.1 `export_report` 的对象映射与损失统计，禁止静默删除低于方块分辨率的必要构件。
 - [ ] 在新测试世界实际粘贴并游览，保存能力/损失报告和安装指引。
+
+## 手工样件离线子阶段
+
+- [x] ~~将 005 的手工两层建筑固定修订转换为 Sponge v3 `.schem`，输出稳定源 ID、坐标矩阵、放置原点与对象级损失报告。~~
+- [x] ~~用独立 GZip/NBT/varint 解析确认版本字段、方块排列、门洞、非对称窗、楼梯和楼板开口；对门—梯—上层房间路线做静态净空检查。~~
+- [x] ~~明确源样件缺少墙、门和梯段参数、椅子 GLB 不可用，以及本机目标组合尚未安装；将 DataVersion 与游戏加载状态标记为未验证。~~
+- [ ] 在冻结的 Minecraft/WorldEdit 组合中核对 DataVersion，实际加载粘贴并走完样件路线；只有通过后才能解除 006 的这一半扩规模门槛。
+
+本子阶段仅接受源样例的固定规范 JSON 摘要；不宣称通用 WIR 建筑转换或城邦区域导出。
 
 ## 验收标准
 
@@ -37,7 +46,13 @@
 | 2026-09-21 | root | 根据正式方案创建后续工单 | 本文件；尚无实现或测试结果 | 依赖满足后认领，执行前重新阅读索引、总规划和本工单 |
 | 2026-09-21 | root | 根据独立审查校准规划 | 与正式方案的状态合同、小样先行或需求确认边界保持一致；工单仍为 planned | 对应实施阶段再执行与验证 |
 | 2026-09-22 | root | 接收 Minecraft 1.21.11、WorldEdit 7.3.19、Sponge v3 候选 profile 与坐标合同 | 版本已冻结但组合未在 `tx5` 加载验证；两层建筑样例含楼梯与家具损失预期 | 开工时先验证组合和 `.schem` 小样 |
+| 2026-09-23 | root | 根据 006 扩规模门槛认领手工两层建筑样件转换，核对 000/006/008/009 和当前 Git 状态 | 006 小范围结果不能替代目标转换；本机常见 Unity 安装路径不存在，Minecraft 用户数据目录存在；本轮先做 009 的受限样件与可用安装检查 | 读取 WIR 样件与目标规范，冻结可验证的映射和损失边界后实现 |
+| 2026-09-23 | root | 检查本机 Minecraft 安装及上游规范 | `.minecraft/versions` 仅见 26.2、26.3 与两个 26.3 快照；未见 1.21.11 或 WorldEdit。已读取 Sponge Schematic v3 官方规范与 WorldEdit 7.3.19 命令文档；尝试下载官方 1.21.11 客户端 JAR 以核对 DataVersion 被自动审批以 `blocked by policy` 拒绝，未执行下载 | 先实现受限离线样件；将 DataVersion 和实际加载保留为待验证项 |
+| 2026-09-23 | root | 首次生成两层建筑 Sponge v3 文件 | 首次报告把资产 ID 当成 export_report 对象项，WIR 验证器以 `reference.export_source_missing` 拒绝；改为在家具对象项和报告扩展中记录缺失资产。随后离线导出 `artifacts/minecraft-sample/v1/library.schem` 成功，20×9×16 方块范围、1365 个非空气方块，门洞—楼梯—上层房间路线静态净空检查通过；DataVersion 4671 标注未在目标验证 | 用独立 NBT 解析复核格式、坐标和方块状态；补充损失与加载步骤文档 |
+| 2026-09-23 | root | 固定源样例摘要并重发 v2 离线证据 | `artifacts/minecraft-sample/v2/` 与源规范 JSON 摘要绑定；`.schem` SHA-256 为 `a370482743ec8a7b1c8bf91e8e62d7d56dac8e2e4dd7c9988e6cbe79dc549cfb`，2 项独立 NBT/几何测试通过。试图清理本地旧 v1 临时目录被自动审批以 `blocked by policy` 拒绝，故将其忽略、不纳入交付；未删除任何目录 | 跑完整回归并同步文档、总规划与索引 |
+| 2026-09-23 | root | 完成样件离线回归、运行说明与索引同步 | `artifacts/minecraft-full-tests.xml`：61 项全部通过；`docs/contracts/minecraft-sample-v0.1.md` 记录官方格式/命令来源、访问日期、量化与损失、目标未验证状态。文档检查首次因索引仍把 009 标为 planned 而失败，修正后通过：32 个 Markdown、37 个本地链接、5 个 JSON、13 个工单，零错误 | 目标组合可用时核对 DataVersion 并实际粘贴/通行；另一半 008 Unity 样件仍需实施，006 不扩规模 |
+| 2026-09-23 | root | 提交离线样件并首次推送 | 本地提交成功；`git push origin main` 首次以 `Recv failure: Connection was reset` 失败，`git ls-remote` 随后不能连接 github.com:443；GitHub API 确认远端仍为旧提交 `5561d15` | 重试 Git 传输，不将本地提交冒称为已推送 |
 
 ## 交接说明
 
-开始前登记负责人及实际文件范围。完成每个有实际结果的动作后更新记录；通过验收后用 `- [x] ~~工作描述~~` 划掉完成事项，并由协调者同步索引和总规划。
+当前负责人 root，009 保持 in_progress。离线样件与损失报告见 `artifacts/minecraft-sample/v2/`；不要把 61 项本地回归解释为 WorldEdit 加载或玩家通行。下一步先在冻结目标安装中确认 DataVersion，再于新测试世界加载、粘贴、走过门和楼梯并保存证据；若安装组合不可用，应版本化修订目标 profile，不覆盖本次源样例与离线证据。008 的 Unity 手工两层样件同样尚未完成，006 的扩规模门槛保持关闭。
