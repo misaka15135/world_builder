@@ -1,0 +1,19 @@
+# Python and local tooling
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.venv/
+venv/
+
+# Local generated repositories and content-addressed resources
+artifacts/**/wir.sqlite3
+artifacts/**/assets/
+artifacts/**/runs/
+artifacts/pytest-*/
+artifacts/benchmark-pilot-v1/*/
+artifacts/benchmark-pilot-v2/*/
+
+# Keep small, reviewable reports, registrations, snapshots and hardware evidence.

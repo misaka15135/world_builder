@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "world-builder-wir"
+version = "0.1.0"
+description = "World Intermediate Representation contract and validation tools"
+requires-python = ">=3.10"
+dependencies = ["jsonschema>=4.23,<5"]
+
+[project.scripts]
+validate-worldpkg = "world_builder.wir.cli:main"
+generate-world = "world_builder.generation.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

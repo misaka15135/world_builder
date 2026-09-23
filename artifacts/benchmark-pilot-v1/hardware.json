@@ -1,0 +1,31 @@
+{
+  "captured_at": "2026-09-23T10:31:20.4876271+08:00",
+  "host": {
+    "Name": "MISAKA",
+    "TotalPhysicalMemory": 68319457280
+  },
+  "cpu": {
+    "Name": "Intel(R) Core(TM) i9-14900HX",
+    "NumberOfCores": 24,
+    "NumberOfLogicalProcessors": 32
+  },
+  "os": {
+    "Caption": "Microsoft Windows 11 专业版",
+    "Version": "10.0.26200",
+    "BuildNumber": "26200"
+  },
+  "gpu": [
+    {
+      "Name": "GameViewer Virtual Display Adapter",
+      "DriverVersion": "15.6.5.199"
+    },
+    {
+      "Name": "Intel(R) UHD Graphics",
+      "DriverVersion": "32.0.101.6790"
+    },
+    {
+      "Name": "NVIDIA GeForce RTX 4070 Laptop GPU",
+      "DriverVersion": "32.0.16.1692"
+    }
+  ]
+}
