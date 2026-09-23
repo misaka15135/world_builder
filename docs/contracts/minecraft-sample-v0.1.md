@@ -31,6 +31,6 @@ python tools/export_minecraft.py --source examples/two_storey_building.world.jso
 
 在隔离游戏目录中新建创造模式 Superflat 世界 `World Builder Sample`。游戏内 `//schem load library` 返回 `library loaded`，`//paste -a` 在 `(7,-60,3)` 返回 `1365 blocks affected`。新证据目录 `artifacts/minecraft-sample/target-v1/` 包含南门外观和一层室内的游戏原生 F2 截图，均采自测试世界未受后续误操作影响时。粘贴点是当时玩家位置；并非旧 manifest 中示例原点 `[4,0,-18]`，不可把两者混同。
 
-定位楼梯后，电脑操作工具的键盘输入未再被游戏接收，一次试图恢复焦点的点击误拆了测试世界中的一个楼梯块。原始 `.schem`、源 WIR 与导出器均未改变；当前测试世界需重贴样件修复该块。已经观察到楼梯形状，但没有完成真实控制器连续上楼；`in_game_walk` 仍是 `not_run`，009 不因此视为完成。
+定位楼梯后，电脑操作工具的键盘输入未再被游戏接收，一次试图恢复焦点的点击误拆了测试世界中的一个楼梯块。重启游戏后键盘故障仍在，后续窗口点击也可能影响测试世界方块。原始 `.schem`、源 WIR 与导出器均未改变；当前测试世界需重贴样件修复。已经观察到楼梯形状，但没有完成真实控制器连续上楼；`in_game_walk` 仍是 `not_run`，009 不因此视为完成。
 
 下一步在输入可控时重新粘贴 `.schem` 修复测试世界，再实际穿过门、走完楼梯、进入上层房间，记录路线结果。WorldEdit 的[剪贴板文档](https://worldedit.enginehub.org/en/7.3.19/usage/clipboard/)说明配置目录和加载/粘贴流程。只有这些动作成功，009 的玩家通行子项才可勾选。
