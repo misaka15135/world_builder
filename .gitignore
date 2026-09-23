@@ -15,5 +15,6 @@ artifacts/**/runs/
 artifacts/pytest-*/
 artifacts/benchmark-pilot-v1/*/
 artifacts/benchmark-pilot-v2/*/
+artifacts/benchmark-pilot-v3/*/
 
 # Keep small, reviewable reports, registrations, snapshots and hardware evidence.

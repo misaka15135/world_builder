@@ -59,7 +59,7 @@ def worker(case: dict, output: Path) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--cases", type=Path, default=Path("benchmarks/pilot_cases_v2.json"))
+    parser.add_argument("--cases", type=Path, default=Path("benchmarks/pilot_cases_v3.json"))
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--worker", help=argparse.SUPPRESS)
     args = parser.parse_args()

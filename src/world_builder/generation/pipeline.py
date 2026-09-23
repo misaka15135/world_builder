@@ -61,9 +61,10 @@ def make_snapshot(spec: PilotSpec, records: list[dict], stage: str, parent: str 
     records.append({"record_type": "recipe", "id": recipe_id, "generator_id": "pilot." + stage,
         "generator_version": GENERATOR_VERSION, "input_hash": digest([spec.to_dict(), stage, parent]),
         "seed": f"0x{spec.seed:016x}", "dependency_recipe_ids": ["recipe_" + STAGES[index-1]] if index else [],
-        "budget": {"wall_time_ms": budget.wall_time_ms, "max_candidates": budget.max_candidates, "max_model_calls": 0},
+        "budget": {"wall_time_ms": budget.wall_time_ms, "max_candidates": budget.max_candidates,
+                   "max_model_calls": 1 if spec.accepted_response_hash else 0},
         "outcome": {"termination_reason": "completed", "feasibility": "unknown" if failures else "feasible", "proof_ref": None},
-        "accepted_model_response_hash": None, "extensions": {"validation_scope": "pilot_axis_aligned_templates",
+        "accepted_model_response_hash": spec.accepted_response_hash, "extensions": {"validation_scope": "pilot_axis_aligned_templates",
             "attempt_history": copy.deepcopy(attempt_history or [])}})
     revision_id = "revision_" + digest(records)[7:31]
     for check in checks:

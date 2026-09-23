@@ -25,6 +25,8 @@ class PilotSpec:
     source_prompt: str = "A small editable arcane settlement beside a river."
     layout_profile: str = "standard"
     lock_stair_void: bool = False
+    accepted_response_hash: str | None = None
+    model_provenance: dict | None = None
 
     def __post_init__(self) -> None:
         if type(self.seed) is not int or not 0 <= self.seed < 2**64:
@@ -41,6 +43,13 @@ class PilotSpec:
             raise ValueError("layout_profile must be standard or compact (a preference, not an exact size constraint)")
         if type(self.lock_stair_void) is not bool:
             raise ValueError("lock_stair_void must be a boolean")
+        if (self.accepted_response_hash is None) != (self.model_provenance is None):
+            raise ValueError("accepted response hash and model provenance must appear together")
+        if self.accepted_response_hash is not None:
+            if not isinstance(self.accepted_response_hash, str) or len(self.accepted_response_hash) != 71 or not self.accepted_response_hash.startswith("sha256:"):
+                raise ValueError("accepted_response_hash must be a SHA-256 digest")
+            if not isinstance(self.model_provenance, dict):
+                raise ValueError("model_provenance must be an object")
 
     def to_dict(self) -> dict:
         return asdict(self)

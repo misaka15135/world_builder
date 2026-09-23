@@ -1,0 +1,1 @@
+{"contract_version":"0.1.0","provider_id":"fixture.local","model_id":"fixture-pilot-v1","candidate":{"scenario":"riverside","building_count":6,"interior_count":2,"layout_profile":"compact","lock_stair_void":false},"usage":{"input_tokens":0,"output_tokens":0}}

@@ -41,12 +41,22 @@ def height(spec: PilotSpec, x: float, y: float) -> float:
 def initial_records(spec: PilotSpec) -> list[dict]:
     root = entity(spec.world_id, "world", None, [0, 0, -4], [128, 128, 36])
     root["transform"]["translation"] = [0, 0, 0]
-    return [{
+    records = [{
         "record_type": "world_spec", "id": "spec_pilot", "source_prompt": spec.source_prompt,
         "world_seed": f"0x{spec.seed:016x}", "region_bounds": {"min": [0, 0, -4], "max": [128, 128, 32]},
         "style_profile": "arcane_pilot_v1", "target_profile_ids": [], "fantasy_exceptions": [],
-        "extensions": {"pilot_spec": spec.to_dict(), "generator_version": GENERATOR_VERSION, "stage": "initial"},
+        "extensions": {"pilot_spec": spec.to_dict(), "generator_version": GENERATOR_VERSION, "stage": "initial",
+                       "accepted_model_response_hash": spec.accepted_response_hash,
+                       "model_provenance": spec.model_provenance},
     }, root]
+    if spec.accepted_response_hash:
+        records.append({"record_type": "asset", "id": "asset_model_response", "content_hash": spec.accepted_response_hash,
+            "uri": "assets/sha256/" + spec.accepted_response_hash[7:], "media_type": "application/json",
+            "length_unit": "m", "axis": "RH_Z_up",
+            "license": {"spdx": "LicenseRef-GeneratedModelResponse", "source": spec.model_provenance["provider_id"]},
+            "bounds": {"min": [0, 0, 0], "max": [0, 0, 0]},
+            "extensions": {"role": "accepted_model_response", "model_id": spec.model_provenance["model_id"]}})
+    return records
 
 
 def plan_stage(spec: PilotSpec, stage: str, records: list[dict]) -> tuple[list[dict], dict[str, bytes]]:

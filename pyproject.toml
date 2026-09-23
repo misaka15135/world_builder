@@ -12,6 +12,7 @@ dependencies = ["jsonschema>=4.23,<5"]
 [project.scripts]
 validate-worldpkg = "world_builder.wir.cli:main"
 generate-world = "world_builder.generation.cli:main"
+worldpkg = "world_builder.storage.worldpkg_cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

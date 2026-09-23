@@ -2,7 +2,7 @@
 
 自然语言驱动的分层三维世界生成与编辑系统。
 
-当前阶段：M2 最小生成闭环实施中。已提供 128 m 小范围本地生成试验：固定 seed、五阶段提交、6 栋建筑/2 栋室内模板、源端校验、SQLite 存档和故障恢复；v2 增加最多 3 次候选的楼梯修复、建筑预留空间反馈、锁冲突保护和逐次日志。完整城邦、模型接入、查看器及目标导出尚未完成。能力与限制见 [006 运行说明](docs/contracts/generation-v0.1.md)。
+当前阶段：M2 最小生成闭环实施中。已提供 128 m 小范围本地生成试验：固定 seed、五阶段提交、6 栋建筑/2 栋室内模板、源端校验、SQLite 存档和故障恢复；v2 增加最多 3 次候选的楼梯修复、建筑预留空间反馈、锁冲突保护和逐次日志；v3 增加可替换的自然语言规格 JSON 接口、已接受响应回放与自包含 `.worldpkg` 交换。真实模型服务、完整城邦、查看器及目标导出尚未验证。能力与限制见 [006 运行说明](docs/contracts/generation-v0.1.md)。
 
 ## 方案文档
 
@@ -23,9 +23,10 @@
 ```powershell
 $env:PYTHONPATH = 'src'
 python tools/generate_world.py --output artifacts/my-pilot --seed 101
+python tools/generate_world.py --output artifacts/model-demo --seed 17 --prompt '一座河畔魔法小镇' --model-fixture examples/pilot_model_response.json
 $testRunDir = Join-Path (Get-Location) ('artifacts/pytest-006-' + [guid]::NewGuid().ToString('N'))
 python -m pytest -q --basetemp $testRunDir
 python tools/check_project_docs.py
 ```
 
-运行需要 Python 3.10+ 和 `jsonschema`，测试另需 `pytest`。当前实测依赖与原锁定文件存在版本差异，见 [基准记录](docs/contracts/environment-baseline.md)；没有修改全局依赖。重复相同生成命令可继续未完成阶段，完整执行后不重复生成。输出的 JSON 快照附带同目录资源，并非正式 `.worldpkg` 或目标平台场景。
+运行需要 Python 3.10+ 和 `jsonschema`，测试另需 `pytest`。当前实测依赖与原锁定文件存在版本差异，见 [基准记录](docs/contracts/environment-baseline.md)；没有修改全局依赖。重复相同生成命令可继续未完成阶段，完整执行后不重复生成。输出的 JSON 快照附带同目录资源；`tools/worldpkg.py` 可将自包含修订导出、校验并导入 ZIP64 世界包。它不是 Unity 或 Minecraft 场景。
