@@ -14,7 +14,7 @@
 | 005 | [WIR v0.1 数据契约与样例](005_wir_contract.md) | done | root | 001—004 |
 | 006 | [最小分层生成闭环](006_generation_vertical_slice.md) | in_progress | root | 005 |
 | 007 | [本地三维查看与增量编辑](007_local_viewer_editor.md) | planned | 待认领 | 005；最终联调需要 006 |
-| 008 | [Unity 场景导出与加载验证](008_unity_export.md) | planned | 待认领 | 005；完整验收 006、007 |
+| 008 | [Unity 场景导出与加载验证](008_unity_export.md) | in_progress | root | 005；完整验收 006、007 |
 | 009 | [Minecraft Java 区域导出](009_minecraft_schematic_export.md) | in_progress | root | 005；完整验收 006、007 |
 | 010 | [Minecraft Java 独立世界导出](010_minecraft_world_export.md) | planned | 待认领 | 009 |
 | 011 | [IFC 建筑概念模型验证](011_ifc_concept_export.md) | planned | 待认领 | 005、006；游戏首版之后 |
@@ -22,7 +22,7 @@
 
 下一个可分配编号：013。编号由协调者串行分配，避免并行碰撞。
 
-当前状态：001—005 done。006 in_progress：已交付 128 m 固定规格生成/存档恢复、有限楼梯修复、可替换的模型规格合同、已接受响应回放和自包含 ZIP64 世界包交换；59 项既有测试通过，v3 小范围输入首次 15/30、最终 30/30。009 in_progress：手工两层建筑的 Sponge v3 离线文件和损失报告已生成，实际 Minecraft/WorldEdit 加载尚未验证。007、008、010—012 未开始，完整城邦扩规模前仍需 008/009 的目标软件样件验证。010 为必要性待明确的可选后续路线。
+当前状态：001—005 done。006 in_progress：已交付 128 m 固定规格生成/存档恢复、有限楼梯修复、可替换的模型规格合同、已接受响应回放和自包含 ZIP64 世界包交换；v3 小范围输入首次 15/30、最终 30/30。008 in_progress：Unity 6000.3.24f1 的两层 GLB 在批处理和图形界面均成功导入，26/26 对象映射和碰撞、东窗方向通过，连续控制器漫游待验。009 in_progress：Minecraft 1.21.11/Fabric/WorldEdit 成功加载并粘贴 1365 方块样件，连续玩家通行待验。完整回归 63 passed；007、010—012 未开始，完整城邦扩规模前仍需完成两个目标的通行子项。010 为必要性待明确的可选后续路线。
 
 ## 执行约定
 

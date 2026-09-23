@@ -1,6 +1,6 @@
 # 开发与目标环境基线
 
-冻结日期：2026-09-22。对应工单：005。状态：开发基准已实测，目标应用组合尚未安装验证。
+初始冻结日期：2026-09-22；Unity 目标修订日期：2026-09-23。对应工单：005、008、009。状态：开发基准已实测；Unity 手工样件已在目标编辑器批处理和图形界面导入，Minecraft 已在目标游戏加载并粘贴；两者连续玩家通行待验。
 
 ## 基准主机
 
@@ -28,11 +28,17 @@
 
 | 目标 | 版本组合 | 当前状态 |
 |---|---|---|
-| Unity | Unity `6000.3.0f1`（6.3 LTS）、URP；glTFast `6.19.0` 候选 | 已冻结，未在 `tx5` 安装验证；008 开始时记录 URP 精确包版本 |
-| Minecraft | Java Edition `1.21.11`、WorldEdit `7.3.19`、Sponge Schematic v3、Java 21 | 已冻结，未执行加载测试；009 必须先验证该组合，失败时新修订 profile，不能覆盖历史配置 |
+| Unity | Unity `6000.3.24f1`（6.3 LTS）、URP `17.3.0`、glTFast `6.20.0` | 本机安装及签名有效；手工两层 GLB 已在目标编辑器导入并目视，26 个对象 ID/碰撞和不对称东窗坐标通过；控制器漫游待验 |
+| Minecraft | Java Edition `1.21.11`、Fabric Loader `0.19.5`、WorldEdit `7.3.19`、Sponge Schematic v3、Java 21 | 目标游戏已运行并用 WorldEdit 加载、粘贴 1365 个非空气方块；连续玩家通行待验 |
 | IFC | IFC4 ADD2 TC1；IfcOpenShell 版本由 011 安装后固定 | schema 已冻结，工具版本待验证 |
 
-冻结目标用于形成可复现 profile，并不表示兼容性已得到证明。Unity 6.3 LTS 和 Unity 6000.3.0f1 有官方发布记录；Minecraft 1.21.11、WorldEdit 7.3.19 和 Sponge v3 均有维护方资料，但组合仍须在 `tx5` 实测。
+Unity 原候选 `6000.3.0f1` 在 Hub 存档中显示警告标记；用户报告官方签名警告并停止安装。该原候选及现有 WIR 样例 profile 保留为历史记录，不作为后续 008 的安装目标。修订后的 `6000.3.24f1` 见 [Unity 官方发布记录](https://unity.com/releases/editor/whats-new/6000.3.24f1)（2026-09-10 发布）；2026-09-23 本机 Hub 的正式发行版列表显示它为 Unity 6.3 LTS 且未显示旧版警告标记，Unity CLI 预检无警告。这些事实不代替安装包数字签名或目标项目加载验证。
+
+同日本机安装核对：Unity CLI `editors --installed` 返回 `6000.3.24f1` x86_64，`editors verify 6000.3.24f1` 返回 `ok=true`；编辑器位于 `C:\Program Files\Unity\Hub\Editor\6000.3.24f1\Editor\Unity.exe`，文件 `ProductVersion=6000.3.24f1_4e7b9b5b6244`。Windows Authenticode 对完整安装包和编辑器可执行文件均返回 `Valid`，签名者为 `Unity Technologies SF`。这一步只验证了本机安装和签名。
+
+后续目标项目 `adapters/unity/sample_project/` 的包清单与锁文件实际解析为 URP `17.3.0`、glTFast `6.20.0`。Unity 批处理调用样件构建器导入 v2 GLB 并保存场景，`artifacts/unity-sample/target-validation-v2.json` 记录目标读取、东窗坐标及 26 个 MeshCollider 为 pass。该证据不等于运行时门洞/楼梯漫游通过；见 [008 样件说明](unity-sample-v0.1.md)。
+
+Minecraft 官方 Launcher 安装了 1.21.11，本机客户端 JAR 内 `version.json.world_version=4671`。Fabric 官方安装器 1.1.2 安装 Loader 0.19.5，WorldEdit 7.3.19 的 1.21.11 模组已与发布方 SHA-512 核对并放入独立游戏目录。目标游戏已经启动，WorldEdit 加载日志与样件粘贴返回值见 [009 样件说明](minecraft-sample-v0.1.md)；连续玩家通行尚未证明。
 
 ## 软件与许可记录
 

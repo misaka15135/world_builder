@@ -3,7 +3,7 @@
 - 状态：in_progress
 - 创建日期：2026-09-21
 - 执行者：协调者 root
-- 项目阶段：M2 最小生成闭环实施中（006）；009 两层建筑目标样件试验同步进行
+- 项目阶段：M2 最小生成闭环实施中（006）；008/009 目标环境与样件试验同步进行
 
 ## 项目目标
 
@@ -34,7 +34,7 @@
 
 ## 当前状态与下一步
 
-M0 与 M1 已完成。当前直接在基准 Windows 本机 MISAKA 执行，无须 SSH。006 已实现 128 m、6 栋建筑/2 栋室内模板的五阶段源数据生成、校验、SQLite 存档恢复、有限楼梯修复、模型规格 JSON 接口、已接受响应回放和自包含 ZIP64 世界包交换；v3 的 30 个离线小范围输入首次 15/30、最终 30/30。006 仍为 in_progress：真实模型服务、广范围规划与修复、完整城邦尚未验证。009 的手工两层建筑已离线转换为 Sponge v3 区域剪贴板并完成静态检查，但本机没有冻结的 Minecraft/WorldEdit 组合，目标加载/玩家通行未验收。008 尚未开始，008/009 的目标样件验证仍是完整城邦扩规模前的门槛。010 必要性待明确。项目已建立私有 GitHub 仓库 `misaka15135/world_builder` 并配置 `origin/main`。
+M0 与 M1 已完成。当前直接在基准 Windows 本机 MISAKA 执行，无须 SSH。006 已实现 128 m、6 栋建筑/2 栋室内模板的五阶段源数据生成、校验、SQLite 存档恢复、有限楼梯修复、模型规格 JSON 接口、已接受响应回放和自包含 ZIP64 世界包交换；v3 的 30 个离线小范围输入首次 15/30、最终 30/30。006 仍为 in_progress：真实模型服务、广范围规划与修复、完整城邦尚未验证。009 的手工两层 Sponge v3 样件已在 Minecraft 1.21.11/Fabric/WorldEdit 中加载并粘贴，1365 方块与离线数量一致；连续玩家通行未验收。008 的 Unity 6000.3.24f1 两层 GLB 已在目标编辑器批处理和图形界面导入，26 个构件的 ID/碰撞与不对称东窗方向通过；连续控制器漫游未验收。008/009 的通行子项仍是完整城邦扩规模前的门槛。完整回归 63 项通过。010 必要性待明确。项目已建立私有 GitHub 仓库 `misaka15135/world_builder` 并配置 `origin/main`。
 
 ## 执行记录
 
@@ -52,3 +52,8 @@ M0 与 M1 已完成。当前直接在基准 Windows 本机 MISAKA 执行，无�
 | 2026-09-23 | root | 按用户要求创建私有 GitHub 仓库并推送现有项目 | `https://github.com/misaka15135/world_builder`，初始提交 `7eac268`，`main` 跟踪 `origin/main` | 在此仓库继续 006，保留历史成果 |
 | 2026-09-23 | root | 继续 006，完成模型规格合同、响应回放与自包含包交换子阶段 | `59 passed`；v3 预登记 30 个离线小范围输入首次 15/30、最终 30/30；模型响应和 `.worldpkg` 样例校验、导入及零调用回放通过 | 验证真实服务适配；008/009 手工两层样件通过后再扩规模，M2 尚未完成 |
 | 2026-09-23 | root | 开始 009 手工两层建筑离线目标样件 | `artifacts/minecraft-sample/v2/library.schem` 为 Sponge v3 区域剪贴板，20×9×16、1365 非空气方块；对象损失报告与两格净空静态路径已保存；完整回归 `61 passed`，文档检查零错误。目标游戏/WorldEdit 未安装，DataVersion 未实测；Unity 常见安装路径/PATH 亦未发现，原两层样例只有 Minecraft profile | 009 保持 in_progress；下一步建立版本化 Unity 样例 profile 并实施 008 样件，实际目标加载后才能解除 006 扩规模门槛 |
+| 2026-09-23 | root | 按用户授权开始 Unity/Minecraft 目标环境安装 | Unity Hub 3.21.3 已运行；Java 21 已安装；`.minecraft/versions` 尚无 1.21.11。008 登记为 in_progress，009 扩展本机安装范围；实际目标加载仍待验证 | 通过 Hub 和 Launcher 获取冻结版本，核对安装结果 |
+| 2026-09-23 | root | 完成 Minecraft 目标文件安装并启动 Unity 下载 | Launcher 下载 1.21.11，客户端 JAR 的 `world_version=4671`；Fabric Loader 0.19.5 配置和隔离的 WorldEdit 7.3.19 模组已安装，两个下载文件均与发布方哈希匹配。Unity 6000.3.0f1 的 4.1 GB 安装仍在下载；Fabric/WorldEdit 游戏启动和样件加载未验证 | 完成 Unity 安装；启动 Fabric 目标组合并测试样件 |
+| 2026-09-23 | root | 按用户的签名警告反馈修订 Unity 冻结版本 | 停止独立运行的旧版 CLI 下载，`editors --installed` 为空；官方发布页和本机 Hub 正式版列表确认 `6000.3.24f1`，Hub 对该版本无旧版警告标记；新版本 CLI 预检无警告，安装下载已开始。`docs/contracts/environment-baseline.md` 与能力矩阵改为新目标，原 WIR 样例 profile 保留历史版本 | 完成新版签名与编辑器核对；008 样件仍待实现 |
+| 2026-09-23 | root | 完成新 Unity 编辑器的安装和签名验证 | Unity CLI 安装与 `editors verify` 均成功，安装包及 `Unity.exe` Authenticode `Valid`，文件版本 `6000.3.24f1_4e7b9b5b6244`。URP/glTFast 与样件导入尚未执行 | 开始 008 手工样件 profile/导出/加载验证 |
+| 2026-09-23 | root | 完成 008/009 两层目标样件的加载阶段 | Unity URP 17.3.0/glTFast 6.20.0 导入 v2 GLB，26/26 源 ID/碰撞和东窗坐标通过，图形界面再次重建并目视；Minecraft 1.21.11/Fabric/WorldEdit 加载 Sponge v3 并粘贴 1365 方块，保存门外与室内截图；完整回归 63 passed | 补足 Unity 控制器与 Minecraft 实际玩家穿门、上楼证据后才能解除 006 扩规模门槛 |

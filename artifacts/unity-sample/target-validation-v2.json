@@ -1,0 +1,11 @@
+{
+    "unity_version": "6000.3.24f1",
+    "target_load": "pass",
+    "collision": "pass",
+    "orientation": "pass",
+    "scene_path": "Assets/WorldBuilderSample/LibrarySample.unity",
+    "expected_pieces": 26,
+    "mapped_pieces": 26,
+    "mesh_colliders": 26,
+    "error": ""
+}

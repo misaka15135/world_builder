@@ -19,3 +19,25 @@ artifacts/benchmark-pilot-v3/*/
 artifacts/minecraft-sample/v1/
 
 # Keep small, reviewable reports, registrations, snapshots and hardware evidence.
+
+# Unity sample project local caches and machine-specific editor state
+adapters/unity/sample_project/Library/
+adapters/unity/sample_project/Temp/
+adapters/unity/sample_project/Obj/
+adapters/unity/sample_project/Logs/
+adapters/unity/sample_project/UserSettings/
+adapters/unity/sample_project/.vs/
+adapters/unity/sample_project/*.slnx
+adapters/unity/sample_project/*.csproj
+adapters/unity/sample_project/.vsconfig
+adapters/unity/sample_project/Assets/Resources/
+adapters/unity/sample_project/Assets/Resources.meta
+adapters/unity/sample_project/Assets/Settings/SampleSceneProfile.asset*
+adapters/unity/sample_project/Assets/TutorialInfo/
+adapters/unity/sample_project/Assets/TutorialInfo.meta
+adapters/unity/sample_project/Assets/Scenes/
+adapters/unity/sample_project/Assets/Scenes.meta
+adapters/unity/sample_project/Assets/Readme.asset*
+adapters/unity/sample_project/Assets/InputSystem_Actions.inputactions*
+artifacts/unity-sample/editor-*.log
+artifacts/unity-sample/v1/

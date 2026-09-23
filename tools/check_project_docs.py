@@ -9,7 +9,8 @@ from pathlib import Path
 def main() -> int:
     root = Path(__file__).resolve().parents[1]
     errors: list[str] = []
-    markdown_files = sorted(root.rglob("*.md"))
+    unity_cache = root / "adapters" / "unity" / "sample_project" / "Library"
+    markdown_files = sorted(path for path in root.rglob("*.md") if not path.is_relative_to(unity_cache))
     local_links = 0
 
     for path in markdown_files:

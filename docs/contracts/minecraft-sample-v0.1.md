@@ -1,6 +1,6 @@
 # 009 两层建筑 Minecraft 样件导出
 
-状态：受限离线样件已实现，目标软件加载与玩家通行尚未验收。日期：2026-09-23。适配器版本：`0.1.0-sample.1`；源 WIR Schema：0.1.0。
+状态：受限样件已在目标游戏加载并粘贴，玩家连续通行尚未验收。日期：2026-09-23。适配器版本：`0.1.0-sample.1`；源 WIR Schema：0.1.0。
 
 ## 来源与适用边界
 
@@ -19,12 +19,18 @@ $env:PYTHONPATH = 'src'
 python tools/export_minecraft.py --source examples/two_storey_building.world.json --output artifacts/my-minecraft-sample --data-version 4671
 ```
 
-`--data-version` 必须显式提供正整数；上例的 `4671` 只用于当前离线试验，未在本机目标安装核对。导出器不替用户推断目标运行时版本。输出目录必须不存在，避免覆盖已有证据。文件有 `library.schem`、`manifest.json` 和 `export_report.json`：manifest 记录源修订/摘要、目标原点 `[4,0,-18]`、尺寸、方块数、Schematic 哈希、离线检查与目标加载状态；报告符合 WIR 0.1 `export_report` 形状，源快照不被修改。文件是区域剪贴板，不是独立 Minecraft 世界目录。
+`--data-version` 必须显式提供正整数；上例的 `4671` 已于 2026-09-23 从本机安装的官方 1.21.11 客户端 JAR 内 `version.json.world_version` 核对，但现有 v2 文件仍保留生成时的离线验证状态。导出器不替用户推断目标运行时版本。输出目录必须不存在，避免覆盖已有证据。文件有 `library.schem`、`manifest.json` 和 `export_report.json`：manifest 记录源修订/摘要、目标原点 `[4,0,-18]`、尺寸、方块数、Schematic 哈希、离线检查与目标加载状态；报告符合 WIR 0.1 `export_report` 形状，源快照不被修改。文件是区域剪贴板，不是独立 Minecraft 世界目录。
 
 离线检查逐格验证门洞到上层房间的连续路径、至少两格头部净空与每级不超过一格的高度变化；独立测试解析 GZip/NBT、palette、varint 索引、门洞、窗、楼梯和楼板开口。它没有模拟 Minecraft 碰撞形状、导航、流体或实体行为，不能代替实际玩家通行。
 
-## 目标验证待办
+## 目标运行验证
 
-本机 `.minecraft/versions` 检查仅见 26.2、26.3 和 26.3 快照，没有冻结的 Minecraft 1.21.11/WorldEdit 7.3.19 组合。官方客户端 JAR 下载核对 `DataVersion` 的尝试被自动审批阻止。因此 `manifest.json` 的 `data_version_verified_on_target` 为 `false`，`game_load` 和 `in_game_walk` 均为 `not_run`。
+本机现已通过官方 Launcher 安装 `1.21.11`，并从其客户端 JAR 核对 `world_version=4671`。通过 [Fabric 官方安装器](https://fabricmc.net/use/) 1.1.2 安装 Loader 0.19.5；安装器与 Maven SHA-256 一致。专用配置 `World Builder 1.21.11 Fabric` 指向 `.minecraft/world_builder_1.21.11`，避免影响现有 26.x 配置。[WorldEdit 7.3.19 的 1.21.11 Fabric/NeoForge 发布页](https://modrinth.com/plugin/worldedit/version/SDczInMa)提供的 `worldedit-mod-7.3.19.jar` 已与 Modrinth API SHA-512 核对，放在该独立游戏目录的 `mods` 下。`library.schem` 也已复制到 `config/worldedit/schematics`，与 v2 SHA-256 一致。来源访问及本机核对日期：2026-09-23。
 
-在目标组合可用后，应先从该安装确认 `DataVersion`，用确认值重新导出；将 `.schem` 放到 WorldEdit 配置的 `schematics` 目录，执行 `/schem load library`，在新测试世界按 manifest 原点放置并实际穿过门、走完楼梯、进入上层房间，记录加载日志与截图/视频。WorldEdit 的[剪贴板文档](https://worldedit.enginehub.org/en/7.3.19/usage/clipboard/)说明配置目录和加载/粘贴流程。只有这些动作成功，009 的目标加载与玩家通行子项才可勾选。
+既有 v2 `manifest.json` 是安装前的离线证据，其 `data_version_verified_on_target=false`、`game_load=not_run` 和 `in_game_walk=not_run` 保持原样，不追溯改写。后续实际在 Fabric 1.21.11 主菜单看到 `Modded`，日志显示 WorldEdit `7.3.19+7378-cb4171a` 加载并注册命令；该游戏能够读取 DataVersion 4671 的 v3 剪贴板。
+
+在隔离游戏目录中新建创造模式 Superflat 世界 `World Builder Sample`。游戏内 `//schem load library` 返回 `library loaded`，`//paste -a` 在 `(7,-60,3)` 返回 `1365 blocks affected`。新证据目录 `artifacts/minecraft-sample/target-v1/` 包含南门外观和一层室内的游戏原生 F2 截图，均采自测试世界未受后续误操作影响时。粘贴点是当时玩家位置；并非旧 manifest 中示例原点 `[4,0,-18]`，不可把两者混同。
+
+定位楼梯后，电脑操作工具的键盘输入未再被游戏接收，一次试图恢复焦点的点击误拆了测试世界中的一个楼梯块。原始 `.schem`、源 WIR 与导出器均未改变；当前测试世界需重贴样件修复该块。已经观察到楼梯形状，但没有完成真实控制器连续上楼；`in_game_walk` 仍是 `not_run`，009 不因此视为完成。
+
+下一步在输入可控时重新粘贴 `.schem` 修复测试世界，再实际穿过门、走完楼梯、进入上层房间，记录路线结果。WorldEdit 的[剪贴板文档](https://worldedit.enginehub.org/en/7.3.19/usage/clipboard/)说明配置目录和加载/粘贴流程。只有这些动作成功，009 的玩家通行子项才可勾选。

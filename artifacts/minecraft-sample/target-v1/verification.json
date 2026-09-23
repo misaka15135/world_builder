@@ -1,0 +1,23 @@
+{
+  "source_revision_id": "revision_two_storey_001",
+  "schematic_sha256": "a370482743ec8a7b1c8bf91e8e62d7d56dac8e2e4dd7c9988e6cbe79dc549cfb",
+  "minecraft_version": "1.21.11",
+  "fabric_loader_version": "0.19.5",
+  "worldedit_loaded_version": "7.3.19+7378-cb4171a",
+  "data_version": 4671,
+  "test_world": "World Builder Sample",
+  "world_type": "superflat",
+  "game_mode": "creative",
+  "schematic_load": "pass",
+  "paste": "pass",
+  "paste_anchor_blocks": [7, -60, 3],
+  "blocks_affected": 1365,
+  "door_visual_check": "pass",
+  "interior_visual_check": "pass",
+  "continuous_player_walk": "not_run",
+  "post_evidence_world_state": "one stair block was accidentally broken after screenshots; repaste before walkthrough",
+  "screenshots": {
+    "exterior.png": "sha256:e0240540b4f23bb68b656fef5ea3de76ae61b8adc9dab0385683162473e9c21f",
+    "interior-before-damage.png": "sha256:2f748db56dbea91856c2772dd291a0bffd7db55591bd66c1cebc4767e738a2b3"
+  }
+}

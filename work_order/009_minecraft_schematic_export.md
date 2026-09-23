@@ -4,7 +4,7 @@
 - 创建日期：2026-09-21
 - 执行者：root
 - 依赖：005；样件试验可与 006 并行，完整验收需要 006、007
-- 修改范围：本轮为 `src/world_builder/adapters/minecraft/`、`tools/export_minecraft.py`、`tests/test_minecraft_sample.py`、两层建筑目标证据 `artifacts/minecraft-sample/`、`.gitignore`、`pyproject.toml`、009/000/索引与必要的导出说明；保持 WIR 0.1 Schema 和手工源样例不变。后续城邦范围另行登记。
+- 修改范围：本轮完成本机 Minecraft Java 1.21.11、Fabric 与 WorldEdit 7.3.19 的目标运行和两层样件加载/通行验收；可新增 `artifacts/minecraft-sample/` 目标证据、更新 009/000/索引与必要说明。既有导出代码、WIR 0.1 Schema 和手工源样例保持不变。后续城邦范围另行登记。
 
 ## 目标与范围
 
@@ -14,7 +14,7 @@
 
 ## 工作项
 
-- [ ] 冻结 Java、WorldEdit、Sponge schematic 版本和方块注册表/DataVersion 组合。
+- [x] ~~冻结 Java、WorldEdit、Sponge schematic 版本和方块注册表/DataVersion 组合。~~
 - [ ] 005 完成后先转换手工两层建筑样件，验证坐标、门洞、楼梯与玩家通行，作为 006 扩规模的前置子项。
 - [ ] 定义米到方块比例、坐标变换、竖向放置、材料/方块状态和替代策略。
 - [ ] 优先实现墙、地板、门、楼梯、道路和水体的语义转换，再处理一般网格量化。
@@ -53,7 +53,13 @@
 | 2026-09-23 | root | 完成样件离线回归、运行说明与索引同步 | `artifacts/minecraft-full-tests.xml`：61 项全部通过；`docs/contracts/minecraft-sample-v0.1.md` 记录官方格式/命令来源、访问日期、量化与损失、目标未验证状态。文档检查首次因索引仍把 009 标为 planned 而失败，修正后通过：32 个 Markdown、37 个本地链接、5 个 JSON、13 个工单，零错误 | 目标组合可用时核对 DataVersion 并实际粘贴/通行；另一半 008 Unity 样件仍需实施，006 不扩规模 |
 | 2026-09-23 | root | 提交离线样件并首次推送 | 本地提交成功；`git push origin main` 首次以 `Recv failure: Connection was reset` 失败，`git ls-remote` 随后不能连接 github.com:443；GitHub API 确认远端仍为旧提交 `5561d15` | 重试 Git 传输，不将本地提交冒称为已推送 |
 | 2026-09-23 | root | 通过 GitHub Git API 发布同一提交 | Git HTTPS 重试仍无法连接 github.com:443；通过已认证 GitHub API 上传 18 个对象，逐项比较本地 blob/tree SHA，并用相同作者、提交者与时间创建一致的 Git 提交 `d01ea85`；API 非强制更新 `main` 成功 | 同步本行执行记录并核对远端与工作区状态 |
+| 2026-09-23 | root | 按用户授权开始目标游戏安装阶段 | 当前 `.minecraft/versions` 仍无 1.21.11；本轮通过已安装 Launcher 获取冻结版本，并安装核对 Fabric/WorldEdit 7.3.19，保留实际加载验收门槛 | 检查 Launcher 安装位置、登录状态与目标版本入口 |
+| 2026-09-23 | root | 在官方 Launcher 下载 1.21.11；安装独立 Fabric/WorldEdit 配置 | `.minecraft/versions/1.21.11/1.21.11.jar` 已落盘并启动游戏进程；JAR 内 `version.json` 给出 `world_version=4671`。Fabric Installer 1.1.2 的 Maven SHA-256 与本地文件一致；安装 Fabric Loader 0.19.5，创建 `World Builder 1.21.11 Fabric` 配置，游戏目录独立于既有 26.x 配置。WorldEdit 7.3.19 模组的 Modrinth SHA-512 与本地 6,888,750 字节 JAR 一致，已复制到独立 `mods` 目录。游戏首次启动停在加载画面后经用户同意关闭；Fabric/WorldEdit 实际启动与 `.schem` 加载尚待验证 | 启动专用配置，检查 WorldEdit 日志与游戏菜单，再测试样件加载 |
+| 2026-09-23 | root | 准备本机 WorldEdit 样件加载并同步运行说明 | `artifacts/minecraft-sample/v2/library.schem` 已复制至隔离配置的 `config/worldedit/schematics/library.schem`，SHA-256 同为 `a370482743ec8a7b1c8bf91e8e62d7d56dac8e2e4dd7c9988e6cbe79dc549cfb`；`docs/contracts/minecraft-sample-v0.1.md` 更新安装事实与待验证边界 | 实际启动、加载、粘贴和通行 |
+| 2026-09-23 | root | 按用户“继续推进”进入目标运行验收 | 本轮先运行已安装的 Fabric/WorldEdit 专用配置，核对模组日志和 1.21.11 主菜单，再用新测试世界加载/粘贴 v2 样件；现有 v2 离线证据保留不改 | 启动目标组合并记录实际结果 |
+| 2026-09-23 | root | 在目标游戏中加载并粘贴 v2 剪贴板 | 专用 Fabric 1.21.11 配置进入主菜单；`latest.log` 明确显示 WorldEdit `7.3.19+7378-cb4171a` 加载并注册命令。新建创造模式 Superflat 世界 `World Builder Sample`；游戏内 `//schem load library` 返回 `library loaded`，`//paste -a` 返回放置点 `(7,-60,3)`、`1365 blocks affected`，与离线非空气方块数一致。`artifacts/minecraft-sample/target-v1/exterior.png` 目视可见南门，`interior-before-damage.png` 可见室内与楼梯；既有 v2 manifest 不追溯修改 | 恢复测试世界楼梯后完成真实玩家穿门、上楼与二层路线，方可勾选样件通行条目 |
+| 2026-09-23 | root | 尝试游戏内行走并记录限制 | 定位楼梯后，电脑操作的键盘输入不再被游戏接收，无法证明连续行走；恢复焦点的一次点击误拆了测试世界的一个楼梯块，未改源 `.schem` 或导出代码。现有外观/内部截图均在误拆前采集。目标世界当前不能作为完整通行验收证据 | 待输入可控时重新粘贴原始样件覆盖测试世界，再用实际控制器走完整路线 |
 
 ## 交接说明
 
-当前负责人 root，009 保持 in_progress。离线样件与损失报告见 `artifacts/minecraft-sample/v2/`；不要把 61 项本地回归解释为 WorldEdit 加载或玩家通行。下一步先在冻结目标安装中确认 DataVersion，再于新测试世界加载、粘贴、走过门和楼梯并保存证据；若安装组合不可用，应版本化修订目标 profile，不覆盖本次源样例与离线证据。008 的 Unity 手工两层样件同样尚未完成，006 的扩规模门槛保持关闭。
+当前负责人 root，009 保持 in_progress。离线样件与损失报告见 `artifacts/minecraft-sample/v2/`；目标加载/粘贴证据见 `artifacts/minecraft-sample/target-v1/`。目标软件已证明能读取并放置样件，玩家连续穿门/上楼仍待验证。重新粘贴原始 `.schem` 恢复测试世界中误拆的楼梯块后，再做路线验收；不能把截图或离线净空检查当成漫游通过。008 的 Unity 手工样件目标导入已通过，漫游仍待完成，006 的扩规模门槛保持关闭。
