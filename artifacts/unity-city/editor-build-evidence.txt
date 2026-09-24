@@ -1,0 +1,3 @@
+WorldBuilder city imported: 176 pieces, 176 colliders, revision revision_c1b82ea36c16a34c95f97c42
+Exiting batchmode successfully now!
+Exiting without the bug reporter. Application will terminate with return code 0

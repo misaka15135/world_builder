@@ -4,7 +4,7 @@
 - 创建日期：2026-09-21
 - 执行者：root
 - 依赖：005；样件试验可与 006 并行，完整验收需要 006、007
-- 修改范围：已按用户反馈停止 Unity 6000.3.0f1，安装并核对 Unity 6000.3.24f1 本机环境；本轮为固定手工样件补充仅用于目标验收的角色控制器、连续路线场景与运行记录，范围包括 `adapters/unity/sample_project/Assets/WorldBuilderSample/`、`artifacts/unity-sample/`、相关说明及 008/006/000/索引。原 GLB、WIR 0.1 Schema、手工源样例和通用导出范围保持不变。
+- 修改范围：2026-09-24 本阶段由 root 实施同修订城邦静态区域导出与 Unity 目标加载，涉及 `src/world_builder/adapters/unity/city.py`、`tools/export_unity_city.py`、`tests/test_unity_city.py`、`adapters/unity/sample_project/Assets/WorldBuilderCity/`、`artifacts/unity-city/`、导出说明及 008/000/索引。固定手工样件与 WIR 0.1 Schema 不改；室内通行另行验收。
 
 ## 目标与范围
 
@@ -27,6 +27,14 @@
 - [ ] 验证坐标、法线、比例、实例化与目标材质降级，生成损失报告。
 - [ ] 输出符合 WIR 0.1 `export_report` 的对象映射与损失统计；Unity 反射变换必须处理绕序、法线和切线。
 - [ ] 导入与查看器同一修订的代表性城邦并进行漫游与室内可达性验收。
+
+## 城邦静态区域子阶段（2026-09-24）
+
+- [x] ~~从已校验的 512 m WIR 城邦包导出道路、桥、建筑体量和地表/河道代理 GLB，保留源 ID 与修订。~~
+- [x] ~~输出符合 WIR 0.1 的逐实体损失报告，明确 80 栋实心代理、平坦地形及未进入场景的室内对象。~~
+- [x] ~~在 Unity 6000.3.24f1 实际加载同一城邦修订，核对构件映射、碰撞体和桥的目标边界。~~
+- [ ] 在 Play Mode 连续实走道路和桥，建立可核对的运行证据。
+- [ ] 实现可进入的城邦建筑和室内楼梯，完成目标通行与其余 008 验收。
 
 ## 验收标准
 
@@ -55,6 +63,9 @@
 | 2026-09-23 | root | 复核最终项目保存与批处理重建 | `EditorBuildSettings.asset` 指向 `LibrarySample.unity` 的实际 GUID；构建器补充 `AssetDatabase.SaveAssets()` 后重新批处理，`artifacts/unity-sample/target-validation-final.json` 全项 pass，日志以 `return code 0` 结束；完整 Python 回归 63 passed、文档检查 33 Markdown/40 链接/5 JSON/13 工单零错误 | 保持 008 in_progress，下一步验证实际控制器穿门、上楼 |
 | 2026-09-24 | root | 按用户要求开始 Unity 连续漫游验收并登记修改范围 | 既有 v2 GLB、26 个 MeshCollider、东窗方向和目标编辑器导入已通过；仍缺从南门到二层的控制器连续运动证据。本轮只新增样件验收场景与控制器，保留原 GLB 和源样例 | 构建可记录控制器碰撞与路线的目标运行场景，在 Unity Play Mode 实走并保存证据 |
 | 2026-09-24 | root | 完成固定两层样件的 Unity 控制器漫游 | `LibraryWalkValidation.unity` 使用 1.8 m 高、0.25 m 半径、0.55 m 跨阶的 CharacterController；`walk-scene-build-evidence.txt` 摘录重新编译、重建和退出码 0 的日志。Unity 6000.3.24f1 图形 Play Mode 连续经过南门、一层、楼梯底、二层平台和二层房间；`artifacts/unity-sample/walk-validation.json` 为 `status=pass`、5/5 检查点、终点脚部 Y≈4.28 m；`walk-validation.png` 留下同次运行画面。`pytest tests/test_unity_sample.py` 2 passed，文档检查 33 Markdown/40 链接/5 JSON/13 工单零错误。夹具不属于通用 GLB/导出器 | 固定样件子项完成；008 仍 in_progress，下一步实现通用区域、道路/桥及与 006/007 同修订联调 |
+| 2026-09-24 | root | 按用户继续推进认领城邦静态区域子阶段 | 本轮文件范围见文件头；512 m 源端城邦包与固定样件验收证据已具备，目标城邦尚未导出或加载 | 建立真实 WIR 派生 GLB、对象映射与明确损失，再运行 Unity 目标导入 |
+| 2026-09-24 | root | 完成 512 m 城邦静态 GLB 与 Unity 目标加载 | `artifacts/unity-city/v1/city.glb` 对应源修订 `revision_c1b82ea36c16a34c95f97c42`，SHA-256 `9fbbe5c489c74ab1566705afa2faa3fd8d305640652599ee33644e205c97be52`；176 个网格、294 实体逐项报告（94 保留/82 近似/118 省略）。Unity 6000.3.24f1 批处理保存 `CityStatic.unity`，`target-validation.json` 为 176/176 ID 与碰撞、桥方向/尺寸、加载全 pass，日志记录退出码 0。Python 全套 `70 passed`，文档检查 34 Markdown/40 链接/5 JSON/13 工单零错误。详情见 `docs/contracts/unity-city-v0.1.md` | 008 保持 in_progress；下一步实际角色跨桥，再实现并验证 5 室内/楼梯、法线与导航；007 尚未提供同修订查看器联调 |
+| 2026-09-24 | root | 提交本阶段产物并尝试推送 GitHub | 本地提交完成、工作树干净；三次推送均因 `github.com:443` 连接重置或无法连接失败，远端仍停留在上次提交；没有把未推送内容称为远端成果 | 网络恢复后推送本地 `main`，再继续目标跨桥验收 |
 
 ## 交接说明
 

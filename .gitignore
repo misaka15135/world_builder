@@ -43,4 +43,5 @@ adapters/unity/sample_project/Assets/Scenes.meta
 adapters/unity/sample_project/Assets/Readme.asset*
 adapters/unity/sample_project/Assets/InputSystem_Actions.inputactions*
 artifacts/unity-sample/editor-*.log
+artifacts/unity-city/editor-*.log
 artifacts/unity-sample/v1/

@@ -1,0 +1,13 @@
+{
+    "unity_version": "6000.3.24f1",
+    "source_world_id": "world_e98d1d4d587fb96f",
+    "source_revision_id": "revision_c1b82ea36c16a34c95f97c42",
+    "target_load": "pass",
+    "collision": "pass",
+    "orientation": "pass",
+    "scene_path": "Assets/WorldBuilderCity/CityStatic.unity",
+    "expected_pieces": 176,
+    "mapped_pieces": 176,
+    "mesh_colliders": 176,
+    "error": ""
+}
