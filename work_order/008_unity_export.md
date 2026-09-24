@@ -80,7 +80,7 @@
 | 2026-09-25 | root | 认领其余四栋室内实走子阶段 | 工作树干净且 `main` 与 `origin/main` 一致；五栋源建筑几何按东向 44 m 等距排列，首栋相同路线已通过。本轮范围见文件头 | 生成四个独立验证场景，在目标编辑器逐栋运行并记录 JSON/截图 |
 | 2026-09-25 | root | 完成其余四栋 Unity 室内路线验收 | `WorldBuilderCityV2Builder.BuildRemainingInteriorWalkValidations` 在 Unity 6000.3.24f1 保存四个独立场景并以代码 0 退出；`v2-remaining-target-validation.json` 再次为 346/346 ID/碰撞 pass。四栋各在图形 Play Mode 连续穿东门、上楼进入二层房间，`interior-walk-building-001`—`004.json` 各为 5/5 检查点、零侧向碰撞、`status=pass`，同名 PNG 留证；末端 X 依次约 69.67/113.67/157.67/201.67 m，Y 均约 5.28 m | 008 继续 in_progress；分块/法线/导航及 007 同修订联调待做 |
 | 2026-09-25 | root | 复核四栋实走证据与项目文档 | 脚本逐项核对四份 JSON 的源建筑 ID、5/5 检查点、零侧向碰撞、二层终点、高于阈值的楼梯接地帧与 PNG 存在；全部通过。`python tools/check_project_docs.py` 为 34 Markdown/40 链接/5 JSON/13 工单、零错误；本阶段 Python 导出器未改，沿用上轮 71 passed 结果 | 整理提交与推送；008 未完成的目标能力继续留在工单 |
-| 2026-09-25 | root | 提交四栋实走成果并尝试推送 | 本地提交 `38d4308` 完成、工作树干净；连续三次 `git push origin main` 分别因连接重置和 `github.com:443` 无法连接失败。本地 `origin/main` 最后已知为 `573d0eb`，未把本次提交称为远端成果 | 网络恢复后补推；008 后续实施分块/法线/导航和 007 同修订联调 |
+| 2026-09-25 | root | 提交四栋实走成果并尝试推送 | 本地提交 `38d4308` 完成；连续四次 `git push origin main` 分别因连接重置和 `github.com:443` 无法连接失败。本地 `origin/main` 最后已知为 `573d0eb`，未把本次提交称为远端成果 | 网络恢复后补推；008 后续实施分块/法线/导航和 007 同修订联调 |
 
 ## 交接说明
 
