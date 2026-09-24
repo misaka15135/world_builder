@@ -1,0 +1,33 @@
+{
+  "date": "2026-09-24",
+  "target": {
+    "minecraft": "1.21.11",
+    "fabric_loader": "0.19.5",
+    "worldedit": "7.3.19+7378-cb4171a",
+    "world": "World Builder Sample",
+    "mode_for_walk": "survival",
+    "difficulty": "peaceful"
+  },
+  "sample": {
+    "adapter_version": "0.1.0-sample.2",
+    "source": "artifacts/minecraft-sample/v3/library.schem",
+    "sha256": "c68803339e7508d7409ce4c541feb6951d34295eab207d540dd2877754c61a9a",
+    "worldedit_load": "//schem load library-v3: loaded",
+    "worldedit_paste": "//paste -a at (100,-60,100): 1363 blocks affected"
+  },
+  "walk": {
+    "result": "pass",
+    "method": "One continuous survival-mode player route, using movement and jump controls without teleporting between entrance and upper room. F3 coordinates were observed at checkpoints.",
+    "checkpoints_xyz_approx": [
+      [109.5, -60.0, 117.5],
+      [110.6, -59.0, 116.2],
+      [110.6, -59.0, 114.3],
+      [113.5, -59.0, 114.3],
+      [113.5, -59.0, 110.3],
+      [113.5, -56.0, 105.6]
+    ],
+    "end_screenshot": "door-to-upper-room-walk.png",
+    "separate_stair_recheck_screenshot": "stair-independent-walk.png"
+  },
+  "scope": "This validates the frozen two-storey sample in the named local test world. It does not validate general WIR conversion, a city region, or an independent Minecraft world export."
+}

@@ -1,6 +1,6 @@
 # 009 两层建筑 Minecraft 样件导出
 
-状态：受限样件已在目标游戏加载并粘贴，玩家连续通行尚未验收。日期：2026-09-23。适配器版本：`0.1.0-sample.1`；源 WIR Schema：0.1.0。
+状态：受限 v3 样件已在目标游戏加载、粘贴并由玩家连续走通南门至二层路线。日期：2026-09-24。适配器版本：`0.1.0-sample.2`；源 WIR Schema：0.1.0。
 
 ## 来源与适用边界
 
@@ -21,7 +21,7 @@ python tools/export_minecraft.py --source examples/two_storey_building.world.jso
 
 `--data-version` 必须显式提供正整数；上例的 `4671` 已于 2026-09-23 从本机安装的官方 1.21.11 客户端 JAR 内 `version.json.world_version` 核对，但现有 v2 文件仍保留生成时的离线验证状态。导出器不替用户推断目标运行时版本。输出目录必须不存在，避免覆盖已有证据。文件有 `library.schem`、`manifest.json` 和 `export_report.json`：manifest 记录源修订/摘要、目标原点 `[4,0,-18]`、尺寸、方块数、Schematic 哈希、离线检查与目标加载状态；报告符合 WIR 0.1 `export_report` 形状，源快照不被修改。文件是区域剪贴板，不是独立 Minecraft 世界目录。
 
-离线检查逐格验证门洞到上层房间的连续路径、至少两格头部净空与每级不超过一格的高度变化；独立测试解析 GZip/NBT、palette、varint 索引、门洞、窗、楼梯和楼板开口。它没有模拟 Minecraft 碰撞形状、导航、流体或实体行为，不能代替实际玩家通行。
+离线检查逐格验证门洞到上层房间的连续路径、至少两格头部净空与每级不超过一格的高度变化；v3 另外检查第一阶上方的楼板开口。独立测试解析 GZip/NBT、palette、varint 索引、门洞、窗、楼梯和楼板开口。这些检查没有模拟 Minecraft 碰撞形状、导航、流体或实体行为，不能代替实际玩家通行。
 
 ## 目标运行验证
 
@@ -31,6 +31,8 @@ python tools/export_minecraft.py --source examples/two_storey_building.world.jso
 
 在隔离游戏目录中新建创造模式 Superflat 世界 `World Builder Sample`。游戏内 `//schem load library` 返回 `library loaded`，`//paste -a` 在 `(7,-60,3)` 返回 `1365 blocks affected`。新证据目录 `artifacts/minecraft-sample/target-v1/` 包含南门外观和一层室内的游戏原生 F2 截图，均采自测试世界未受后续误操作影响时。粘贴点是当时玩家位置；并非旧 manifest 中示例原点 `[4,0,-18]`，不可把两者混同。
 
-定位楼梯后，电脑操作工具的键盘输入未再被游戏接收，一次试图恢复焦点的点击误拆了测试世界中的一个楼梯块。重启游戏后键盘故障仍在，后续窗口点击也可能影响测试世界方块。原始 `.schem`、源 WIR 与导出器均未改变；当前测试世界需重贴样件修复。已经观察到楼梯形状，但没有完成真实控制器连续上楼；`in_game_walk` 仍是 `not_run`，009 不因此视为完成。
+后来用户指出当时使用中文输入法；切换英文后，游戏命令与移动按键可用。原 v2 样件在 `(7,-60,3)` 重贴后，玩家穿过南门，但在楼梯第二级附近受阻。失败截图保存在 `artifacts/minecraft-sample/target-v2-failure/`。离线整格净空未发现这处由第一阶上方楼板与玩家碰撞形状共同造成的问题，因此样件专用适配器把第一阶上方的两格楼板改为空气，并增加针对性检查；源 WIR 样例和通用映射合同未变。
 
-下一步在输入可控时重新粘贴 `.schem` 修复测试世界，再实际穿过门、走完楼梯、进入上层房间，记录路线结果。WorldEdit 的[剪贴板文档](https://worldedit.enginehub.org/en/7.3.19/usage/clipboard/)说明配置目录和加载/粘贴流程。只有这些动作成功，009 的玩家通行子项才可勾选。
+新版 `artifacts/minecraft-sample/v3/library.schem` 的 SHA-256 为 `c68803339e7508d7409ce4c541feb6951d34295eab207d540dd2877754c61a9a`，含 1363 个非空气方块。在同一个测试世界的空区域，`//schem load library-v3` 成功，`//paste -a` 于 `(100,-60,100)` 报告 `1363 blocks affected`。随后切换生存模式、和平难度，从门外步行进入一层，横移至楼梯，跳跃上楼并进入二层；最终 F3 坐标约 `(113.5,-56,105.6)`。原生 F2 截图和沿途观察的坐标见 `artifacts/minecraft-sample/target-v3/validation.json`。v3 的 manifest 仍是生成时的离线状态，目标结果只记在独立验证文件，不追溯修改。
+
+这证明固定手工样件在所列目标组合中的玩家通行，解除 006 扩规模前的 Minecraft 样件门槛；009 的通用区域/城邦导出与跨桥路径仍未完成。WorldEdit 的[剪贴板文档](https://worldedit.enginehub.org/en/7.3.19/usage/clipboard/)说明配置目录和加载/粘贴流程。

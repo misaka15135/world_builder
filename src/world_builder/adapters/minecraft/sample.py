@@ -18,7 +18,7 @@ from pathlib import Path
 
 from world_builder.wir.validator import validate_package
 
-ADAPTER_VERSION = "0.1.0-sample.1"
+ADAPTER_VERSION = "0.1.0-sample.2"
 SOURCE_HASH = "sha256:07afdf589fc3ddb045d27af0dadabafa58f8b6cea010405bec24b2db62e4f8bb"
 WIDTH, HEIGHT, LENGTH = 20, 9, 16
 ORIGIN = (4, 0, -18)
@@ -92,7 +92,9 @@ def _block_grid() -> list[int]:
         for y in (5, 6):
             put(23, y, z, "minecraft:glass")
     for x in (17, 18):
-        for z in (-9, -10, -11):
+        # The first tread also needs an opening: the player's body overlaps it
+        # while stepping onto the second tread in the target game.
+        for z in (-8, -9, -10, -11):
             put(x, 3, z, "minecraft:air")
         for index, z in enumerate((-8, -9, -10, -11)):
             put(x, index, z, "minecraft:oak_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]")
@@ -109,6 +111,9 @@ def _at(grid: list[int], x: int, y: int, z: int) -> int:
 
 
 def _check_route(grid: list[int]) -> None:
+    for x in (17, 18):
+        if _at(grid, x, 3, -8) != 0:
+            raise SampleExportError("target.first_tread_ceiling", f"upper floor blocks the first tread at x={x}")
     points = [ROUTE[0]]
     for (ax, ay, az), (bx, by, bz) in zip(ROUTE, ROUTE[1:]):
         horizontal = abs(ax - bx) + abs(az - bz)
@@ -187,7 +192,7 @@ def _report(package: dict, data_version: int) -> dict:
     report["summary"] = {key: sum(item["classification"] == key for item in report["items"])
                          for key in ("preserved", "approximated", "omitted", "unsupported", "failed")}
     report["extensions"] = {"adapter_version": ADAPTER_VERSION, "data_version": data_version,
-                            "target_load": "not_run", "passability": "offline_block_clearance_only",
+                            "target_load": "not_run", "passability": "offline_block_clearance_and_first_tread_opening_only",
                             "unresolved_asset_ids": ["asset_chair_oak"]}
     check = copy.deepcopy(package)
     check["records"] = [report if r["id"] == report["id"] else r for r in check["records"]]
@@ -224,7 +229,8 @@ def export_sample(package: dict, output_dir: str | Path, *, data_version: int) -
         "schematic_sha256": "sha256:" + hashlib.sha256(payload).hexdigest(),
         "block_count": sum(index != 0 for index in grid),
         "route_world_blocks": [list(point) for point in ROUTE],
-        "offline_checks": {"two_block_headroom": "pass", "stair_steps": "pass", "game_load": "not_run", "in_game_walk": "not_run"},
+        "offline_checks": {"two_block_headroom": "pass", "stair_steps": "pass",
+                           "first_tread_ceiling_opening": "pass", "game_load": "not_run", "in_game_walk": "not_run"},
         "source_limitations": ["source lacks explicit wall, door and stair tread geometry", "linked chair GLB is unavailable"],
     }
     output = Path(output_dir)

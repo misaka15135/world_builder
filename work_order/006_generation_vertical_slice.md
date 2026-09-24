@@ -94,7 +94,8 @@ HTTPS 适配器仅验证了本地模拟合同，尚无具体云服务端点的�
 | 2026-09-23 | root | 完成模型合同、响应保存/回放与 ZIP64 世界包本地样例 | `artifacts/model-pilot-v3/`：fixture 生成 `world_ddaf0480b19874da`，316 条记录、2 个资源；`world_ddaf0480b19874da.worldpkg` SHA-256 为 `8f96e6de6b08baa41654bd3f1a6fd0ff670274ce61556d14ad9dc52ca1dc37ae`，校验通过并导入新修订 `revision_import_9efcf51ebcb56c859cd67f7b`。测试中的损坏成员拒绝且分支头不变 | 执行完整回归与预登记 v3 小范围批量测试 |
 | 2026-09-23 | root | 完成 v3 全部回归及文档一致性检查 | `artifacts/model-package-tests-v3.xml`：`59 passed in 116.40s`；`tools/check_project_docs.py`：31 个 Markdown、35 个本地链接、5 个 JSON、13 个编号工单，零错误；HTTPS 服务适配仅通过模拟响应验证 | 收集 v3 批量结果并同步总规划/索引 |
 | 2026-09-23 | root | 完成 v3 预登记小范围试验与响应回放 | `artifacts/benchmark-pilot-v3/report.json`：30/30 完成，首次 15/30，三类各 10/10；耗时 2923.658—3996.779 ms、均值 3445.709 ms；峰值工作集 38,309,888—38,891,520 bytes。回放同一世界得到相同修订及语义哈希，`model_calls_this_run=0` | 同步总规划、索引并推送；006 仍需真实服务验证、008/009 样件与完整城邦验收 |
+| 2026-09-24 | root | 同步 009 手工样件目标通行门槛 | Minecraft 1.21.11/Fabric/WorldEdit 中，009 的 v3 两层样件已由玩家连续走完南门—楼梯—二层；证据见 `artifacts/minecraft-sample/target-v3/validation.json` 和原生 F2 截图。仅 Minecraft 一半门槛通过，008 Unity 控制器漫游仍待验 | 完成 008 的手工样件连续漫游后，才可重新评估 512 m 城邦扩规模；006 继续 in_progress |
 
 ## 交接说明
 
-当前负责人 root，006 保持 in_progress。下一次先读本工单、运行说明和现有代码，不重复固定规格/存储、楼梯有限修复、已接受响应回放及自包含包交换。继续真实模型端点适配、扩展几何与修复规则；008/009 的手工两层建筑转换通过之前，不解除 6 栋试验上限，不将 v3 的 30 个小范围输入记作 80 栋城邦成功率。当前没有完备无解证明器和已验证的云 API 接入。运行和复测命令见 `docs/contracts/generation-v0.1.md`。
+当前负责人 root，006 保持 in_progress。下一次先读本工单、运行说明和现有代码，不重复固定规格/存储、楼梯有限修复、已接受响应回放及自包含包交换。继续真实模型端点适配、扩展几何与修复规则；009 手工样件通行已通过，008 Unity 控制器漫游未通过前仍不解除 6 栋试验上限，不将 v3 的 30 个小范围输入记作 80 栋城邦成功率。当前没有完备无解证明器和已验证的云 API 接入。运行和复测命令见 `docs/contracts/generation-v0.1.md`。

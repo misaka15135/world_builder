@@ -106,6 +106,7 @@ def test_sponge_v3_sample_round_trip_and_target_geometry(tmp_path: Path) -> None
     assert block(23, 5, -10) == "minecraft:stone_bricks"
     for step, z in enumerate((-8, -9, -10, -11)):
         assert block(17, step, z).startswith("minecraft:oak_stairs[facing=north")
+    assert block(17, 3, -8) == block(18, 3, -8) == "minecraft:air"
     assert block(17, 3, -12) == "minecraft:oak_planks"
     assert block(17, 3, -10) == "minecraft:air" or block(17, 3, -10).startswith("minecraft:oak_stairs")
     assert block(10, 1, -9).startswith("minecraft:oak_stairs[facing=west")

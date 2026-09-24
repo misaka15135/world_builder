@@ -34,7 +34,7 @@
 
 ## 当前状态与下一步
 
-M0 与 M1 已完成。当前直接在基准 Windows 本机 MISAKA 执行，无须 SSH。006 已实现 128 m、6 栋建筑/2 栋室内模板的五阶段源数据生成、校验、SQLite 存档恢复、有限楼梯修复、模型规格 JSON 接口、已接受响应回放和自包含 ZIP64 世界包交换；v3 的 30 个离线小范围输入首次 15/30、最终 30/30。006 仍为 in_progress：真实模型服务、广范围规划与修复、完整城邦尚未验证。009 的手工两层 Sponge v3 样件已在 Minecraft 1.21.11/Fabric/WorldEdit 中加载并粘贴，1365 方块与离线数量一致；连续玩家通行未验收。008 的 Unity 6000.3.24f1 两层 GLB 已在目标编辑器批处理和图形界面导入，26 个构件的 ID/碰撞与不对称东窗方向通过；连续控制器漫游未验收。008/009 的通行子项仍是完整城邦扩规模前的门槛。完整回归 63 项通过。010 必要性待明确。项目已建立私有 GitHub 仓库 `misaka15135/world_builder` 并配置 `origin/main`。
+M0 与 M1 已完成。当前直接在基准 Windows 本机 MISAKA 执行，无须 SSH。006 已实现 128 m、6 栋建筑/2 栋室内模板的五阶段源数据生成、校验、SQLite 存档恢复、有限楼梯修复、模型规格 JSON 接口、已接受响应回放和自包含 ZIP64 世界包交换；v3 的 30 个离线小范围输入首次 15/30、最终 30/30。006 仍为 in_progress：真实模型服务、广范围规划与修复、完整城邦尚未验证。009 的手工两层 Sponge v3 新版样件已在 Minecraft 1.21.11/Fabric/WorldEdit 中加载、粘贴并由玩家连续走通南门—楼梯—二层，1363 方块与离线数量一致；Minecraft 固定样件门槛通过，通用区域/跨桥仍待验。008 的 Unity 6000.3.24f1 两层 GLB 已在目标编辑器批处理和图形界面导入，26 个构件的 ID/碰撞与不对称东窗方向通过；连续控制器漫游未验收。006 扩规模前尚须通过 Unity 通行子项。完整回归 63 项通过。010 必要性待明确。项目已建立私有 GitHub 仓库 `misaka15135/world_builder` 并配置 `origin/main`。
 
 ## 执行记录
 
@@ -57,3 +57,4 @@ M0 与 M1 已完成。当前直接在基准 Windows 本机 MISAKA 执行，无�
 | 2026-09-23 | root | 按用户的签名警告反馈修订 Unity 冻结版本 | 停止独立运行的旧版 CLI 下载，`editors --installed` 为空；官方发布页和本机 Hub 正式版列表确认 `6000.3.24f1`，Hub 对该版本无旧版警告标记；新版本 CLI 预检无警告，安装下载已开始。`docs/contracts/environment-baseline.md` 与能力矩阵改为新目标，原 WIR 样例 profile 保留历史版本 | 完成新版签名与编辑器核对；008 样件仍待实现 |
 | 2026-09-23 | root | 完成新 Unity 编辑器的安装和签名验证 | Unity CLI 安装与 `editors verify` 均成功，安装包及 `Unity.exe` Authenticode `Valid`，文件版本 `6000.3.24f1_4e7b9b5b6244`。URP/glTFast 与样件导入尚未执行 | 开始 008 手工样件 profile/导出/加载验证 |
 | 2026-09-23 | root | 完成 008/009 两层目标样件的加载阶段 | Unity URP 17.3.0/glTFast 6.20.0 导入 v2 GLB，26/26 源 ID/碰撞和东窗坐标通过，图形界面再次重建并目视；Minecraft 1.21.11/Fabric/WorldEdit 加载 Sponge v3 并粘贴 1365 方块，保存门外与室内截图；完整回归 63 passed | 补足 Unity 控制器与 Minecraft 实际玩家穿门、上楼证据后才能解除 006 扩规模门槛 |
+| 2026-09-24 | root | 修复并完成 009 固定样件的目标玩家通行 | v2 玩家可穿南门但楼梯受阻；v3 扩大第一阶上方楼板开口，加载并粘贴 1363 方块，在生存模式连续走通南门—一层—楼梯—二层；`artifacts/minecraft-sample/target-v3/validation.json` 与 F2 截图留证；完整回归 63 passed | 009 保持 in_progress 等待通用区域/跨桥；先完成 008 Unity 控制器漫游，再评估 006 扩规模 |
