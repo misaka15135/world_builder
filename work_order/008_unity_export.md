@@ -4,7 +4,7 @@
 - 创建日期：2026-09-21
 - 执行者：root
 - 依赖：005；样件试验可与 006 并行，完整验收需要 006、007
-- 修改范围：2026-09-25 本阶段由 root 实施同修订城邦道路—跨桥连续角色验收，涉及 `adapters/unity/sample_project/Assets/WorldBuilderCity/` 内独立运行夹具与场景、`artifacts/unity-city/` 运行证据、`docs/contracts/unity-city-v0.1.md` 及 008/000/索引。静态 GLB、源 WIR、固定手工样件及 WIR 0.1 Schema 不改；室内通行另行验收。
+- 修改范围：2026-09-25 本阶段由 root 实施五栋已生成室内建筑的 Unity 派生构件与通行验收，涉及 `src/world_builder/adapters/unity/city.py`、`tests/test_unity_city.py`、`adapters/unity/sample_project/Assets/WorldBuilderCity/`、`artifacts/unity-city/`、`docs/contracts/unity-city-v0.1.md` 及 008/000/索引。源 WIR、固定手工样件及 WIR 0.1 Schema 不改；导出版本另起 v2，不覆盖 v1 证据。
 
 ## 目标与范围
 
@@ -34,7 +34,8 @@
 - [x] ~~输出符合 WIR 0.1 的逐实体损失报告，明确 80 栋实心代理、平坦地形及未进入场景的室内对象。~~
 - [x] ~~在 Unity 6000.3.24f1 实际加载同一城邦修订，核对构件映射、碰撞体和桥的目标边界。~~
 - [x] ~~在 Play Mode 连续实走道路和桥，建立可核对的运行证据。~~
-- [ ] 实现可进入的城邦建筑和室内楼梯，完成目标通行与其余 008 验收。
+- [x] ~~五栋生成室内建筑转为可进入壳体与楼梯，完成首栋道路—门—二层房间目标连续通行。~~
+- [ ] 逐栋验证其余四栋室内路线，完成分块、法线、导航及 007 同修订联调。
 
 ## 验收标准
 
@@ -69,6 +70,10 @@
 | 2026-09-25 | root | 补推上轮提交并认领城邦跨桥运行验收 | `git push origin main` 成功，远端推进至 `1f5c296`；核对 WIR `road_cross_west`、`bridge_main`、`road_cross_east` 在北向 268—274 m 连续衔接。本阶段修改范围见文件头 | 建立角色路线与独立场景，在 Unity Play Mode 连续过桥并留证 |
 | 2026-09-25 | root | 完成 Unity 城邦道路—跨桥 Play Mode 连续验收 | `WorldBuilderCityBuilder.BuildBridgeWalkValidation` 批处理重建 176 构件与独立 `CityBridgeWalk.unity`，正常以代码 0 退出；图形 Play Mode 的 `bridge-walk-validation.json` 为 3/3 检查点、4850 帧接地、桥段 1539 帧接地、零侧向碰撞、`status=pass`，同次 `bridge-walk-validation.png` 留证。源修订仍为 `revision_c1b82ea36c16a34c95f97c42`。Unity 提示河道代理大三角形可能影响物理查询稳定性；本次路线未受阻，不视为普遍排除风险 | 008 保持 in_progress；下一步城邦可进入室内及楼梯、分块/法线/导航与 007 同修订联调 |
 | 2026-09-25 | root | 提交跨桥验收产物并尝试推送 | 本地提交完成、工作树干净；前两次 `git push origin main` 分别因连接重置与 `github.com:443` 无法连接失败，远端当前仍为 `1f5c296` | 网络恢复后推送本地跨桥提交；继续室内阶段前重新确认远端状态 |
+| 2026-09-25 | root | 认领五栋城邦室内目标验收 | 本次补推 `b529c49` 仍因连接重置失败，本地工作树干净；WIR 首例五栋生成室内建筑均具东侧入口、2 层、预留楼梯洞、20 级直楼梯，参数已核对。本轮文件范围见文件头 | 生成独立 v2 GLB、更新真实对象级损失，再在目标编辑器里实走门洞与楼梯 |
+| 2026-09-25 | root | 导出五栋室内并完成 Unity 目标导入 | 独立 v2 GLB 有 346 构件，SHA-256 `31884caef930c85372d42ee62215fda06076bf75d405908a11a0491dab2796fd`；294 实体损失为 94 保留/107 近似/93 省略。Unity 6000.3.24f1 批处理退出码 0，`v2-target-validation.json` 为 346/346 ID/碰撞、东门朝向和五栋 100 级梯级映射 pass | 在图形 Play Mode 实走首栋入口与二层，检查截图与 JSON |
+| 2026-09-25 | root | 完成首栋城邦室内的目标连续通行 | `CityInteriorWalk.unity` 图形 Play Mode 从道路穿东门、抵达梯底、登上平台并进入二层房间；`interior-walk-validation.json` 为 5/5 检查点、零侧向碰撞、`status=pass`，末端脚部约 `(25.67,5.28,25.99)`；同次 PNG 留证。其余四栋只通过静态映射，未逐栋实走；长河道网格仍提示大三角形 | 跑完整回归与文档检查；后续验证其余四栋、分块/法线/导航及 007 同修订联调 |
+| 2026-09-25 | root | 完成 v2 回归与交接文档 | `python -m pytest -q --basetemp artifacts/pytest-unity-city-full` 为 71 passed；`python tools/check_project_docs.py` 检查 34 Markdown/40 链接/5 JSON/13 工单、零错误。`docs/contracts/unity-city-v0.1.md` 记录重建、目标证据和未验边界，`editor-interior-build-evidence.txt` 留存正常退出日志 | 提交并尝试推送；008 继续 in_progress，后续按未完成项推进 |
 
 ## 交接说明
 

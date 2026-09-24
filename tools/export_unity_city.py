@@ -13,9 +13,10 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--interiors", action="store_true", help="materialize generated two-storey interiors using adapter geometry policy")
     args = parser.parse_args()
     package, _ = read_worldpkg(args.source)
-    print(json.dumps(export_city(package, args.output), ensure_ascii=False, sort_keys=True))
+    print(json.dumps(export_city(package, args.output, include_interiors=args.interiors), ensure_ascii=False, sort_keys=True))
     return 0
 
 

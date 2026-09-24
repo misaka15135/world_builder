@@ -1,0 +1,3 @@
+WorldBuilder city v2 imported: 346 pieces, 346 colliders, revision revision_c1b82ea36c16a34c95f97c42
+WorldBuilder city interior walk scene saved: Assets/WorldBuilderCity/v2/CityInteriorWalk.unity
+Exiting without the bug reporter. Application will terminate with return code 0

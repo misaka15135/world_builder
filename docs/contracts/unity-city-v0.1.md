@@ -27,4 +27,16 @@ python tools/export_unity_city.py --source artifacts/benchmark-city-v1/city-firs
 
 `artifacts/unity-city/editor-bridge-build-evidence.txt` 记录重建 176 构件、保存场景和编辑器正常以代码 0 退出。随后在 Unity 图形 Play Mode 实走，`artifacts/unity-city/bridge-walk-validation.json` 为 `status=pass`、3/3 检查点、4850 帧接地、桥段 1539 帧接地、零侧向碰撞，终点约 `(267.84,2.08,271)`，同次 Game View 截图为 `bridge-walk-validation.png`。实际目标编辑器曾提示河道代理存在跨度超过 500 单位的大三角形，后续应对长条网格分块并单独验收物理查询稳定性；本次过桥实走通过并不消除该限制。
 
-城邦室内仍是实心建筑代理，未验证进入建筑、上下楼、法线逐面、导航或帧率。008 的最终城邦室内验收仍待后续实现。
+## 五栋生成室内建筑 v2
+
+2026-09-25 新增独立 `0.1.0-city.2` / `profile_unity_city_6000324_v2` 导出；v1 文件及桥梁证据不变。根目录运行：
+
+```powershell
+python tools/export_unity_city.py --source artifacts/benchmark-city-v1/city-first.worldpkg --output artifacts/unity-city/new-interior-run --interiors
+```
+
+将新运行的 `city.glb` 与 `manifest.json` 放入 Unity 项目 `Assets/WorldBuilderCity/v2/`，执行菜单 `World Builder > Build City Interior Walk Validation`，或批处理方法 `WorldBuilderCityV2Builder.BuildInteriorWalkValidation`。可用 `WORLD_BUILDER_UNITY_CITY_V2_VALIDATION` 指定目标加载 JSON 路径。生成 `CityInteriors.unity` 和带控制器的 `CityInteriorWalk.unity`；图形 Play Mode 后使用 `WORLD_BUILDER_UNITY_CITY_INTERIOR_WALK_VALIDATION` 指定运行 JSON 路径，默认写入 `artifacts/unity-city/interior-walk-validation.json`。
+
+v2 仍以 WIR 米为单位，目标 Unity 坐标为 `(X 东,Y 上,Z 北)`。五栋 `interior_state=generated` 的建筑使用源入口、墙厚、楼板厚、楼梯洞、直楼梯 20 级参数派生壳体、东侧门洞、两层楼板、梯级和平台；家具仅用源边界盒代理。其余 75 栋仍为实心体量。屋顶为平板代理，没有实现源屋顶形状、室内房间隔墙或原生 Unity Terrain/NavMesh。每个 GLB 构件都保留源实体 ID；源楼层、楼梯和家具可能对应多个网格。对象级报告在 294 个源实体中列出 94 `preserved`、107 `approximated`、93 `omitted`，报告的成功状态只表示导出完成。
+
+本机产物为 `artifacts/unity-city/v2/city.glb`，SHA-256 `31884caef930c85372d42ee62215fda06076bf75d405908a11a0491dab2796fd`，346 个网格。Unity `6000.3.24f1` 批处理正常退出，`v2-target-validation.json` 记录 346/346 源映射与 MeshCollider、首栋东门朝向、五栋各 20 级楼梯映射均通过。图形 Play Mode 中，高 1.8 m、半径 0.25 m 的 CharacterController 从首栋入口道路连续穿过东门、抵达楼梯底、登上二层平台并进入二层房间；`interior-walk-validation.json` 为 `status=pass`、5/5 检查点、零侧向碰撞，末端脚部约 `(25.67,5.28,25.99)`，同次截图为 `interior-walk-validation.png`。这验证了首栋一条通行路径；另外四栋完成目标导入与静态楼梯映射，尚未逐栋实走。河道长三角形的物理警告仍存在；法线逐面、分块、导航和性能也未验收。

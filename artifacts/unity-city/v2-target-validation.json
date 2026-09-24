@@ -1,0 +1,14 @@
+{
+    "unity_version": "6000.3.24f1",
+    "source_world_id": "world_e98d1d4d587fb96f",
+    "source_revision_id": "revision_c1b82ea36c16a34c95f97c42",
+    "target_load": "pass",
+    "collision": "pass",
+    "door_orientation": "pass",
+    "stair_mapping": "pass",
+    "scene_path": "Assets/WorldBuilderCity/v2/CityInteriors.unity",
+    "expected_pieces": 346,
+    "mapped_pieces": 346,
+    "mesh_colliders": 346,
+    "error": ""
+}

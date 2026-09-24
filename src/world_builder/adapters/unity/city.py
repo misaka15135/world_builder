@@ -17,6 +17,8 @@ from world_builder.wir.validator import validate_package
 
 ADAPTER_VERSION = "0.1.0-city.1"
 PROFILE_ID = "profile_unity_city_6000324"
+INTERIOR_ADAPTER_VERSION = "0.1.0-city.2"
+INTERIOR_PROFILE_ID = "profile_unity_city_6000324_v2"
 EXPORT_KINDS = {"road", "bridge", "building"}
 
 
@@ -24,7 +26,71 @@ class CityExportError(ValueError):
     pass
 
 
-def export_city(package: dict, output_dir: str | Path) -> dict:
+def _interior_pieces(building: dict, entities: dict[str, dict]) -> list[dict]:
+    """Apply a versioned shell/stair policy to a source-generated two-storey plan."""
+    children = [r for r in entities.values() if r["parent_id"] == building["id"]]
+    storeys = sorted((r for r in children if r["kind"] == "storey"), key=lambda r: r["bounds"]["min"][2])
+    stairs = [r for r in children if r["kind"] == "stair"]
+    if len(storeys) != 2 or len(stairs) != 1:
+        raise CityExportError("interior building requires two storeys and one stair: " + building["id"])
+    stair = stairs[0]
+    g, sg = building["geometry"], stair["geometry"]
+    if (g["representation"] != "parametric_building" or g["entry"]["side"] != "east"
+            or sg["representation"] != "straight_stair" or sg["steps"] < 1):
+        raise CityExportError("unsupported interior geometry: " + building["id"])
+    (x0, n0, z0), (x1, n1, z1) = building["bounds"]["min"], building["bounds"]["max"]
+    wall, floor = g["wall_thickness_m"], g["floor_thickness_m"]
+    upper_z = storeys[1]["bounds"]["min"][2]
+    upper_top = upper_z + floor
+    void = g["stair_void_local_m"]
+    vx0, vn0 = x0 + void["min"][0], n0 + void["min"][1]
+    vx1, vn1 = x0 + void["max"][0], n0 + void["max"][1]
+    (sx0, sn0, _), (sx1, sn1, _) = stair["bounds"]["min"], stair["bounds"]["max"]
+    if not (x0 < vx0 < vx1 < x1 and n0 < vn0 < vn1 < n1
+            and vx0 <= sx0 < sx1 <= vx1 and vn0 <= sn0 < sn1 <= vn1
+            and abs(sg["floor_levels_m"][0] - (z0 + floor)) < 0.01
+            and abs(sg["floor_levels_m"][1] - upper_top) < 0.01):
+        raise CityExportError("stair void or levels do not match source plan: " + building["id"])
+    entry = g["entry"]
+    door_n0, door_n1 = n0 + entry["offset_m"], n0 + entry["offset_m"] + entry["width_m"]
+    door_top = z0 + floor + entry["height_m"]
+    if not (n0 + wall < door_n0 < door_n1 < n1 - wall and door_top < z1 - g["roof_height_m"]):
+        raise CityExportError("entry opening does not fit shell: " + building["id"])
+    name = building["id"]
+    parts = [
+        _box(name + "_ground_floor", storeys[0]["id"], x0, x1, n0, n1, z0, z0 + floor, 1),
+        _box(name + "_west_wall", name, x0, x0 + wall, n0, n1, z0 + floor, z1 - g["roof_height_m"], 0),
+        _box(name + "_south_wall", name, x0 + wall, x1 - wall, n0, n0 + wall, z0 + floor, z1 - g["roof_height_m"], 0),
+        _box(name + "_north_wall", name, x0 + wall, x1 - wall, n1 - wall, n1, z0 + floor, z1 - g["roof_height_m"], 0),
+        _box(name + "_east_wall_south", name, x1 - wall, x1, n0 + wall, door_n0, z0 + floor, z1 - g["roof_height_m"], 0),
+        _box(name + "_east_wall_north", name, x1 - wall, x1, door_n1, n1 - wall, z0 + floor, z1 - g["roof_height_m"], 0),
+        _box(name + "_east_door_lintel", name, x1 - wall, x1, door_n0, door_n1, door_top, z1 - g["roof_height_m"], 0),
+        _box(name + "_upper_floor_west", storeys[1]["id"], x0, vx0, n0, n1, upper_z, upper_top, 1),
+        _box(name + "_upper_floor_east", storeys[1]["id"], vx1, x1, n0, n1, upper_z, upper_top, 1),
+        _box(name + "_upper_floor_south", storeys[1]["id"], vx0, vx1, n0, vn0, upper_z, upper_top, 1),
+        _box(name + "_upper_floor_north", storeys[1]["id"], vx0, vx1, vn1, n1, upper_z, upper_top, 1),
+        _box(name + "_flat_roof_proxy", name, x0, x1, n0, n1, z1 - g["roof_height_m"], z1, 1),
+    ]
+    step_run, step_rise = sg["run_m"] / sg["steps"], sg["rise_m"] / sg["steps"]
+    clear_x0 = sx0 + (sx1 - sx0 - sg["clear_width_m"]) / 2
+    for index in range(sg["steps"]):
+        parts.append(_box(f"{stair['id']}_tread_{index + 1:02}", stair["id"],
+                          clear_x0, clear_x0 + sg["clear_width_m"],
+                          sn0 + index * step_run, sn0 + (index + 1) * step_run,
+                          z0 + floor, z0 + floor + (index + 1) * step_rise, 3))
+    parts.append(_box(stair["id"] + "_landing", stair["id"], clear_x0,
+                      clear_x0 + sg["clear_width_m"], sn0 + sg["run_m"], sn1,
+                      upper_z, upper_top, 3))
+    for item in sorted((r for r in entities.values() if r["kind"] == "furniture"
+                        and r["parent_id"] in {r["id"] for r in entities.values()
+                                               if r["kind"] == "room" and r["parent_id"] in {s["id"] for s in storeys}}),
+                       key=lambda r: r["id"]):
+        low, high = item["bounds"]["min"], item["bounds"]["max"]
+        parts.append(_box(item["id"] + "_proxy", item["id"], low[0], high[0], low[1], high[1], low[2], high[2], 3))
+    return parts
+
+
+def export_city(package: dict, output_dir: str | Path, *, include_interiors: bool = False) -> dict:
     validate_package(package)
     specs = [r for r in package["records"] if r["record_type"] == "world_spec"]
     if len(specs) != 1 or "city_spec" not in specs[0].get("extensions", {}):
@@ -32,6 +98,7 @@ def export_city(package: dict, output_dir: str | Path) -> dict:
     if package["manifest"]["coordinate_system"]["x_axis"] != "east" or package["manifest"]["coordinate_system"]["y_axis"] != "north":
         raise CityExportError("unsupported source axes")
     entities = sorted((r for r in package["records"] if r["record_type"] == "entity"), key=lambda r: r["id"])
+    by_id = {r["id"]: r for r in entities}
     kinds = {r["kind"] for r in entities}
     if not {"terrain", "river", "road", "bridge", "building"} <= kinds:
         raise CityExportError("city is missing required spatial layers")
@@ -41,6 +108,10 @@ def export_city(package: dict, output_dir: str | Path) -> dict:
             continue
         if record["geometry"]["representation"] not in {"box", "parametric_building"}:
             raise CityExportError("unsupported source geometry: " + record["id"])
+        if (include_interiors and record["kind"] == "building"
+                and record["attributes"]["interior_state"] == "generated"):
+            pieces.extend(_interior_pieces(record, by_id))
+            continue
         low, high = record["bounds"]["min"], record["bounds"]["max"]
         pieces.append(_box(record["id"], record["id"], low[0], high[0], low[1], high[1],
                            low[2], high[2], {"road": 0, "bridge": 3, "building": 1}[record["kind"]]))
@@ -58,6 +129,9 @@ def export_city(package: dict, output_dir: str | Path) -> dict:
     glb = _glb(pieces)
     source_hash = "sha256:" + hashlib.sha256(json.dumps(package, ensure_ascii=False, sort_keys=True,
                                                          separators=(",", ":")).encode()).hexdigest()
+    represented = {piece["source_id"] for piece in pieces}
+    adapter_version = INTERIOR_ADAPTER_VERSION if include_interiors else ADAPTER_VERSION
+    profile_id = INTERIOR_PROFILE_ID if include_interiors else PROFILE_ID
     items = []
     for record in entities:
         kind = record["kind"]
@@ -66,40 +140,45 @@ def export_city(package: dict, output_dir: str | Path) -> dict:
         elif kind in {"road", "bridge"}:
             classification, target, message = "preserved", "glb:" + record["id"], "axis-aligned box mesh and collider; source bounds retained"
         elif kind == "building":
-            classification, target, message = "approximated", "glb:" + record["id"], "solid bounds proxy; entry, roof, storeys and interior are not modeled"
+            if include_interiors and record["attributes"]["interior_state"] == "generated":
+                classification, target, message = "approximated", "glb:" + record["id"] + "_*", "source entrance, floor and stair parameters drive adapter-policy shell; roof is flat proxy"
+            else:
+                classification, target, message = "approximated", "glb:" + record["id"], "solid bounds proxy; entry, roof, storeys and interior are not modeled"
         elif kind == "terrain":
             classification, target, message = "approximated", "glb:terrain_*_proxy", "flat banks replace source heightfield; no native Unity Terrain"
         elif kind == "river":
             classification, target, message = "approximated", "glb:river_water_proxy", "straight translucent water box; no fluid simulation"
+        elif include_interiors and record["id"] in represented:
+            classification, target, message = "approximated", "glb:" + record["id"] + "_*", "source floor, stair or furniture bounds materialized using adapter geometry policy"
         else:
             classification, target, message = "omitted", None, "source entity retained in WIR package but not represented in this static GLB"
         items.append({"source_id": record["id"], "target_id": target,
                       "classification": classification, "message": message})
     summary = {key: sum(item["classification"] == key for item in items)
                for key in ("preserved", "approximated", "omitted", "unsupported", "failed")}
-    report = {"record_type": "export_report", "id": "report_unity_city",
-              "revision_id": package["manifest"]["revision_id"], "target_profile_id": PROFILE_ID,
+    report = {"record_type": "export_report", "id": "report_unity_city_v2" if include_interiors else "report_unity_city",
+              "revision_id": package["manifest"]["revision_id"], "target_profile_id": profile_id,
               "status": "succeeded_with_warnings", "coordinate_transform_row_major":
               [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1],
               "items": items, "summary": summary,
-              "extensions": {"adapter_version": ADAPTER_VERSION, "target_load": "not_run",
+              "extensions": {"adapter_version": adapter_version, "target_load": "not_run",
                              "collision": "not_run", "walkthrough": "not_run"}}
-    profile = {"record_type": "target_profile", "id": PROFILE_ID, "target": "unity",
+    profile = {"record_type": "target_profile", "id": profile_id, "target": "unity",
                "target_version": UNITY_VERSION + "+urp-" + URP_VERSION + "+gltfast-" + GLTFAST_VERSION,
-               "adapter_version": ADAPTER_VERSION,
+               "adapter_version": adapter_version,
                "configuration": {"meters_per_unit": 1, "x_axis": "east", "y_axis": "up",
                                  "z_axis": "north", "mesh_format": "glb-2.0", "terrain": "ordinary_mesh"},
                "declared_capabilities": ["mesh", "materials", "mesh_collider"], "extensions": {}}
     derived = copy.deepcopy(package)
     derived["records"].extend([profile, report])
-    next(r for r in derived["records"] if r["record_type"] == "world_spec")["target_profile_ids"].append(PROFILE_ID)
+    next(r for r in derived["records"] if r["record_type"] == "world_spec")["target_profile_ids"].append(profile_id)
     validate_package(derived)
     output = Path(output_dir)
     output.mkdir(parents=True, exist_ok=False)
     files = {"city.glb": glb, "manifest.json": _canonical({
-        "format": "unity-glb-city-0.1", "source_world_id": package["manifest"]["world_id"],
+        "format": "unity-glb-city-0.2" if include_interiors else "unity-glb-city-0.1", "source_world_id": package["manifest"]["world_id"],
         "source_revision_id": package["manifest"]["revision_id"], "source_snapshot_hash": source_hash,
-        "adapter_version": ADAPTER_VERSION, "target_profile_id": PROFILE_ID,
+        "adapter_version": adapter_version, "target_profile_id": profile_id,
         "unity_version": UNITY_VERSION, "urp_version": URP_VERSION, "gltfast_version": GLTFAST_VERSION,
         "glb_sha256": "sha256:" + hashlib.sha256(glb).hexdigest(), "pieces": pieces,
         "source_to_glb_row_major": [-1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1],
