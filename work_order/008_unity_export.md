@@ -74,6 +74,7 @@
 | 2026-09-25 | root | 导出五栋室内并完成 Unity 目标导入 | 独立 v2 GLB 有 346 构件，SHA-256 `31884caef930c85372d42ee62215fda06076bf75d405908a11a0491dab2796fd`；294 实体损失为 94 保留/107 近似/93 省略。Unity 6000.3.24f1 批处理退出码 0，`v2-target-validation.json` 为 346/346 ID/碰撞、东门朝向和五栋 100 级梯级映射 pass | 在图形 Play Mode 实走首栋入口与二层，检查截图与 JSON |
 | 2026-09-25 | root | 完成首栋城邦室内的目标连续通行 | `CityInteriorWalk.unity` 图形 Play Mode 从道路穿东门、抵达梯底、登上平台并进入二层房间；`interior-walk-validation.json` 为 5/5 检查点、零侧向碰撞、`status=pass`，末端脚部约 `(25.67,5.28,25.99)`；同次 PNG 留证。其余四栋只通过静态映射，未逐栋实走；长河道网格仍提示大三角形 | 跑完整回归与文档检查；后续验证其余四栋、分块/法线/导航及 007 同修订联调 |
 | 2026-09-25 | root | 完成 v2 回归与交接文档 | `python -m pytest -q --basetemp artifacts/pytest-unity-city-full` 为 71 passed；`python tools/check_project_docs.py` 检查 34 Markdown/40 链接/5 JSON/13 工单、零错误。`docs/contracts/unity-city-v0.1.md` 记录重建、目标证据和未验边界，`editor-interior-build-evidence.txt` 留存正常退出日志 | 提交并尝试推送；008 继续 in_progress，后续按未完成项推进 |
+| 2026-09-25 | root | 提交并推送室内阶段与先前滞留的跨桥阶段 | 本地提交 `d687581`，`git push origin main` 成功，远端由 `1f5c296` 前进至 `d687581`，包含先前跨桥提交 `b529c49` | 008 继续 in_progress；后续逐栋通行、分块/法线/导航及 007 同修订联调 |
 
 ## 交接说明
 
