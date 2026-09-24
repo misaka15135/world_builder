@@ -1,0 +1,49 @@
+{
+    "unity_version": "6000.3.24f1",
+    "scene": "LibraryWalkValidation",
+    "status": "pass",
+    "reason": "continuous_character_controller_route",
+    "player_height": 1.7999999523162842,
+    "player_radius": 0.25,
+    "step_offset": 0.550000011920929,
+    "grounded_frames": 3420,
+    "side_collision_frames": 71,
+    "screenshot": "walk-validation.png",
+    "checkpoints": [
+        {
+            "name": "through_south_door",
+            "x": 14.0,
+            "y": 0.2799997925758362,
+            "z": 4.342029094696045,
+            "elapsed_seconds": 1.7086035013198853
+        },
+        {
+            "name": "lower_room",
+            "x": 16.87067222595215,
+            "y": 0.27999991178512576,
+            "z": 6.4069719314575199,
+            "elapsed_seconds": 3.921755790710449
+        },
+        {
+            "name": "stair_foot",
+            "x": 16.985450744628908,
+            "y": 0.27999991178512576,
+            "z": 7.6432785987854,
+            "elapsed_seconds": 4.700402736663818
+        },
+        {
+            "name": "upper_landing",
+            "x": 16.999553680419923,
+            "y": 4.279999732971191,
+            "z": 12.54465389251709,
+            "elapsed_seconds": 7.766502380371094
+        },
+        {
+            "name": "upper_room",
+            "x": 14.1422758102417,
+            "y": 4.279999732971191,
+            "z": 13.93096923828125,
+            "elapsed_seconds": 9.753937721252442
+        }
+    ]
+}

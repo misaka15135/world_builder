@@ -4,13 +4,13 @@
 - 创建日期：2026-09-21
 - 执行者：root
 - 依赖：005；样件试验可与 006 并行，完整验收需要 006、007
-- 修改范围：已按用户反馈停止 Unity 6000.3.0f1，安装并核对 Unity 6000.3.24f1 本机环境；本轮继续建立 URP/glTFast 精确包配置与手工两层样件 Unity 项目，范围包括 `adapters/unity/`、必要的样件导出工具、008/000/索引和目标环境基线。保留 6000.3.0f1 的历史源样例 profile，不把编辑器安装冒称为场景验证。
+- 修改范围：已按用户反馈停止 Unity 6000.3.0f1，安装并核对 Unity 6000.3.24f1 本机环境；本轮为固定手工样件补充仅用于目标验收的角色控制器、连续路线场景与运行记录，范围包括 `adapters/unity/sample_project/Assets/WorldBuilderSample/`、`artifacts/unity-sample/`、相关说明及 008/006/000/索引。原 GLB、WIR 0.1 Schema、手工源样例和通用导出范围保持不变。
 
 ## 目标与范围
 
 把同一 WIR 修订转成可以在固定 Unity 环境使用的区域场景。
 
-本工单已进入目标编辑器安装子阶段；场景导出器、样件导入和实际漫游验收尚未实施。
+目标编辑器、固定两层样件导入和控制器连续漫游已验证；通用区域导出及与 006/007 同修订的代表性城邦联调尚未实施。
 
 ## 本机编辑器子阶段
 
@@ -21,7 +21,7 @@
 ## 工作项
 
 - [x] ~~固定并记录 Unity、渲染管线、glTF 导入包版本及安装/运行步骤。~~
-- [ ] 005 完成后先转换手工两层建筑样件，验证坐标、门洞、楼梯和基础碰撞，作为 006 扩规模的前置子项。
+- [x] ~~005 完成后先转换手工两层建筑样件，验证坐标、门洞、楼梯和基础碰撞，作为 006 扩规模的前置子项。~~
 - [ ] 输出分块 GLB、场景清单、对象 ID、材质映射和碰撞描述。
 - [ ] 实现 Editor 导入器，恢复场景层次、位置、碰撞与约定的导航设置。
 - [ ] 验证坐标、法线、比例、实例化与目标材质降级，生成损失报告。
@@ -53,6 +53,8 @@
 | 2026-09-23 | root | 收紧样件项目交付范围 | 编辑器生成的本地缓存、解决方案及模板教程/示例资产已加入 `.gitignore`，样件自己的 GLB、场景、脚本和 URP 配置保留；尝试清理本机模板教程/示例资产时自动审批以 `blocked by policy` 拒绝，未删除文件 | 复核包清单和场景引用，保持本机现状 |
 | 2026-09-23 | root | 在 Unity 图形界面打开并重建样件 | Hub 识别 `sample_project` 为 Unity 6000.3.24f1 项目；用户授权接受编辑器条款后打开。图形菜单构建再次输出 `artifacts/unity-sample/target-validation.json`：26/26 构件、26/26 MeshCollider、方向 pass；Scene 视图显示屋顶/东窗，Game 视图显示南立面/门洞。包管理器在线检索 `packages.unity.com` 连接重置，但本地包已注册且场景构建成功。构建场景的 Build Settings 改为 `LibrarySample.unity`，不再指向忽略的模板场景 | 下一步加入角色通行验证，门洞与楼梯尚未以控制器连续走通 |
 | 2026-09-23 | root | 复核最终项目保存与批处理重建 | `EditorBuildSettings.asset` 指向 `LibrarySample.unity` 的实际 GUID；构建器补充 `AssetDatabase.SaveAssets()` 后重新批处理，`artifacts/unity-sample/target-validation-final.json` 全项 pass，日志以 `return code 0` 结束；完整 Python 回归 63 passed、文档检查 33 Markdown/40 链接/5 JSON/13 工单零错误 | 保持 008 in_progress，下一步验证实际控制器穿门、上楼 |
+| 2026-09-24 | root | 按用户要求开始 Unity 连续漫游验收并登记修改范围 | 既有 v2 GLB、26 个 MeshCollider、东窗方向和目标编辑器导入已通过；仍缺从南门到二层的控制器连续运动证据。本轮只新增样件验收场景与控制器，保留原 GLB 和源样例 | 构建可记录控制器碰撞与路线的目标运行场景，在 Unity Play Mode 实走并保存证据 |
+| 2026-09-24 | root | 完成固定两层样件的 Unity 控制器漫游 | `LibraryWalkValidation.unity` 使用 1.8 m 高、0.25 m 半径、0.55 m 跨阶的 CharacterController；`walk-scene-build-evidence.txt` 摘录重新编译、重建和退出码 0 的日志。Unity 6000.3.24f1 图形 Play Mode 连续经过南门、一层、楼梯底、二层平台和二层房间；`artifacts/unity-sample/walk-validation.json` 为 `status=pass`、5/5 检查点、终点脚部 Y≈4.28 m；`walk-validation.png` 留下同次运行画面。`pytest tests/test_unity_sample.py` 2 passed，文档检查 33 Markdown/40 链接/5 JSON/13 工单零错误。夹具不属于通用 GLB/导出器 | 固定样件子项完成；008 仍 in_progress，下一步实现通用区域、道路/桥及与 006/007 同修订联调 |
 
 ## 交接说明
 

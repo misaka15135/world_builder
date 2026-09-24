@@ -25,6 +25,39 @@ public static class WorldBuilderSampleBuilder
 
     private const string Base = "Assets/WorldBuilderSample/";
 
+    [MenuItem("World Builder/Build Library Walk Validation")]
+    public static void BuildWalkValidation()
+    {
+        Build();
+        var pad = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        pad.name = "Validation exterior pad";
+        pad.transform.position = new Vector3(14f, 0.1f, 2.1f);
+        pad.transform.localScale = new Vector3(3f, 0.2f, 2.3f);
+
+        var player = new GameObject("Validation player");
+        player.transform.position = new Vector3(14f, 0.2f, 1.8f);
+        var controller = player.AddComponent<CharacterController>();
+        controller.height = 1.8f;
+        controller.radius = 0.25f;
+        controller.center = new Vector3(0f, 0.9f, 0f);
+        controller.stepOffset = 0.55f;
+        controller.slopeLimit = 60f;
+        player.AddComponent<WorldBuilderWalkValidator>();
+
+        var camera = new GameObject("Validation first-person camera").AddComponent<Camera>();
+        camera.transform.SetParent(player.transform, false);
+        camera.transform.localPosition = new Vector3(0f, 1.6f, 0f);
+        camera.transform.localRotation = Quaternion.identity;
+        camera.tag = "MainCamera";
+        camera.clearFlags = CameraClearFlags.Skybox;
+        var overview = GameObject.Find("Overview Camera");
+        if (overview != null) overview.GetComponent<Camera>().enabled = false;
+
+        var path = Base + "LibraryWalkValidation.unity";
+        EditorSceneManager.SaveScene(SceneManager.GetActiveScene(), path);
+        Debug.Log("WorldBuilder walk validation scene saved: " + path);
+    }
+
     [MenuItem("World Builder/Build Library Sample")]
     public static void Build()
     {

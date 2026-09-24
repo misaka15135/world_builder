@@ -1,0 +1,7 @@
+[ScriptCompilation] Requested script compilation because: Assetdatabase observed changes in script compilation related files
+*** Tundra build success (2.17 seconds), 8 items updated, 1377 evaluated
+AssetDatabase: script compilation time: 6.654180s
+WorldBuilder sample imported: 26 parts, 26 colliders
+WorldBuilder walk validation scene saved: Assets/WorldBuilderSample/LibraryWalkValidation.unity
+Exiting batchmode successfully now!
+Exiting without the bug reporter. Application will terminate with return code 0

@@ -34,7 +34,7 @@
 
 ## 当前状态与下一步
 
-M0 与 M1 已完成。当前直接在基准 Windows 本机 MISAKA 执行，无须 SSH。006 已实现 128 m、6 栋建筑/2 栋室内模板的五阶段源数据生成、校验、SQLite 存档恢复、有限楼梯修复、模型规格 JSON 接口、已接受响应回放和自包含 ZIP64 世界包交换；v3 的 30 个离线小范围输入首次 15/30、最终 30/30。006 仍为 in_progress：真实模型服务、广范围规划与修复、完整城邦尚未验证。009 的手工两层 Sponge v3 新版样件已在 Minecraft 1.21.11/Fabric/WorldEdit 中加载、粘贴并由玩家连续走通南门—楼梯—二层，1363 方块与离线数量一致；Minecraft 固定样件门槛通过，通用区域/跨桥仍待验。008 的 Unity 6000.3.24f1 两层 GLB 已在目标编辑器批处理和图形界面导入，26 个构件的 ID/碰撞与不对称东窗方向通过；连续控制器漫游未验收。006 扩规模前尚须通过 Unity 通行子项。完整回归 63 项通过。010 必要性待明确。项目已建立私有 GitHub 仓库 `misaka15135/world_builder` 并配置 `origin/main`。
+M0 与 M1 已完成。当前直接在基准 Windows 本机 MISAKA 执行，无须 SSH。006 已实现 128 m、6 栋建筑/2 栋室内模板的五阶段源数据生成、校验、SQLite 存档恢复、有限楼梯修复、模型规格 JSON 接口、已接受响应回放和自包含 ZIP64 世界包交换；v3 的 30 个离线小范围输入首次 15/30、最终 30/30。006 仍为 in_progress：真实模型服务、广范围规划与修复、完整城邦尚未验证。009 的手工两层 Sponge v3 新版样件已在 Minecraft 1.21.11/Fabric/WorldEdit 中加载、粘贴并由玩家连续走通南门—楼梯—二层，1363 方块与离线数量一致。008 的 Unity 6000.3.24f1 两层 GLB 已在目标编辑器导入，26 个构件 ID/碰撞与东窗方向通过；图形 Play Mode 的控制器连续穿南门、上一层楼梯至二层房间，5/5 检查点通过。008/009 的固定样件通行门槛均已通过；下一轮可在预登记范围后评估 006 扩规模，通用区域/跨桥和同修订联调仍待验。此前完整回归 63 项通过。010 必要性待明确。项目已建立私有 GitHub 仓库 `misaka15135/world_builder` 并配置 `origin/main`。
 
 ## 执行记录
 
@@ -58,3 +58,4 @@ M0 与 M1 已完成。当前直接在基准 Windows 本机 MISAKA 执行，无�
 | 2026-09-23 | root | 完成新 Unity 编辑器的安装和签名验证 | Unity CLI 安装与 `editors verify` 均成功，安装包及 `Unity.exe` Authenticode `Valid`，文件版本 `6000.3.24f1_4e7b9b5b6244`。URP/glTFast 与样件导入尚未执行 | 开始 008 手工样件 profile/导出/加载验证 |
 | 2026-09-23 | root | 完成 008/009 两层目标样件的加载阶段 | Unity URP 17.3.0/glTFast 6.20.0 导入 v2 GLB，26/26 源 ID/碰撞和东窗坐标通过，图形界面再次重建并目视；Minecraft 1.21.11/Fabric/WorldEdit 加载 Sponge v3 并粘贴 1365 方块，保存门外与室内截图；完整回归 63 passed | 补足 Unity 控制器与 Minecraft 实际玩家穿门、上楼证据后才能解除 006 扩规模门槛 |
 | 2026-09-24 | root | 修复并完成 009 固定样件的目标玩家通行 | v2 玩家可穿南门但楼梯受阻；v3 扩大第一阶上方楼板开口，加载并粘贴 1363 方块，在生存模式连续走通南门—一层—楼梯—二层；`artifacts/minecraft-sample/target-v3/validation.json` 与 F2 截图留证；完整回归 63 passed | 009 保持 in_progress 等待通用区域/跨桥；先完成 008 Unity 控制器漫游，再评估 006 扩规模 |
+| 2026-09-24 | root | 完成 008 固定样件的 Unity 连续漫游 | Unity 6000.3.24f1 中 1.8 m CharacterController 从门外连续走到二层房间；`artifacts/unity-sample/walk-validation.json` 为 `status=pass`、5/5 检查点，`walk-validation.png` 留证；批处理重建以退出码 0 结束 | 008 保持 in_progress 等待通用区域/跨桥和 006/007 同修订联调；006 可规划下一轮扩规模试验 |
