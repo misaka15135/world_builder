@@ -5,6 +5,8 @@ import json
 from dataclasses import asdict, dataclass
 from typing import Any
 
+from . import CITY_GENERATOR_VERSION, GENERATOR_VERSION
+
 
 def canonical(value: Any) -> bytes:
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("utf-8")
@@ -16,7 +18,7 @@ def digest(value: Any) -> str:
 
 @dataclass(frozen=True)
 class PilotSpec:
-    """Fixed 128 m pilot, bounded until target sample conversions are verified."""
+    """Historical fixed 128 m pilot; its serialized fields and identity stay stable."""
 
     seed: int = 1
     scenario: str = "riverside"
@@ -55,8 +57,59 @@ class PilotSpec:
         return asdict(self)
 
     @property
+    def region_size_m(self) -> int:
+        return 128
+
+    @property
+    def generator_version(self) -> str:
+        return GENERATOR_VERSION
+
+    @property
+    def contract_key(self) -> str:
+        return "pilot_spec"
+
+    @property
     def world_id(self) -> str:
         return "world_" + digest(self.to_dict())[7:23]
+
+
+@dataclass(frozen=True)
+class CitySpec(PilotSpec):
+    """Fixed 512 m source-data city; target-adapter validation is separate."""
+
+    building_count: int = 80
+    interior_count: int = 5
+    source_prompt: str = "An editable arcane city across a river."
+    region_size_m: int = 512
+
+    def __post_init__(self) -> None:
+        if type(self.region_size_m) is not int or self.region_size_m != 512:
+            raise ValueError("city region_size_m must be 512")
+        if type(self.building_count) is not int or self.building_count != 80:
+            raise ValueError("city building_count must be 80")
+        if type(self.interior_count) is not int or self.interior_count != 5:
+            raise ValueError("city interior_count must be 5")
+        if self.accepted_response_hash is not None or self.model_provenance is not None:
+            raise ValueError("city specification currently supports offline fixed inputs only")
+        # Reuse common field validation without accepting the pilot count limits.
+        if type(self.seed) is not int or not 0 <= self.seed < 2**64:
+            raise ValueError("seed must be an unsigned 64-bit integer")
+        if self.scenario not in {"riverside", "hillside", "dense"}:
+            raise ValueError("scenario must be riverside, hillside or dense")
+        if not isinstance(self.source_prompt, str) or not self.source_prompt.strip():
+            raise ValueError("source_prompt must be nonempty")
+        if self.layout_profile not in {"standard", "compact"}:
+            raise ValueError("layout_profile must be standard or compact")
+        if type(self.lock_stair_void) is not bool:
+            raise ValueError("lock_stair_void must be a boolean")
+
+    @property
+    def generator_version(self) -> str:
+        return CITY_GENERATOR_VERSION
+
+    @property
+    def contract_key(self) -> str:
+        return "city_spec"
 
 
 @dataclass(frozen=True)

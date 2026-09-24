@@ -11,7 +11,7 @@ from pathlib import Path
 from world_builder.storage.repository import Repository
 from .model import FixtureProvider, HttpJSONProvider, ModelContractError, compile_spec, publish_accepted, replay_spec
 from .pipeline import generate, semantic_hash
-from .spec import Budget, PilotSpec, canonical
+from .spec import Budget, CitySpec, PilotSpec, canonical
 
 
 def atomic_json(path: Path, value: dict) -> None:
@@ -29,12 +29,13 @@ def atomic_json(path: Path, value: dict) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Generate/resume a bounded WIR pilot; not the full 006 city acceptance")
+    parser = argparse.ArgumentParser(description="Generate/resume a bounded WIR pilot or fixed source-data city")
     parser.add_argument("--output", type=Path, required=True, help="SQLite repository and resources directory")
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--scenario", choices=["riverside", "hillside", "dense"], default="riverside")
-    parser.add_argument("--buildings", type=int, default=6)
-    parser.add_argument("--interiors", type=int, default=2)
+    parser.add_argument("--city", action="store_true", help="fixed offline 512 m, 80-building, five-interior source-data city")
+    parser.add_argument("--buildings", type=int)
+    parser.add_argument("--interiors", type=int)
     parser.add_argument("--timeout-ms", type=int, default=30000)
     parser.add_argument("--max-candidates", type=int, default=3, help="per-stage candidate cap, including the initial candidate")
     parser.add_argument("--layout-profile", choices=["standard", "compact"], default="standard")
@@ -55,6 +56,8 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("a model source requires --prompt")
     if args.model_endpoint and not args.model_id:
         parser.error("--model-endpoint requires --model-id")
+    if args.city and (args.prompt or args.replay_world_id):
+        parser.error("--city currently accepts only fixed offline inputs")
     try:
         budget = Budget(wall_time_ms=args.timeout_ms, max_candidates=args.max_candidates)
     except ValueError as exc:
@@ -76,7 +79,10 @@ def main(argv: list[str] | None = None) -> int:
             spec = publish_accepted(repository, prepared)
             budget = Budget(wall_time_ms=budget.wall_time_ms - elapsed, max_candidates=budget.max_candidates)
         else:
-            spec = PilotSpec(seed=args.seed, scenario=args.scenario, building_count=args.buildings, interior_count=args.interiors,
+            spec_type = CitySpec if args.city else PilotSpec
+            spec = spec_type(seed=args.seed, scenario=args.scenario,
+                             building_count=args.buildings if args.buildings is not None else (80 if args.city else 6),
+                             interior_count=args.interiors if args.interiors is not None else (5 if args.city else 2),
                              layout_profile=args.layout_profile, lock_stair_void=args.lock_stair_void)
     except (ValueError, OSError) as exc:
         print(json.dumps({"code": getattr(exc, "code", "contract.model_error"), "message": str(exc)}, ensure_ascii=False))

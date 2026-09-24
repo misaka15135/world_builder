@@ -2,7 +2,7 @@
 
 自然语言驱动的分层三维世界生成与编辑系统。
 
-当前阶段：M2 最小生成闭环实施中。已提供 128 m 小范围本地生成试验：固定 seed、五阶段提交、6 栋建筑/2 栋室内模板、源端校验、SQLite 存档和故障恢复；v2 增加最多 3 次候选的楼梯修复、建筑预留空间反馈、锁冲突保护和逐次日志；v3 增加可替换的自然语言规格 JSON 接口、已接受响应回放与自包含 `.worldpkg` 交换。[Unity 两层建筑样件](docs/contracts/unity-sample-v0.1.md)已在目标编辑器导入并目视，连续控制器漫游待验；[Minecraft 区域样件](docs/contracts/minecraft-sample-v0.1.md)已在目标游戏用 WorldEdit 加载、粘贴，并由玩家连续走通南门至二层。真实模型服务、完整城邦和本地查看器尚未完成。能力与限制见 [006 运行说明](docs/contracts/generation-v0.1.md)。
+当前阶段：M2 最小生成闭环实施中。已提供 128 m 小范围本地生成试验：固定 seed、五阶段提交、6 栋建筑/2 栋室内模板、源端校验、SQLite 存档和故障恢复；v2 增加最多 3 次候选的楼梯修复、建筑预留空间反馈、锁冲突保护和逐次日志；v3 增加可替换的自然语言规格 JSON 接口、已接受响应回放与自包含 `.worldpkg` 交换。512 m、80 栋建筑/5 栋室内的独立离线源端规格在预登记基准中 30/30 完成。[Unity 两层建筑样件](docs/contracts/unity-sample-v0.1.md)已在目标编辑器由控制器连续穿门上楼；[Minecraft 区域样件](docs/contracts/minecraft-sample-v0.1.md)已在目标游戏由玩家连续走通南门至二层。真实模型服务、通用城邦跨目标导出和本地查看器尚未完成。能力与限制见 [006 运行说明](docs/contracts/generation-v0.1.md)。
 
 ## 方案文档
 
@@ -23,6 +23,7 @@
 ```powershell
 $env:PYTHONPATH = 'src'
 python tools/generate_world.py --output artifacts/my-pilot --seed 101
+python tools/generate_world.py --city --output artifacts/my-city --seed 101 --timeout-ms 120000
 python tools/generate_world.py --output artifacts/model-demo --seed 17 --prompt '一座河畔魔法小镇' --model-fixture examples/pilot_model_response.json
 $testRunDir = Join-Path (Get-Location) ('artifacts/pytest-006-' + [guid]::NewGuid().ToString('N'))
 python -m pytest -q --basetemp $testRunDir

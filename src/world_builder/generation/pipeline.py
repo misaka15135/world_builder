@@ -9,7 +9,6 @@ from typing import Callable
 from world_builder.storage.repository import Repository, StoreError
 from world_builder.wir.validator import validate_package
 
-from . import GENERATOR_VERSION
 from .journal import RunJournal
 from .planner import STAGES, initial_records, plan_stage
 from .repair import propose_repair
@@ -58,18 +57,18 @@ def make_snapshot(spec: PilotSpec, records: list[dict], stage: str, parent: str 
     failures = sum(c["state"] == "fail" and c["severity"] == "hard" for c in checks)
     recipe_id = "recipe_" + stage
     index = STAGES.index(stage)
-    records.append({"record_type": "recipe", "id": recipe_id, "generator_id": "pilot." + stage,
-        "generator_version": GENERATOR_VERSION, "input_hash": digest([spec.to_dict(), stage, parent]),
+    records.append({"record_type": "recipe", "id": recipe_id, "generator_id": ("city." if spec.region_size_m == 512 else "pilot.") + stage,
+        "generator_version": spec.generator_version, "input_hash": digest([spec.to_dict(), stage, parent]),
         "seed": f"0x{spec.seed:016x}", "dependency_recipe_ids": ["recipe_" + STAGES[index-1]] if index else [],
         "budget": {"wall_time_ms": budget.wall_time_ms, "max_candidates": budget.max_candidates,
                    "max_model_calls": 1 if spec.accepted_response_hash else 0},
         "outcome": {"termination_reason": "completed", "feasibility": "unknown" if failures else "feasible", "proof_ref": None},
-        "accepted_model_response_hash": spec.accepted_response_hash, "extensions": {"validation_scope": "pilot_axis_aligned_templates",
+        "accepted_model_response_hash": spec.accepted_response_hash, "extensions": {"validation_scope": ("city" if spec.region_size_m == 512 else "pilot") + "_axis_aligned_templates",
             "attempt_history": copy.deepcopy(attempt_history or [])}})
     revision_id = "revision_" + digest(records)[7:31]
     for check in checks:
         records.append({"record_type": "constraint", "id": "constraint_" + digest([check["rule"], check["scope_ids"]])[7:31],
-            "rule_id": check["rule"], "rule_version": GENERATOR_VERSION, "scope_entity_ids": check["scope_ids"],
+            "rule_id": check["rule"], "rule_version": spec.generator_version, "scope_entity_ids": check["scope_ids"],
             "severity": check["severity"], "priority": 100 if check["severity"] == "hard" else 10,
             "parameters": {}, "tolerance": {"value": 1e-6, "unit": "m"}, "source": "system",
             "validation": {"state": check["state"], "checked_revision_id": revision_id, "message": check["message"]}, "extensions": {}})
@@ -82,11 +81,11 @@ def make_snapshot(spec: PilotSpec, records: list[dict], stage: str, parent: str 
             "transform_convention": "column_vector_parent_times_local", "quaternion_order": "xyzw", "storage_precision": "float64"},
         "tolerances": {"regional_m": 0.1, "building_m": 0.01, "interior_m": 0.005, "angle_rad": 0.0001},
         "package_mode": "self_contained", "created_at": created_at,
-        "extensions": {"generator_version": GENERATOR_VERSION, "pilot": True},
+        "extensions": {"generator_version": spec.generator_version, "pilot": spec.region_size_m == 128},
     }
     failures = sum(c["state"] == "fail" and c["severity"] == "hard" for c in checks)
     records.append({"record_type": "revision", "id": revision_id, "world_id": spec.world_id,
-        "parent_revision_ids": [parent] if parent else [], "created_at": created_at, "author": GENERATOR_VERSION,
+        "parent_revision_ids": [parent] if parent else [], "created_at": created_at, "author": spec.generator_version,
         "change_set_hash": digest(records), "validation_summary": {"hard_failures": failures, "unknown_checks": 0},
         "committed": failures == 0, "extensions": {"snapshot_manifest": copy.deepcopy(manifest)}})
     return {"manifest": manifest, "records": records}, checks
@@ -106,7 +105,7 @@ def generate(spec: PilotSpec, repository: Repository, budget: Budget | None = No
     head = repository.head(spec.world_id)
     metrics: list[dict] = []
     journal = RunJournal(repository.root)
-    journal.append({"event": "started", "contract_version": "0.1.0", "generator_version": GENERATOR_VERSION,
+    journal.append({"event": "started", "contract_version": "0.1.0", "generator_version": spec.generator_version,
                     "world_id": spec.world_id, "spec": spec.to_dict(), "budget": asdict(budget), "base_revision_id": head})
 
     def finish(reason: str, feasibility: str, code: str, message: str) -> RunResult:
@@ -126,7 +125,7 @@ def generate(spec: PilotSpec, repository: Repository, budget: Budget | None = No
         if head:
             package = repository.load(spec.world_id)
             saved = next(r for r in package["records"] if r["record_type"] == "world_spec")
-            if saved["extensions"]["pilot_spec"] != spec.to_dict() or saved["extensions"]["generator_version"] != GENERATOR_VERSION:
+            if saved["extensions"].get(spec.contract_key) != spec.to_dict() or saved["extensions"]["generator_version"] != spec.generator_version:
                 raise StoreError("contract.generator_version", "resume requires the same spec and generator version")
             if any(c["severity"] == "hard" and c["state"] != "pass" for c in check_geometry(package["records"])):
                 raise StoreError("constraint.resume_invalid", "saved geometry failed revalidation")
@@ -196,7 +195,7 @@ def generate(spec: PilotSpec, repository: Repository, budget: Budget | None = No
                             "soft_failures": sum(c["severity"] == "soft" and c["state"] == "fail" for c in checks),
                             "resource_bytes": sum(len(v) for v in resources.values()), "model_calls": 0})
             journal.append({"event": "stage_committed", "stage": stage, "revision_id": head})
-        return finish("completed", "feasible", "generation.completed", "pilot completed within the declared template rules")
+        return finish("completed", "feasible", "generation.completed", "world completed within the declared template rules")
     except Halt as exc:
         return finish(exc.reason, "unknown", "execution." + exc.reason, "last committed revision preserved")
     except Exception as exc:

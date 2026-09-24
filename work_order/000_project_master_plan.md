@@ -34,7 +34,7 @@
 
 ## 当前状态与下一步
 
-M0 与 M1 已完成。当前直接在基准 Windows 本机 MISAKA 执行，无须 SSH。006 已实现 128 m、6 栋建筑/2 栋室内模板的五阶段源数据生成、校验、SQLite 存档恢复、有限楼梯修复、模型规格 JSON 接口、已接受响应回放和自包含 ZIP64 世界包交换；v3 的 30 个离线小范围输入首次 15/30、最终 30/30。006 仍为 in_progress：真实模型服务、广范围规划与修复、完整城邦尚未验证。009 的手工两层 Sponge v3 新版样件已在 Minecraft 1.21.11/Fabric/WorldEdit 中加载、粘贴并由玩家连续走通南门—楼梯—二层，1363 方块与离线数量一致。008 的 Unity 6000.3.24f1 两层 GLB 已在目标编辑器导入，26 个构件 ID/碰撞与东窗方向通过；图形 Play Mode 的控制器连续穿南门、上一层楼梯至二层房间，5/5 检查点通过。008/009 的固定样件通行门槛均已通过；下一轮可在预登记范围后评估 006 扩规模，通用区域/跨桥和同修订联调仍待验。此前完整回归 63 项通过。010 必要性待明确。项目已建立私有 GitHub 仓库 `misaka15135/world_builder` 并配置 `origin/main`。
+M0 与 M1 已完成。当前直接在基准 Windows 本机 MISAKA 执行，无须 SSH。006 的 128 m、6 栋/2 室内固定试验已实现五阶段源数据生成、校验、SQLite 存档恢复、有限楼梯修复、模型规格 JSON 接口、已接受响应回放和自包含 ZIP64 世界包交换。008/009 固定两层样件在 Unity 6000.3.24f1 与 Minecraft 1.21.11 均实际穿门上楼通过后，006 新增独立 `0.1.0-city.1` 的 512 m、80 栋/5 室内离线源端模式；预登记 30 输入全部成功，首次 15/30、三类各 10/10，完整回归 68 项通过。006 仍为 in_progress：真实模型服务、复杂地形与更广范围修复、完整目标平台城邦尚未验证。008/009 仍为 in_progress：通用区域/跨桥和同修订联调待验。010 必要性待明确。项目已建立私有 GitHub 仓库 `misaka15135/world_builder` 并配置 `origin/main`。
 
 ## 执行记录
 
@@ -59,3 +59,4 @@ M0 与 M1 已完成。当前直接在基准 Windows 本机 MISAKA 执行，无�
 | 2026-09-23 | root | 完成 008/009 两层目标样件的加载阶段 | Unity URP 17.3.0/glTFast 6.20.0 导入 v2 GLB，26/26 源 ID/碰撞和东窗坐标通过，图形界面再次重建并目视；Minecraft 1.21.11/Fabric/WorldEdit 加载 Sponge v3 并粘贴 1365 方块，保存门外与室内截图；完整回归 63 passed | 补足 Unity 控制器与 Minecraft 实际玩家穿门、上楼证据后才能解除 006 扩规模门槛 |
 | 2026-09-24 | root | 修复并完成 009 固定样件的目标玩家通行 | v2 玩家可穿南门但楼梯受阻；v3 扩大第一阶上方楼板开口，加载并粘贴 1363 方块，在生存模式连续走通南门—一层—楼梯—二层；`artifacts/minecraft-sample/target-v3/validation.json` 与 F2 截图留证；完整回归 63 passed | 009 保持 in_progress 等待通用区域/跨桥；先完成 008 Unity 控制器漫游，再评估 006 扩规模 |
 | 2026-09-24 | root | 完成 008 固定样件的 Unity 连续漫游 | Unity 6000.3.24f1 中 1.8 m CharacterController 从门外连续走到二层房间；`artifacts/unity-sample/walk-validation.json` 为 `status=pass`、5/5 检查点，`walk-validation.png` 留证；批处理重建以退出码 0 结束 | 008 保持 in_progress 等待通用区域/跨桥和 006/007 同修订联调；006 可规划下一轮扩规模试验 |
+| 2026-09-24 | root | 完成 006 的 512 m 离线源端城邦扩规模 | `benchmarks/city_cases_v1.json` 预登记 30 输入；`artifacts/benchmark-city-v1/report.json` 为 30/30 成功、三类各 10/10、首次 15/30，首例 80 栋/5 室内、2,156 记录；城邦世界包导出/校验/导入通过。完整 Python 回归 68 passed，文档检查零错误 | 006 保持 in_progress；真实模型服务、复杂地形、通用 Unity/Minecraft 城邦导出及目标通行仍待验证 |

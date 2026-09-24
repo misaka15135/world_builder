@@ -31,7 +31,7 @@ def check_geometry(records: list[dict]) -> list[dict]:
         return [e for e in entities.values() if e["kind"] == name]
 
     spec = next(r for r in records if r["record_type"] == "world_spec")
-    settings = spec["extensions"]["pilot_spec"]
+    settings = spec["extensions"].get("city_spec", spec["extensions"].get("pilot_spec"))
     stage = spec["extensions"]["stage"]
     if stage in {"buildings", "interiors"}:
         check("pilot.building_count", [next(e["id"] for e in entities.values() if e["kind"] == "world")], len(kind("building")) == settings["building_count"], "all requested buildings exist")
@@ -57,14 +57,30 @@ def check_geometry(records: list[dict]) -> list[dict]:
     buildings, rivers, bridges = kind("building"), kind("river"), kind("bridge")
     for building in buildings:
         for river in rivers:
-            check("pilot.river_setback", [building["id"], river["id"]], not overlaps(building["bounds"], {"min": [river["bounds"]["min"][0]-2, 0, -4], "max": [river["bounds"]["max"][0]+2, 128, 32]}), "building clears channel plus 2 m setback")
+            check("pilot.river_setback", [building["id"], river["id"]], not overlaps(building["bounds"], {"min": [river["bounds"]["min"][0]-2, river["bounds"]["min"][1], -4], "max": [river["bounds"]["max"][0]+2, river["bounds"]["max"][1], 32]}), "building clears channel plus 2 m setback")
         parcel = entities[building["parent_id"]]
         raw = parcel["attributes"]["raw_height_range_m"]
         platform = parcel["attributes"]["platform_z_m"]
         check("pilot.platform", [building["id"], parcel["id"]], max(raw) <= platform and abs(building["bounds"]["min"][2]-platform) < 1e-6, "supported level platform is above sampled ground")
         check("pilot.earthwork", [parcel["id"]], platform - min(raw) <= 2, "prefer platform fill depth <= 2 m", "soft")
-    for a, b in combinations(buildings, 2):
-        check("pilot.building_overlap", [a["id"], b["id"]], not overlaps(a["bounds"], b["bounds"]), "building footprints do not overlap")
+    if settings.get("region_size_m") == 512:
+        # A sweep preserves the all-buildings condition without materializing
+        # thousands of passing pairwise constraints in the city snapshot.
+        active = []
+        collisions = []
+        for building in sorted(buildings, key=lambda item: (item["bounds"]["min"][0], item["id"])):
+            active = [item for item in active if item["bounds"]["max"][0] > building["bounds"]["min"][0] + 1e-6]
+            collisions.extend((item, building) for item in active if overlaps(item["bounds"], building["bounds"]))
+            active.append(building)
+        if collisions:
+            for a, b in collisions:
+                check("pilot.building_overlap", [a["id"], b["id"]], False, "building footprints do not overlap")
+        else:
+            check("pilot.building_overlap", [next(e["id"] for e in entities.values() if e["kind"] == "world")], True,
+                  "all building footprints do not overlap")
+    else:
+        for a, b in combinations(buildings, 2):
+            check("pilot.building_overlap", [a["id"], b["id"]], not overlaps(a["bounds"], b["bounds"]), "building footprints do not overlap")
     roads = kind("road") + bridges
     graph = {r["id"]: set() for r in roads}
     for a, b in combinations(roads, 2):

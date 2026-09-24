@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run every preregistered pilot case in a fresh process; preserve failures."""
+"""Run every preregistered source-data case in a fresh process; preserve failures."""
 from __future__ import annotations
 
 import argparse
@@ -12,10 +12,10 @@ import sys
 import time
 from pathlib import Path
 
-from world_builder.generation import GENERATOR_VERSION
+from world_builder.generation import CITY_GENERATOR_VERSION, GENERATOR_VERSION
 from world_builder.generation.cli import atomic_json
 from world_builder.generation.pipeline import generate, semantic_hash
-from world_builder.generation.spec import Budget, PilotSpec, digest
+from world_builder.generation.spec import Budget, CitySpec, PilotSpec, digest
 from world_builder.storage.repository import Repository
 
 
@@ -40,7 +40,8 @@ def peak_working_set() -> int:
 
 
 def worker(case: dict, output: Path) -> dict:
-    spec = PilotSpec(**case["spec"])
+    spec_type = CitySpec if case["spec"].get("region_size_m") == 512 else PilotSpec
+    spec = spec_type(**case["spec"])
     repository = Repository(output)
     start = time.perf_counter()
     result = generate(spec, repository, Budget(**case["budget"]))
@@ -67,16 +68,19 @@ def main() -> int:
         print(json.dumps(worker(json.loads(args.worker), args.output)))
         return 0
     registration = json.loads(args.cases.read_text(encoding="utf-8"))
-    if registration["generator_version"] != GENERATOR_VERSION:
+    if registration["generator_version"] not in {GENERATOR_VERSION, CITY_GENERATOR_VERSION}:
         parser.error("preregistered generator version does not match the implementation")
+    city = registration["generator_version"] == CITY_GENERATOR_VERSION
+    if any((CitySpec if case["spec"].get("region_size_m") == 512 else PilotSpec)(**case["spec"]).generator_version != registration["generator_version"] for case in registration["cases"]):
+        parser.error("all preregistered cases must use the declared generator version")
     if args.output.exists():
         parser.error("benchmark output must be new; existing results are never overwritten")
     args.output.mkdir(parents=True)
     root = Path(__file__).resolve().parents[1]
     sources = sorted((root / "src/world_builder/generation").glob("*.py")) + sorted((root / "src/world_builder/storage").glob("*.py"))
-    report = {"scope": "128m_pilot_not_006_city_acceptance", "registration_hash": digest(registration),
+    report = {"scope": registration["scope"], "registration_hash": digest(registration),
               "implementation_hash": digest({p.relative_to(root).as_posix(): p.read_text(encoding="utf-8") for p in sources}),
-              "generator_version": GENERATOR_VERSION,
+              "generator_version": registration["generator_version"],
               "environment": {"hostname": platform.node(), "platform": platform.platform(), "python": sys.version,
                   "jsonschema": importlib.metadata.version("jsonschema"), "pytest": importlib.metadata.version("pytest")},
               "cases": []}
@@ -84,7 +88,7 @@ def main() -> int:
     for case in registration["cases"]:
         try:
             completed = subprocess.run([sys.executable, str(Path(__file__).resolve()), "--worker", json.dumps(case),
-                                        "--output", str(args.output / case["id"])], capture_output=True, text=True, timeout=90)
+                                        "--output", str(args.output / case["id"])], capture_output=True, text=True, timeout=180 if city else 90)
             if completed.returncode:
                 raise RuntimeError(completed.stderr[-4000:])
             entry = json.loads(completed.stdout)
@@ -94,13 +98,15 @@ def main() -> int:
         atomic_json(args.output / "report.json", report)
         print(f"{case['id']}: {entry['termination_reason']}", flush=True)
     passed = [c for c in report["cases"] if c["termination_reason"] == "completed" and c["feasibility"] == "feasible"]
+    by_scenario = {scenario: sum(c["scenario"] == scenario for c in passed) for scenario in ("riverside", "hillside", "dense")}
+    threshold_met = len(passed) >= 27 and all(count >= 8 for count in by_scenario.values()) if city else len(passed) == len(registration["cases"])
     report["summary"] = {"total": len(registration["cases"]), "completed": len(report["cases"]), "succeeded": len(passed),
         "first_attempt_passed": sum(all(s["attempts"] == 1 for s in c["stages"]) for c in passed),
-        "by_scenario": {scenario: sum(c["scenario"] == scenario for c in passed) for scenario in ("riverside", "hillside", "dense")},
+        "by_scenario": by_scenario, "source_city_threshold_met": threshold_met if city else None,
         "full_city_acceptance": False}
     atomic_json(args.output / "report.json", report)
     print(json.dumps(report["summary"], indent=2))
-    return 0 if len(passed) == len(registration["cases"]) else 1
+    return 0 if threshold_met else 1
 
 
 if __name__ == "__main__":
