@@ -1,0 +1,52 @@
+{
+    "unity_version": "6000.3.24f1",
+    "source_world_id": "world_e98d1d4d587fb96f",
+    "source_revision_id": "revision_c1b82ea36c16a34c95f97c42",
+    "source_building_id": "building_004",
+    "scene": "CityInteriorWalk004",
+    "status": "pass",
+    "reason": "continuous_door_stair_upper_room_route",
+    "grounded_frames": 4385,
+    "stair_grounded_frames": 2596,
+    "side_collision_frames": 0,
+    "player_height": 1.7999999523162842,
+    "player_radius": 0.25,
+    "screenshot": "interior-walk-building-004.png",
+    "checkpoints": [
+        {
+            "name": "access_road",
+            "x": 209.16943359375,
+            "y": 2.080000162124634,
+            "z": 16.5,
+            "elapsed_seconds": 0.5360864996910095
+        },
+        {
+            "name": "through_east_door",
+            "x": 207.16781616210938,
+            "y": 2.2799997329711916,
+            "z": 16.5,
+            "elapsed_seconds": 1.872485637664795
+        },
+        {
+            "name": "stair_foot",
+            "x": 204.16563415527345,
+            "y": 2.429999828338623,
+            "z": 17.068628311157228,
+            "elapsed_seconds": 3.9120872020721437
+        },
+        {
+            "name": "upper_landing",
+            "x": 204.00314331054688,
+            "y": 5.279999256134033,
+            "z": 25.830284118652345,
+            "elapsed_seconds": 9.75639533996582
+        },
+        {
+            "name": "upper_room",
+            "x": 201.66883850097657,
+            "y": 5.279999732971191,
+            "z": 25.98855209350586,
+            "elapsed_seconds": 11.319076538085938
+        }
+    ]
+}

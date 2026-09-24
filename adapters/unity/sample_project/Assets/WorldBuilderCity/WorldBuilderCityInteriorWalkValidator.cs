@@ -20,6 +20,7 @@ public sealed class WorldBuilderCityInteriorWalkValidator : MonoBehaviour
         public string unity_version;
         public string source_world_id;
         public string source_revision_id;
+        public string source_building_id;
         public string scene;
         public string status;
         public string reason;
@@ -34,6 +35,7 @@ public sealed class WorldBuilderCityInteriorWalkValidator : MonoBehaviour
 
     public string sourceWorldId;
     public string sourceRevisionId;
+    public int buildingIndex;
 
     private readonly Vector3[] targets = {
         new Vector3(33f, 2f, 16.5f),
@@ -53,18 +55,22 @@ public sealed class WorldBuilderCityInteriorWalkValidator : MonoBehaviour
     private float lastProgressAt;
     private float bestDistance = float.PositiveInfinity;
     private string outputPath;
+    private float eastOffset;
 
     private void Start()
     {
         controller = GetComponent<CharacterController>();
+        eastOffset = 44f * buildingIndex;
         outputPath = Environment.GetEnvironmentVariable("WORLD_BUILDER_UNITY_CITY_INTERIOR_WALK_VALIDATION");
         if (string.IsNullOrEmpty(outputPath))
             outputPath = Path.GetFullPath(Path.Combine(Application.dataPath,
-                "../../../../artifacts/unity-city/interior-walk-validation.json"));
+                "../../../../artifacts/unity-city/" + (buildingIndex == 0 ?
+                "interior-walk-validation.json" : $"interior-walk-building-{buildingIndex:000}.json")));
         result = new Result {
             unity_version = Application.unityVersion,
             source_world_id = sourceWorldId,
             source_revision_id = sourceRevisionId,
+            source_building_id = $"building_{buildingIndex:000}",
             scene = gameObject.scene.name,
             status = "in_progress",
             reason = "",
@@ -82,7 +88,7 @@ public sealed class WorldBuilderCityInteriorWalkValidator : MonoBehaviour
         if (result.status != "in_progress") return;
         if (Time.time - startedAt > 50f) { Finish("failed", "total_route_timeout"); return; }
 
-        var target = targets[targetIndex];
+        var target = targets[targetIndex] + new Vector3(eastOffset, 0f, 0f);
         var current = transform.position;
         var horizontal = new Vector3(target.x - current.x, 0f, target.z - current.z);
         var distance = horizontal.magnitude;
@@ -118,7 +124,7 @@ public sealed class WorldBuilderCityInteriorWalkValidator : MonoBehaviour
         var flags = controller.Move(movement);
         if ((flags & CollisionFlags.Below) != 0) {
             result.grounded_frames++;
-            if (transform.position.x >= 27.2f && transform.position.x <= 28.8f &&
+            if (transform.position.x >= 27.2f + eastOffset && transform.position.x <= 28.8f + eastOffset &&
                 transform.position.z >= 17f && transform.position.z <= 27f &&
                 transform.position.y >= 2.2f && transform.position.y <= 5.35f)
                 result.stair_grounded_frames++;
@@ -135,7 +141,7 @@ public sealed class WorldBuilderCityInteriorWalkValidator : MonoBehaviour
     {
         if (result == null) return;
         GUI.Box(new Rect(16f, 16f, 460f, 62f),
-            "WorldBuilder city interior: " + result.status + "\n" +
+            "WorldBuilder city interior " + result.source_building_id + ": " + result.status + "\n" +
             "Checkpoint " + Mathf.Min(targetIndex, targets.Length) + "/" + targets.Length +
             "  Feet: " + transform.position.ToString("F2"));
     }
@@ -147,7 +153,7 @@ public sealed class WorldBuilderCityInteriorWalkValidator : MonoBehaviour
         Save();
         if (status == "pass") {
             var camera = GetComponentInChildren<Camera>();
-            if (camera != null) camera.transform.LookAt(new Vector3(28f, 3.6f, 21f));
+            if (camera != null) camera.transform.LookAt(new Vector3(28f + eastOffset, 3.6f, 21f));
             StartCoroutine(CaptureResult());
         }
         Debug.Log("WorldBuilder city interior walk: " + status + " (" + reason + ") at " + transform.position);

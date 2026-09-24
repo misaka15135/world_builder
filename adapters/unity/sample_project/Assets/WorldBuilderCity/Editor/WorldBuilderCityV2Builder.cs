@@ -115,9 +115,26 @@ public static class WorldBuilderCityV2Builder
     public static void BuildInteriorWalkValidation()
     {
         BuildInteriors();
+        CreateWalkScene(0);
+    }
+
+    [MenuItem("World Builder/Build Remaining City Interior Walk Validations")]
+    public static void BuildRemainingInteriorWalkValidations()
+    {
+        BuildInteriors();
+        for (var building = 1; building < 5; building++)
+        {
+            EditorSceneManager.OpenScene(Base + "CityInteriors.unity", OpenSceneMode.Single);
+            CreateWalkScene(building);
+        }
+    }
+
+    private static void CreateWalkScene(int buildingIndex)
+    {
         var manifest = ReadManifest();
-        var player = new GameObject("Interior validation player");
-        player.transform.position = new Vector3(34f, 2.1f, 16.5f);
+        var eastOffset = 44f * buildingIndex;
+        var player = new GameObject($"Interior validation player {buildingIndex:000}");
+        player.transform.position = new Vector3(34f + eastOffset, 2.1f, 16.5f);
         var controller = player.AddComponent<CharacterController>();
         controller.height = 1.8f;
         controller.radius = 0.25f;
@@ -127,6 +144,7 @@ public static class WorldBuilderCityV2Builder
         var validator = player.AddComponent<WorldBuilderCityInteriorWalkValidator>();
         validator.sourceWorldId = manifest.source_world_id;
         validator.sourceRevisionId = manifest.source_revision_id;
+        validator.buildingIndex = buildingIndex;
 
         var camera = new GameObject("Interior first-person camera").AddComponent<Camera>();
         camera.transform.SetParent(player.transform, false);
@@ -137,7 +155,8 @@ public static class WorldBuilderCityV2Builder
         var overview = GameObject.Find("Overview Camera");
         if (overview != null) overview.GetComponent<Camera>().enabled = false;
 
-        var path = Base + "CityInteriorWalk.unity";
+        var path = Base + (buildingIndex == 0 ? "CityInteriorWalk.unity" :
+            $"CityInteriorWalk{buildingIndex:000}.unity");
         EditorSceneManager.SaveScene(SceneManager.GetActiveScene(), path);
         Debug.Log("WorldBuilder city interior walk scene saved: " + path);
     }

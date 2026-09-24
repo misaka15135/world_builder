@@ -5,6 +5,7 @@
 - 执行者：root
 - 依赖：005；样件试验可与 006 并行，完整验收需要 006、007
 - 修改范围：2026-09-25 本阶段由 root 实施五栋已生成室内建筑的 Unity 派生构件与通行验收，涉及 `src/world_builder/adapters/unity/city.py`、`tests/test_unity_city.py`、`adapters/unity/sample_project/Assets/WorldBuilderCity/`、`artifacts/unity-city/`、`docs/contracts/unity-city-v0.1.md` 及 008/000/索引。源 WIR、固定手工样件及 WIR 0.1 Schema 不改；导出版本另起 v2，不覆盖 v1 证据。
+- 修改范围：2026-09-25 后续由 root 对其余四栋生成室内建筑逐栋做 Unity Play Mode 通行验收；修改 `WorldBuilderCityV2Builder.cs`、`WorldBuilderCityInteriorWalkValidator.cs`、新场景/运行证据、008/000/索引及 Unity 城邦说明。v2 GLB 与首栋已有证据保持不变。
 
 ## 目标与范围
 
@@ -35,7 +36,8 @@
 - [x] ~~在 Unity 6000.3.24f1 实际加载同一城邦修订，核对构件映射、碰撞体和桥的目标边界。~~
 - [x] ~~在 Play Mode 连续实走道路和桥，建立可核对的运行证据。~~
 - [x] ~~五栋生成室内建筑转为可进入壳体与楼梯，完成首栋道路—门—二层房间目标连续通行。~~
-- [ ] 逐栋验证其余四栋室内路线，完成分块、法线、导航及 007 同修订联调。
+- [x] ~~逐栋验证其余四栋从入口道路经东门和楼梯到二层房间的连续路线。~~
+- [ ] 完成分块、法线、导航及 007 同修订联调。
 
 ## 验收标准
 
@@ -75,6 +77,9 @@
 | 2026-09-25 | root | 完成首栋城邦室内的目标连续通行 | `CityInteriorWalk.unity` 图形 Play Mode 从道路穿东门、抵达梯底、登上平台并进入二层房间；`interior-walk-validation.json` 为 5/5 检查点、零侧向碰撞、`status=pass`，末端脚部约 `(25.67,5.28,25.99)`；同次 PNG 留证。其余四栋只通过静态映射，未逐栋实走；长河道网格仍提示大三角形 | 跑完整回归与文档检查；后续验证其余四栋、分块/法线/导航及 007 同修订联调 |
 | 2026-09-25 | root | 完成 v2 回归与交接文档 | `python -m pytest -q --basetemp artifacts/pytest-unity-city-full` 为 71 passed；`python tools/check_project_docs.py` 检查 34 Markdown/40 链接/5 JSON/13 工单、零错误。`docs/contracts/unity-city-v0.1.md` 记录重建、目标证据和未验边界，`editor-interior-build-evidence.txt` 留存正常退出日志 | 提交并尝试推送；008 继续 in_progress，后续按未完成项推进 |
 | 2026-09-25 | root | 提交并推送室内阶段与先前滞留的跨桥阶段 | 本地提交 `d687581`，`git push origin main` 成功，远端由 `1f5c296` 前进至 `d687581`，包含先前跨桥提交 `b529c49` | 008 继续 in_progress；后续逐栋通行、分块/法线/导航及 007 同修订联调 |
+| 2026-09-25 | root | 认领其余四栋室内实走子阶段 | 工作树干净且 `main` 与 `origin/main` 一致；五栋源建筑几何按东向 44 m 等距排列，首栋相同路线已通过。本轮范围见文件头 | 生成四个独立验证场景，在目标编辑器逐栋运行并记录 JSON/截图 |
+| 2026-09-25 | root | 完成其余四栋 Unity 室内路线验收 | `WorldBuilderCityV2Builder.BuildRemainingInteriorWalkValidations` 在 Unity 6000.3.24f1 保存四个独立场景并以代码 0 退出；`v2-remaining-target-validation.json` 再次为 346/346 ID/碰撞 pass。四栋各在图形 Play Mode 连续穿东门、上楼进入二层房间，`interior-walk-building-001`—`004.json` 各为 5/5 检查点、零侧向碰撞、`status=pass`，同名 PNG 留证；末端 X 依次约 69.67/113.67/157.67/201.67 m，Y 均约 5.28 m | 008 继续 in_progress；分块/法线/导航及 007 同修订联调待做 |
+| 2026-09-25 | root | 复核四栋实走证据与项目文档 | 脚本逐项核对四份 JSON 的源建筑 ID、5/5 检查点、零侧向碰撞、二层终点、高于阈值的楼梯接地帧与 PNG 存在；全部通过。`python tools/check_project_docs.py` 为 34 Markdown/40 链接/5 JSON/13 工单、零错误；本阶段 Python 导出器未改，沿用上轮 71 passed 结果 | 整理提交与推送；008 未完成的目标能力继续留在工单 |
 
 ## 交接说明
 
