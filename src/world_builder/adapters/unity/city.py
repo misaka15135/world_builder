@@ -8,6 +8,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import math
 from pathlib import Path
 
 from world_builder.adapters.unity.sample import (_box, _canonical, _glb,
@@ -19,11 +20,36 @@ ADAPTER_VERSION = "0.1.0-city.1"
 PROFILE_ID = "profile_unity_city_6000324"
 INTERIOR_ADAPTER_VERSION = "0.1.0-city.2"
 INTERIOR_PROFILE_ID = "profile_unity_city_6000324_v2"
+CHUNKED_ADAPTER_VERSION = "0.1.0-city.3"
+CHUNKED_PROFILE_ID = "profile_unity_city_6000324_v3"
+CHUNK_SIZE_M = 128
 EXPORT_KINDS = {"road", "bridge", "building"}
 
 
 class CityExportError(ValueError):
     pass
+
+
+def _chunk_pieces(pieces: list[dict], origin_x: float, origin_n: float) -> dict[str, list[dict]]:
+    """Clip every box to a half-open 128 m horizontal grid; retain source IDs."""
+    chunks: dict[str, list[dict]] = {}
+    for piece in pieces:
+        (x0, n0, u0), (x1, n1, u1) = piece["bounds_wir_m"]
+        first_x = math.floor((x0 - origin_x) / CHUNK_SIZE_M)
+        last_x = math.floor((math.nextafter(x1, -math.inf) - origin_x) / CHUNK_SIZE_M)
+        first_n = math.floor((n0 - origin_n) / CHUNK_SIZE_M)
+        last_n = math.floor((math.nextafter(n1, -math.inf) - origin_n) / CHUNK_SIZE_M)
+        for ix in range(first_x, last_x + 1):
+            for iz in range(first_n, last_n + 1):
+                cx0, cn0 = origin_x + ix * CHUNK_SIZE_M, origin_n + iz * CHUNK_SIZE_M
+                clipped = _box(f"{piece['name']}__c{ix:02}_{iz:02}", piece["source_id"],
+                               max(x0, cx0), min(x1, cx0 + CHUNK_SIZE_M),
+                               max(n0, cn0), min(n1, cn0 + CHUNK_SIZE_M),
+                               u0, u1, piece["material"])
+                chunk_id = f"c{ix:02}_{iz:02}"
+                clipped["chunk_id"] = chunk_id
+                chunks.setdefault(chunk_id, []).append(clipped)
+    return dict(sorted(chunks.items()))
 
 
 def _interior_pieces(building: dict, entities: dict[str, dict]) -> list[dict]:
@@ -90,7 +116,10 @@ def _interior_pieces(building: dict, entities: dict[str, dict]) -> list[dict]:
     return parts
 
 
-def export_city(package: dict, output_dir: str | Path, *, include_interiors: bool = False) -> dict:
+def export_city(package: dict, output_dir: str | Path, *, include_interiors: bool = False,
+                chunked: bool = False) -> dict:
+    if chunked and not include_interiors:
+        raise CityExportError("chunked v3 requires include_interiors=True")
     validate_package(package)
     specs = [r for r in package["records"] if r["record_type"] == "world_spec"]
     if len(specs) != 1 or "city_spec" not in specs[0].get("extensions", {}):
@@ -126,12 +155,18 @@ def export_city(package: dict, output_dir: str | Path, *, include_interiors: boo
         _box("terrain_east_proxy", terrain["id"], rhi[0], thi[0], tlo[1], thi[1], -0.2, 0.25, 0),
         _box("river_water_proxy", river["id"], rlo[0], rhi[0], rlo[1], rhi[1], -0.05, 0.05, 2),
     ])
-    glb = _glb(pieces)
+    chunks = _chunk_pieces(pieces, tlo[0], tlo[1]) if chunked else None
+    if chunks is not None:
+        pieces = [piece for group in chunks.values() for piece in group]
+    else:
+        glb = _glb(pieces)
     source_hash = "sha256:" + hashlib.sha256(json.dumps(package, ensure_ascii=False, sort_keys=True,
                                                          separators=(",", ":")).encode()).hexdigest()
     represented = {piece["source_id"] for piece in pieces}
-    adapter_version = INTERIOR_ADAPTER_VERSION if include_interiors else ADAPTER_VERSION
-    profile_id = INTERIOR_PROFILE_ID if include_interiors else PROFILE_ID
+    adapter_version = (CHUNKED_ADAPTER_VERSION if chunked else
+                       INTERIOR_ADAPTER_VERSION if include_interiors else ADAPTER_VERSION)
+    profile_id = (CHUNKED_PROFILE_ID if chunked else
+                  INTERIOR_PROFILE_ID if include_interiors else PROFILE_ID)
     items = []
     for record in entities:
         kind = record["kind"]
@@ -156,7 +191,8 @@ def export_city(package: dict, output_dir: str | Path, *, include_interiors: boo
                       "classification": classification, "message": message})
     summary = {key: sum(item["classification"] == key for item in items)
                for key in ("preserved", "approximated", "omitted", "unsupported", "failed")}
-    report = {"record_type": "export_report", "id": "report_unity_city_v2" if include_interiors else "report_unity_city",
+    report_id = "report_unity_city_v3" if chunked else "report_unity_city_v2" if include_interiors else "report_unity_city"
+    report = {"record_type": "export_report", "id": report_id,
               "revision_id": package["manifest"]["revision_id"], "target_profile_id": profile_id,
               "status": "succeeded_with_warnings", "coordinate_transform_row_major":
               [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1],
@@ -167,7 +203,8 @@ def export_city(package: dict, output_dir: str | Path, *, include_interiors: boo
                "target_version": UNITY_VERSION + "+urp-" + URP_VERSION + "+gltfast-" + GLTFAST_VERSION,
                "adapter_version": adapter_version,
                "configuration": {"meters_per_unit": 1, "x_axis": "east", "y_axis": "up",
-                                 "z_axis": "north", "mesh_format": "glb-2.0", "terrain": "ordinary_mesh"},
+                                 "z_axis": "north", "mesh_format": "glb-2.0", "terrain": "ordinary_mesh",
+                                 **({"chunk_size_m": CHUNK_SIZE_M} if chunked else {})},
                "declared_capabilities": ["mesh", "materials", "mesh_collider"], "extensions": {}}
     derived = copy.deepcopy(package)
     derived["records"].extend([profile, report])
@@ -175,18 +212,36 @@ def export_city(package: dict, output_dir: str | Path, *, include_interiors: boo
     validate_package(derived)
     output = Path(output_dir)
     output.mkdir(parents=True, exist_ok=False)
-    files = {"city.glb": glb, "manifest.json": _canonical({
-        "format": "unity-glb-city-0.2" if include_interiors else "unity-glb-city-0.1", "source_world_id": package["manifest"]["world_id"],
+    chunk_files = {}
+    chunk_index = []
+    if chunks is not None:
+        for chunk_id, group in chunks.items():
+            path = f"chunks/city_{chunk_id}.glb"
+            data = _glb(group)
+            chunk_files[path] = data
+            chunk_index.append({"id": chunk_id, "path": path, "glb_sha256":
+                                "sha256:" + hashlib.sha256(data).hexdigest(),
+                                "piece_count": len(group)})
+    manifest = {
+        "format": "unity-glb-city-0.3" if chunked else "unity-glb-city-0.2" if include_interiors else "unity-glb-city-0.1", "source_world_id": package["manifest"]["world_id"],
         "source_revision_id": package["manifest"]["revision_id"], "source_snapshot_hash": source_hash,
         "adapter_version": adapter_version, "target_profile_id": profile_id,
         "unity_version": UNITY_VERSION, "urp_version": URP_VERSION, "gltfast_version": GLTFAST_VERSION,
-        "glb_sha256": "sha256:" + hashlib.sha256(glb).hexdigest(), "pieces": pieces,
+        **({"chunks": chunk_index, "chunk_size_m": CHUNK_SIZE_M,
+            "chunk_origin_wir_m": [tlo[0], tlo[1]]} if chunked else
+           {"glb_sha256": "sha256:" + hashlib.sha256(glb).hexdigest()}),
+        "pieces": pieces,
         "source_to_glb_row_major": [-1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1],
         "source_to_unity_row_major": report["coordinate_transform_row_major"],
-        "target_load": "not_run", "collision": "not_run", "walkthrough": "not_run"}),
-             "export_report.json": _canonical(report), "target_profile.json": _canonical(profile)}
+        "target_load": "not_run", "collision": "not_run", "walkthrough": "not_run"}
+    files = {"manifest.json": _canonical(manifest),
+             "export_report.json": _canonical(report), "target_profile.json": _canonical(profile),
+             **(chunk_files if chunked else {"city.glb": glb})}
     for name, data in files.items():
+        (output / name).parent.mkdir(parents=True, exist_ok=True)
         (output / name).write_bytes(data)
-    return {"output": str(output), "source_revision_id": package["manifest"]["revision_id"],
-            "piece_count": len(pieces), "report_summary": summary,
-            "glb_sha256": hashlib.sha256(glb).hexdigest()}
+    result = {"output": str(output), "source_revision_id": package["manifest"]["revision_id"],
+              "piece_count": len(pieces), "report_summary": summary}
+    result.update({"chunk_count": len(chunks)} if chunked else
+                  {"glb_sha256": hashlib.sha256(glb).hexdigest()})
+    return result

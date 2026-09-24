@@ -6,6 +6,7 @@
 - 依赖：005；样件试验可与 006 并行，完整验收需要 006、007
 - 修改范围：2026-09-25 本阶段由 root 实施五栋已生成室内建筑的 Unity 派生构件与通行验收，涉及 `src/world_builder/adapters/unity/city.py`、`tests/test_unity_city.py`、`adapters/unity/sample_project/Assets/WorldBuilderCity/`、`artifacts/unity-city/`、`docs/contracts/unity-city-v0.1.md` 及 008/000/索引。源 WIR、固定手工样件及 WIR 0.1 Schema 不改；导出版本另起 v2，不覆盖 v1 证据。
 - 修改范围：2026-09-25 后续由 root 对其余四栋生成室内建筑逐栋做 Unity Play Mode 通行验收；修改 `WorldBuilderCityV2Builder.cs`、`WorldBuilderCityInteriorWalkValidator.cs`、新场景/运行证据、008/000/索引及 Unity 城邦说明。v2 GLB 与首栋已有证据保持不变。
+- 修改范围：2026-09-25 root 继续分块子阶段；新增 v3 网格切分与多 GLB 清单、对应 Unity 静态导入和验证，修改 `city.py`、CLI、测试、`WorldBuilderCity/Editor/`、独立 v3 产物、说明及 008/000/索引。v1/v2 导出与目标证据不覆盖；导航和 007 联调另行验收。
 
 ## 目标与范围
 
@@ -23,7 +24,7 @@
 
 - [x] ~~固定并记录 Unity、渲染管线、glTF 导入包版本及安装/运行步骤。~~
 - [x] ~~005 完成后先转换手工两层建筑样件，验证坐标、门洞、楼梯和基础碰撞，作为 006 扩规模的前置子项。~~
-- [ ] 输出分块 GLB、场景清单、对象 ID、材质映射和碰撞描述。
+- [x] ~~输出分块 GLB、场景清单、对象 ID、材质映射和碰撞描述。~~
 - [ ] 实现 Editor 导入器，恢复场景层次、位置、碰撞与约定的导航设置。
 - [ ] 验证坐标、法线、比例、实例化与目标材质降级，生成损失报告。
 - [ ] 输出符合 WIR 0.1 `export_report` 的对象映射与损失统计；Unity 反射变换必须处理绕序、法线和切线。
@@ -38,6 +39,8 @@
 - [x] ~~五栋生成室内建筑转为可进入壳体与楼梯，完成首栋道路—门—二层房间目标连续通行。~~
 - [x] ~~逐栋验证其余四栋从入口道路经东门和楼梯到二层房间的连续路线。~~
 - [ ] 完成分块、法线、导航及 007 同修订联调。
+
+其中分块与普通材质逐面法线的静态目标导入已由 v3 验证；接缝通行、切线材质、导航、性能及 007 联调尚未完成。
 
 ## 验收标准
 
@@ -81,6 +84,10 @@
 | 2026-09-25 | root | 完成其余四栋 Unity 室内路线验收 | `WorldBuilderCityV2Builder.BuildRemainingInteriorWalkValidations` 在 Unity 6000.3.24f1 保存四个独立场景并以代码 0 退出；`v2-remaining-target-validation.json` 再次为 346/346 ID/碰撞 pass。四栋各在图形 Play Mode 连续穿东门、上楼进入二层房间，`interior-walk-building-001`—`004.json` 各为 5/5 检查点、零侧向碰撞、`status=pass`，同名 PNG 留证；末端 X 依次约 69.67/113.67/157.67/201.67 m，Y 均约 5.28 m | 008 继续 in_progress；分块/法线/导航及 007 同修订联调待做 |
 | 2026-09-25 | root | 复核四栋实走证据与项目文档 | 脚本逐项核对四份 JSON 的源建筑 ID、5/5 检查点、零侧向碰撞、二层终点、高于阈值的楼梯接地帧与 PNG 存在；全部通过。`python tools/check_project_docs.py` 为 34 Markdown/40 链接/5 JSON/13 工单、零错误；本阶段 Python 导出器未改，沿用上轮 71 passed 结果 | 整理提交与推送；008 未完成的目标能力继续留在工单 |
 | 2026-09-25 | root | 提交四栋实走成果并尝试推送 | 本地提交 `38d4308` 完成；连续四次 `git push origin main` 分别因连接重置和 `github.com:443` 无法连接失败。本地 `origin/main` 最后已知为 `573d0eb`，未把本次提交称为远端成果 | 网络恢复后补推；008 后续实施分块/法线/导航和 007 同修订联调 |
+| 2026-09-25 | root | 认领 v3 分块导出与静态目标验证 | 当前本地修改范围见文件头；先前积压提交本轮已推至 `origin/main` 的 `4ee4ce8`。用户随后明确改为自行处理远端，之后仅本地提交。Unity 曾报告 512 m 河道代理的大三角形警告 | 生成独立 v3 分块 GLB 并在 Unity 中核对源映射、碰撞和三角形跨度 |
+| 2026-09-25 | root | 完成 v3 源端切分与回归 | 同一修订按 128 m 水平网格裁切盒体，独立输出 16 个 GLB、420 构件，每块有 SHA-256 与源 ID；对象级报告仍为 94 保留/107 近似/93 省略。`pytest tests/test_unity_city.py` 4 passed；测试对照 v2 验证切分体积覆盖、无越界及构件对角线小于 182 m | 在 Unity 6000.3.24f1 实际导入 v3 并核对碰撞、方向和长三角形警告 |
+| 2026-09-25 | root | 完成 v3 分块 Unity 静态导入与几何核对 | `v3-target-validation.json` 为 16/16 块、420/420 源映射和 MeshCollider、法线/绕序、桥边界均 pass，最大三角形边长 181.0193 m；批处理退出码 0，同次构建日志无长三角形警告。`CityChunks.unity`、16 个项目内 GLB 和重建说明已保存；此证据不覆盖运行时接缝通行或 NavMesh | 跑完整回归与文档检查，再做分块接缝 Play Mode、导航和 007 同修订联调 |
+| 2026-09-25 | root | 完成 v3 全量回归与文档检查 | `python -m pytest -q --basetemp artifacts/pytest-unity-city-v3-full` 为 72 passed；`python tools/check_project_docs.py` 为 34 Markdown/40 链接/5 JSON/13 工单、零错误。导出器、CLI、目标场景、报告与说明均已形成独立 v3 产物 | 只做本地提交；008 继续 in_progress，后续运行时接缝/导航/007 联调待做 |
 
 ## 交接说明
 

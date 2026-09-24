@@ -1,0 +1,8 @@
+Unity 6000.3.24f1 v3 chunked city target import, 2026-09-25.
+Command: Unity.exe -batchmode -nographics -quit -projectPath adapters/unity/sample_project -executeMethod WorldBuilderCityV3Builder.Build -logFile artifacts/unity-city/editor-v3-build.log
+Validation: artifacts/unity-city/v3-target-validation.json
+Log excerpt:
+WorldBuilder city v3 imported: 16 chunks, 420 pieces, max triangle edge 181.0193
+Exiting batchmode successfully now!
+Exiting without the bug reporter. Application will terminate with return code 0
+Search for "large triangle", "triangle.*large" and "warning" in the full build log returned no matches. This is a batch static-import result, not a Play Mode navigation test.

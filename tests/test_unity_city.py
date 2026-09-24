@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import copy
 import json
+import hashlib
+import math
 import struct
 from pathlib import Path
 
@@ -78,3 +80,44 @@ def test_generated_interiors_have_traceable_openings_and_stairs(tmp_path: Path) 
                for p in upper)
     assert {p["source_id"] for p in pieces if "furniture_" in p["name"]} == {
         f"furniture_{i:03}_{floor}" for i in range(5) for floor in range(2)}
+
+
+def test_chunked_city_covers_original_boxes_with_bounded_glbs(tmp_path: Path) -> None:
+    package, _ = read_worldpkg(SOURCE)
+    export_city(package, tmp_path / "whole", include_interiors=True)
+    result = export_city(package, tmp_path / "chunked", include_interiors=True, chunked=True)
+    whole = json.loads((tmp_path / "whole/manifest.json").read_text(encoding="utf-8"))
+    manifest = json.loads((tmp_path / "chunked/manifest.json").read_text(encoding="utf-8"))
+    report = json.loads((tmp_path / "chunked/export_report.json").read_text(encoding="utf-8"))
+    assert result["chunk_count"] == 16
+    assert result["piece_count"] == 420
+    assert manifest["format"] == "unity-glb-city-0.3"
+    assert report["summary"] == {"preserved": 94, "approximated": 107,
+                                  "omitted": 93, "unsupported": 0, "failed": 0}
+    assert len({p["name"] for p in manifest["pieces"]}) == 420
+    originals = {p["name"]: p for p in whole["pieces"]}
+    volumes: dict[str, float] = {}
+    for chunk in manifest["chunks"]:
+        data = (tmp_path / "chunked" / chunk["path"]).read_bytes()
+        assert "sha256:" + hashlib.sha256(data).hexdigest() == chunk["glb_sha256"]
+        json_size, tag = struct.unpack_from("<I4s", data, 12)
+        assert tag == b"JSON"
+        doc = json.loads(data[20:20 + json_size])
+        members = [p for p in manifest["pieces"] if p["chunk_id"] == chunk["id"]]
+        assert len(members) == chunk["piece_count"] == len(doc["nodes"])
+        assert [n["name"] for n in doc["nodes"]] == [p["name"] for p in members]
+        assert [n["extras"]["source_id"] for n in doc["nodes"]] == [p["source_id"] for p in members]
+        for piece in members:
+            name = piece["name"].rsplit("__c", 1)[0]
+            original = originals[name]
+            low, high = piece["bounds_wir_m"]
+            olo, ohi = original["bounds_wir_m"]
+            assert piece["source_id"] == original["source_id"]
+            assert all(olo[i] <= low[i] < high[i] <= ohi[i] for i in range(3))
+            assert high[0] - low[0] <= 128 and high[1] - low[1] <= 128
+            assert math.dist(low, high) < 182
+            volumes[name] = volumes.get(name, 0) + math.prod(high[i] - low[i] for i in range(3))
+    assert set(volumes) == set(originals)
+    for name, original in originals.items():
+        low, high = original["bounds_wir_m"]
+        assert volumes[name] == pytest.approx(math.prod(high[i] - low[i] for i in range(3)))

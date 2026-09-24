@@ -44,3 +44,18 @@ v2 仍以 WIR 米为单位，目标 Unity 坐标为 `(X 东,Y 上,Z 北)`。五�
 随后执行菜单 `World Builder > Build Remaining City Interior Walk Validations`，或批处理 `-executeMethod WorldBuilderCityV2Builder.BuildRemainingInteriorWalkValidations`，为 `building_001`—`building_004` 生成 `CityInteriorWalk001.unity`—`CityInteriorWalk004.unity`。本固定基准的五栋建筑沿东向每栋相隔 44 m；这组验收场景仅将首栋路线平移，不表示导出器对任意布局自动规划路径。`editor-interior-remaining-build-evidence.txt` 记录四个场景保存与批处理退出码 0；`v2-remaining-target-validation.json` 再次记录 346/346 源映射与碰撞通过。
 
 四个场景均在 Unity 图形 Play Mode 独立运行，分别生成 `artifacts/unity-city/interior-walk-building-001.json`—`interior-walk-building-004.json` 和同名 PNG。四份 JSON 均为 `status=pass`、5/5 检查点、零侧向碰撞；终点脚部 X 依次约为 69.67、113.67、157.67、201.67 m，Y 均约 5.28 m。连同首栋，五栋生成室内建筑各一条道路—东门—楼梯—二层房间路线已实走通过。河道长三角形的物理警告仍存在；法线逐面、分块、导航和性能也未验收。
+
+## 128 m 分块 v3
+
+2026-09-25 新增独立 `0.1.0-city.3` / `profile_unity_city_6000324_v3`，保留 v1/v2 文件和验收证据。v3 以 v2 的同一 346 个源派生盒体为输入，沿 WIR 东、北水平轴按 128 m 半开网格切分；每个切分盒体保留原源 ID、材质索引和米制边界。切分面可能有相邻盒体的内部面；此版本不进行网格合并或远近层级优化。产物为 16 个 `chunks/city_cXX_YY.glb`、`manifest.json`、`target_profile.json` 和 294 实体的 `export_report.json`，共 420 个目标构件。清单记录块路径、SHA-256、构件数量和每个构件的块 ID。材质索引 0/1/2/3 对应 GLB 内的 `stone` / `oak` / `glass` / `dark_oak`；Unity 导入器为每个构件配置普通 `MeshCollider`。源到 glTF、Unity 的坐标矩阵与 v2 相同。普通网格地表仍不等于原生 Terrain；不输出 NavMesh。
+
+根目录运行：
+
+```powershell
+$env:PYTHONPATH='src'
+python tools/export_unity_city.py --source artifacts/benchmark-city-v1/city-first.worldpkg --output artifacts/unity-city/new-chunked-run --interiors --chunked
+```
+
+将新运行的 `manifest.json` 和 `chunks/` 复制到 Unity 项目 `Assets/WorldBuilderCity/v3/`，执行菜单 `World Builder > Build Chunked City v3`，或使用批处理 `-executeMethod WorldBuilderCityV3Builder.Build`。导入器核对每个 GLB 的 SHA-256、源 ID、构件数量、法线与三角面绕序、桥合并边界、最大三角形边长，并生成 `CityChunks.unity`。`WORLD_BUILDER_UNITY_CITY_V3_VALIDATION` 可指定验证 JSON 绝对路径。GLB 使用逐面法线、固定颜色 PBR 材质；没有法线贴图和切线属性，不声称验证带切线材质的反射处理。
+
+本机批处理在 Unity `6000.3.24f1` 正常以代码 0 退出；`artifacts/unity-city/v3-target-validation.json` 记录 16/16 块、420/420 源映射和 MeshCollider、法线/绕序、桥方向与边界均通过，目标网格最大三角形边长 181.0193 m。`editor-v3-build-evidence.txt` 摘录本次日志，未出现先前的超长三角形警告。源端测试还对照 v2 验证各盒体切分后体积完整、坐标不越界。v3 目前只做静态目标导入验收；跨分块接缝的 Play Mode 漫游、导航、性能和 007 同修订查看器联调仍待执行，不能由静态检查推断通过。
