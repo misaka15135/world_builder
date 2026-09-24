@@ -33,6 +33,39 @@ public static class WorldBuilderCityBuilder
 
     private const string Base = "Assets/WorldBuilderCity/";
 
+    [MenuItem("World Builder/Build City Bridge Walk Validation")]
+    public static void BuildBridgeWalkValidation()
+    {
+        Build();
+        var manifestPath = Path.Combine(Application.dataPath, "WorldBuilderCity", "manifest.json");
+        var manifest = JsonUtility.FromJson<Manifest>(File.ReadAllText(manifestPath));
+
+        var player = new GameObject("Bridge validation player");
+        player.transform.position = new Vector3(244f, 2.1f, 271f);
+        var controller = player.AddComponent<CharacterController>();
+        controller.height = 1.8f;
+        controller.radius = 0.25f;
+        controller.center = new Vector3(0f, 0.9f, 0f);
+        controller.stepOffset = 0.4f;
+        controller.slopeLimit = 60f;
+        var validator = player.AddComponent<WorldBuilderCityBridgeWalkValidator>();
+        validator.sourceWorldId = manifest.source_world_id;
+        validator.sourceRevisionId = manifest.source_revision_id;
+
+        var camera = new GameObject("Bridge first-person camera").AddComponent<Camera>();
+        camera.transform.SetParent(player.transform, false);
+        camera.transform.localPosition = new Vector3(0f, 1.6f, 0f);
+        camera.transform.localRotation = Quaternion.Euler(0f, 90f, 0f);
+        camera.tag = "MainCamera";
+        camera.clearFlags = CameraClearFlags.Skybox;
+        var overview = GameObject.Find("Overview Camera");
+        if (overview != null) overview.GetComponent<Camera>().enabled = false;
+
+        var path = Base + "CityBridgeWalk.unity";
+        EditorSceneManager.SaveScene(SceneManager.GetActiveScene(), path);
+        Debug.Log("WorldBuilder city bridge walk scene saved: " + path);
+    }
+
     [MenuItem("World Builder/Build City Static")]
     public static void Build()
     {

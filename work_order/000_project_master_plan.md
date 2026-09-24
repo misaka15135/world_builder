@@ -34,7 +34,7 @@
 
 ## 当前状态与下一步
 
-M0 与 M1 已完成。当前直接在基准 Windows 本机 MISAKA 执行，无须 SSH。006 的 128 m、6 栋/2 室内固定试验已实现五阶段源数据生成、校验、SQLite 存档恢复、有限楼梯修复、模型规格 JSON 接口、已接受响应回放和自包含 ZIP64 世界包交换。008/009 固定两层样件在 Unity 6000.3.24f1 与 Minecraft 1.21.11 均实际穿门上楼通过后，006 新增独立 `0.1.0-city.1` 的 512 m、80 栋/5 室内离线源端模式；预登记 30 输入全部成功，首次 15/30、三类各 10/10。008 已把首例城邦修订导成 176 网格静态 GLB，并在 Unity 中完成 176/176 对象 ID、碰撞和桥边界验证；全套 Python 回归 70 项通过。006 仍为 in_progress：真实模型服务、复杂地形与更广范围修复未验证。008/009 仍为 in_progress：城邦实走跨桥、室内及 Minecraft 城邦目标联调待验。010 必要性待明确。项目已建立私有 GitHub 仓库 `misaka15135/world_builder` 并配置 `origin/main`。
+M0 与 M1 已完成。当前直接在基准 Windows 本机 MISAKA 执行，无须 SSH。006 的 128 m、6 栋/2 室内固定试验已实现五阶段源数据生成、校验、SQLite 存档恢复、有限楼梯修复、模型规格 JSON 接口、已接受响应回放和自包含 ZIP64 世界包交换。008/009 固定两层样件在 Unity 6000.3.24f1 与 Minecraft 1.21.11 均实际穿门上楼通过后，006 新增独立 `0.1.0-city.1` 的 512 m、80 栋/5 室内离线源端模式；预登记 30 输入全部成功，首次 15/30、三类各 10/10。008 已把首例城邦修订导成 176 网格静态 GLB，在 Unity 中完成 176/176 对象 ID、碰撞和桥边界验证，且 Play Mode 连续走通西岸道路—桥—东岸道路；全套 Python 回归 70 项通过。006 仍为 in_progress：真实模型服务、复杂地形与更广范围修复未验证。008/009 仍为 in_progress：城邦室内及 Minecraft 城邦目标联调待验。010 必要性待明确。项目已建立私有 GitHub 仓库 `misaka15135/world_builder` 并配置 `origin/main`。
 
 ## 执行记录
 
@@ -61,3 +61,4 @@ M0 与 M1 已完成。当前直接在基准 Windows 本机 MISAKA 执行，无�
 | 2026-09-24 | root | 完成 008 固定样件的 Unity 连续漫游 | Unity 6000.3.24f1 中 1.8 m CharacterController 从门外连续走到二层房间；`artifacts/unity-sample/walk-validation.json` 为 `status=pass`、5/5 检查点，`walk-validation.png` 留证；批处理重建以退出码 0 结束 | 008 保持 in_progress 等待通用区域/跨桥和 006/007 同修订联调；006 可规划下一轮扩规模试验 |
 | 2026-09-24 | root | 完成 006 的 512 m 离线源端城邦扩规模 | `benchmarks/city_cases_v1.json` 预登记 30 输入；`artifacts/benchmark-city-v1/report.json` 为 30/30 成功、三类各 10/10、首次 15/30，首例 80 栋/5 室内、2,156 记录；城邦世界包导出/校验/导入通过。完整 Python 回归 68 passed，文档检查零错误 | 006 保持 in_progress；真实模型服务、复杂地形、通用 Unity/Minecraft 城邦导出及目标通行仍待验证 |
 | 2026-09-24 | root | 完成 008 的同修订城邦静态区域导出及 Unity 目标加载 | 从 006 首例 `.worldpkg` 输出 176 网格与 294 实体逐项损失报告；Unity 6000.3.24f1 保存 `CityStatic.unity`，176/176 ID 和 MeshCollider、桥边界通过，批处理退出码 0；完整 Python 回归 70 passed，文档检查零错误 | 008 保持 in_progress；下一步 Play Mode 跨桥、城邦室内与 Minecraft 同修订联调 |
+| 2026-09-25 | root | 完成 008 城邦 Unity 连续跨桥验收 | 图形 Play Mode 通过西岸道路—桥中心—东岸道路 3/3 检查点，桥段 1539 帧接地、零侧向碰撞；`artifacts/unity-city/bridge-walk-validation.json` 和同次截图留证；上次滞留提交已成功推送 GitHub | 008 保持 in_progress；下一步构造和实走城邦室内楼梯，并处理分块、导航和 007 同修订联调 |

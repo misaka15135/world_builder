@@ -4,7 +4,7 @@
 - 创建日期：2026-09-21
 - 执行者：root
 - 依赖：005；样件试验可与 006 并行，完整验收需要 006、007
-- 修改范围：2026-09-24 本阶段由 root 实施同修订城邦静态区域导出与 Unity 目标加载，涉及 `src/world_builder/adapters/unity/city.py`、`tools/export_unity_city.py`、`tests/test_unity_city.py`、`adapters/unity/sample_project/Assets/WorldBuilderCity/`、`artifacts/unity-city/`、导出说明及 008/000/索引。固定手工样件与 WIR 0.1 Schema 不改；室内通行另行验收。
+- 修改范围：2026-09-25 本阶段由 root 实施同修订城邦道路—跨桥连续角色验收，涉及 `adapters/unity/sample_project/Assets/WorldBuilderCity/` 内独立运行夹具与场景、`artifacts/unity-city/` 运行证据、`docs/contracts/unity-city-v0.1.md` 及 008/000/索引。静态 GLB、源 WIR、固定手工样件及 WIR 0.1 Schema 不改；室内通行另行验收。
 
 ## 目标与范围
 
@@ -33,7 +33,7 @@
 - [x] ~~从已校验的 512 m WIR 城邦包导出道路、桥、建筑体量和地表/河道代理 GLB，保留源 ID 与修订。~~
 - [x] ~~输出符合 WIR 0.1 的逐实体损失报告，明确 80 栋实心代理、平坦地形及未进入场景的室内对象。~~
 - [x] ~~在 Unity 6000.3.24f1 实际加载同一城邦修订，核对构件映射、碰撞体和桥的目标边界。~~
-- [ ] 在 Play Mode 连续实走道路和桥，建立可核对的运行证据。
+- [x] ~~在 Play Mode 连续实走道路和桥，建立可核对的运行证据。~~
 - [ ] 实现可进入的城邦建筑和室内楼梯，完成目标通行与其余 008 验收。
 
 ## 验收标准
@@ -66,6 +66,9 @@
 | 2026-09-24 | root | 按用户继续推进认领城邦静态区域子阶段 | 本轮文件范围见文件头；512 m 源端城邦包与固定样件验收证据已具备，目标城邦尚未导出或加载 | 建立真实 WIR 派生 GLB、对象映射与明确损失，再运行 Unity 目标导入 |
 | 2026-09-24 | root | 完成 512 m 城邦静态 GLB 与 Unity 目标加载 | `artifacts/unity-city/v1/city.glb` 对应源修订 `revision_c1b82ea36c16a34c95f97c42`，SHA-256 `9fbbe5c489c74ab1566705afa2faa3fd8d305640652599ee33644e205c97be52`；176 个网格、294 实体逐项报告（94 保留/82 近似/118 省略）。Unity 6000.3.24f1 批处理保存 `CityStatic.unity`，`target-validation.json` 为 176/176 ID 与碰撞、桥方向/尺寸、加载全 pass，日志记录退出码 0。Python 全套 `70 passed`，文档检查 34 Markdown/40 链接/5 JSON/13 工单零错误。详情见 `docs/contracts/unity-city-v0.1.md` | 008 保持 in_progress；下一步实际角色跨桥，再实现并验证 5 室内/楼梯、法线与导航；007 尚未提供同修订查看器联调 |
 | 2026-09-24 | root | 提交本阶段产物并尝试推送 GitHub | 本地提交完成、工作树干净；三次推送均因 `github.com:443` 连接重置或无法连接失败，远端仍停留在上次提交；没有把未推送内容称为远端成果 | 网络恢复后推送本地 `main`，再继续目标跨桥验收 |
+| 2026-09-25 | root | 补推上轮提交并认领城邦跨桥运行验收 | `git push origin main` 成功，远端推进至 `1f5c296`；核对 WIR `road_cross_west`、`bridge_main`、`road_cross_east` 在北向 268—274 m 连续衔接。本阶段修改范围见文件头 | 建立角色路线与独立场景，在 Unity Play Mode 连续过桥并留证 |
+| 2026-09-25 | root | 完成 Unity 城邦道路—跨桥 Play Mode 连续验收 | `WorldBuilderCityBuilder.BuildBridgeWalkValidation` 批处理重建 176 构件与独立 `CityBridgeWalk.unity`，正常以代码 0 退出；图形 Play Mode 的 `bridge-walk-validation.json` 为 3/3 检查点、4850 帧接地、桥段 1539 帧接地、零侧向碰撞、`status=pass`，同次 `bridge-walk-validation.png` 留证。源修订仍为 `revision_c1b82ea36c16a34c95f97c42`。Unity 提示河道代理大三角形可能影响物理查询稳定性；本次路线未受阻，不视为普遍排除风险 | 008 保持 in_progress；下一步城邦可进入室内及楼梯、分块/法线/导航与 007 同修订联调 |
+| 2026-09-25 | root | 提交跨桥验收产物并尝试推送 | 本地提交完成、工作树干净；前两次 `git push origin main` 分别因连接重置与 `github.com:443` 无法连接失败，远端当前仍为 `1f5c296` | 网络恢复后推送本地跨桥提交；继续室内阶段前重新确认远端状态 |
 
 ## 交接说明
 
