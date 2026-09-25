@@ -1,0 +1,36 @@
+{
+    "status": "pass",
+    "reason": "agent_crossed_bridge_on_saved_navmesh",
+    "unity_version": "6000.3.24f1",
+    "source_world_id": "world_e98d1d4d587fb96f",
+    "source_revision_id": "revision_c1b82ea36c16a34c95f97c42",
+    "scene": "CityChunkAgentWalk",
+    "agent_type_id": 0,
+    "agent_radius_m": 0.5,
+    "agent_height_m": 2.0,
+    "elapsed_seconds": 8.209543228149414,
+    "movement_frames": 461,
+    "bridge_frames": 18710,
+    "bridge_moving_frames": 163,
+    "bridge_support_frames": 18710,
+    "bridge_support_moving_frames": 163,
+    "off_navmesh_frames": 0,
+    "max_frame_step_m": 0.0726165771484375,
+    "crossed_bridge_center": true,
+    "path_status": "PathComplete",
+    "start_position": {
+        "x": 244.0,
+        "y": 2.0166666507720949,
+        "z": 271.0
+    },
+    "bridge_position": {
+        "x": 256.000244140625,
+        "y": 2.0166666507720949,
+        "z": 271.0
+    },
+    "end_position": {
+        "x": 267.8000793457031,
+        "y": 2.0166666507720949,
+        "z": 271.0
+    }
+}

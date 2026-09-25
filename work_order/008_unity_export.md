@@ -9,6 +9,7 @@
 - 修改范围：2026-09-25 root 继续分块子阶段；新增 v3 网格切分与多 GLB 清单、对应 Unity 静态导入和验证，修改 `city.py`、CLI、测试、`WorldBuilderCity/Editor/`、独立 v3 产物、说明及 008/000/索引。v1/v2 导出与目标证据不覆盖；导航和 007 联调另行验收。
 - 修改范围：2026-09-25 root 继续 v3 运行时接缝验收；修改 `WorldBuilderCityV3Builder.cs` 与既有 `WorldBuilderCityBridgeWalkValidator.cs` 的场景专属证据路径，新增 v3 跨桥 Play Mode 场景及运行证据、说明与 008/000/索引。保留 v1/v2 和 v3 静态导出证据；导航与 007 联调仍独立验收。
 - 修改范围：2026-09-25 root 继续 v3 导航子阶段；新增独立 Unity 导航场景、Editor 重建及目标 NavMesh 路径验证、对应证据与说明，同步 008/000/索引。限定道路与桥梁导航，保留既有 v1/v2/v3 场景和运行证据；007 联调、其它接缝与性能另行验收。仅本地提交。
+- 修改范围：2026-09-25 root 继续 v3 NavMeshAgent 运行验收；新增独立运行场景、运行时记录组件和批处理/Play Mode 启动入口，修改 `WorldBuilderCityV3NavBuilder.cs`、`Assets/WorldBuilderCity/`、独立证据、Unity 城邦说明及 008/000/索引。复用已保存的 v3 NavMesh，不覆盖先前静态/控制器/NavMesh 证据；室内导航和 007 联调不在本阶段。仅本地提交。
 
 ## 目标与范围
 
@@ -44,9 +45,10 @@
 
 其中分块与普通材质逐面法线的静态目标导入已由 v3 验证；桥面 x=256 m 的一处接缝已 Play Mode 实走通过。其它接缝、切线材质、完整导航、性能及 007 联调尚未完成。
 
-道路与桥梁的独立 v3 NavMesh 已完成烘焙和保存场景重载路径验证；通用室内导航、NavMeshAgent 运行、其它接缝及性能仍待验。
+道路与桥梁的独立 v3 NavMesh 已完成烘焙、保存场景重载路径验证和独立 NavMeshAgent Play Mode 跨桥运动；通用室内导航、其它接缝及性能仍待验。
 
 - [x] ~~为 v3 主路、接入道路和桥梁生成独立 NavMesh，并在保存场景重载后验证跨桥完整路径。~~
+- [x] ~~在独立 Play Mode 场景中验证 NavMeshAgent 沿已保存的导航面连续跨桥。~~
 
 ## 验收标准
 
@@ -99,6 +101,8 @@
 | 2026-09-25 | root | 核对接缝证据与文档 | 清单确认 `bridge_main` 在 `c01_02` 与 `c02_02` 两块的 x=256 m 交界，脚本核对 v3 `status=pass`、3/3 检查点、零侧向碰撞、截图存在且 v1 JSON 仍是 `CityBridgeWalk`；`python tools/check_project_docs.py` 为 34 Markdown/40 链接/5 JSON/13 工单零错误。Python 导出器本轮未改，沿用前阶段 72 passed | 只做本地提交；008 保持 in_progress |
 | 2026-09-25 | root | 认领 v3 道路与桥梁导航子阶段 | 本轮修改范围见文件头；Unity 项目已锁定 `com.unity.ai.navigation` 2.0.14，既有 v3 为 16 块/420 构件，桥面 x=256 m 接缝实走通过。导航尚无目标验证证据 | 构建独立导航场景并在 Unity 目标编辑器查询跨桥完整路径 |
 | 2026-09-25 | root | 完成 v3 道路与桥梁 NavMesh 目标验证 | `CityChunkNavigation.unity` 的 `NavMeshSurface` 仅烘焙 44 个 `road_*`、90 个 `access_*` 和 2 个 `bridge_main` 分块网格；Unity 6000.3.24f1 批处理保存 NavMesh 数据并以代码 0 退出，`v3-navigation-validation.json` 为 `status=pass`、`PathComplete`、西岸至东岸 24 m。独立批处理重开场景后 `v3-navigation-reopen-validation.json` 再次为 `PathComplete`、24 m，资产引用有效；`editor-v3-navigation-evidence.txt` 摘录两次日志。最初只选 `road_*` 和桥的试跑漏掉接入道路，已修正并复验，未作为最终成果。文档检查为 34 Markdown/40 链接/5 JSON/13 工单零错误 | 只本地提交；008 仍需室内导航/Agent、其它接缝、性能及 007 联调 |
+| 2026-09-25 | root | 认领 v3 NavMeshAgent 运行验收 | 工作树干净，上一阶段本地提交 `444b296`；独立导航场景重载后路径为 `PathComplete`、24 m，但未验证 Agent 在 Play Mode 实际运动。本轮修改范围见文件头 | 建立独立运行夹具，使 Agent 从西岸经桥面到东岸并记录位置、耗时与碰撞/停滞证据 |
+| 2026-09-25 | root | 完成 v3 NavMeshAgent Play Mode 跨桥运行 | `CityChunkAgentWalk.unity` 从保存的导航场景派生，目标 Unity 6000.3.24f1 场景构建和无图形 Play Mode 进程均以代码 0 退出。最终复测 `v3-agent-walk-validation.json` 为 `status=pass`、`PathComplete`、8.21 秒走到东岸；461 个位移帧，其中桥段 163 个位移帧均由 `bridge_main` MeshCollider 支撑，经过 x=256 m 桥中心，0 帧离开 NavMesh，最大单帧位移 0.0726 m。`editor-v3-agent-evidence.txt` 摘录日志；两次运行均通过，无图形模式帧数变化不用于衡量性能 | 同步说明、总规划及索引，验证文档与提交；后续室内导航、其它接缝、性能、切线材质和 007 联调仍待做 |
 
 ## 交接说明
 

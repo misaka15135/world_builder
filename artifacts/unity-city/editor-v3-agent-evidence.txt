@@ -1,0 +1,10 @@
+Unity 6000.3.24f1 batch scene build, WorldBuilderCityV3NavBuilder.BuildAgentWalkValidation:
+WorldBuilder city v3 agent walk scene saved: Assets/WorldBuilderCity/v3/CityChunkAgentWalk.unity
+Exiting without the bug reporter. Application will terminate with return code 0
+
+Separate Unity batch Play Mode, WorldBuilderCityV3NavBuilder.RunAgentWalkValidation:
+WorldBuilder city v3 agent walk: pass (agent_crossed_bridge_on_saved_navmesh) at (267.80, 2.02, 271.00)
+PowerShell process wait: UNITY_EXIT_CODE=0
+
+Structured result: artifacts/unity-city/v3-agent-walk-validation.json.
+Full local logs: editor-v3-agent-scene-build.log and editor-v3-agent-walk.log.

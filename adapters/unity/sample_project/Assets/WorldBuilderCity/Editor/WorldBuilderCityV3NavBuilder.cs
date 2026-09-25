@@ -52,6 +52,45 @@ public static class WorldBuilderCityV3NavBuilder
 
     private const string Base = "Assets/WorldBuilderCity/v3/";
 
+    [MenuItem("World Builder/Build Chunked City Agent Walk v3")]
+    public static void BuildAgentWalkValidation()
+    {
+        EditorSceneManager.OpenScene(Base + "CityChunkNavigation.unity", OpenSceneMode.Single);
+        var surface = UnityEngine.Object.FindFirstObjectByType<NavMeshSurface>();
+        if (surface == null || surface.navMeshData == null)
+            throw new InvalidOperationException("saved city navigation scene is missing NavMeshData");
+        var manifest = JsonUtility.FromJson<Manifest>(File.ReadAllText(Path.Combine(
+            Application.dataPath, "WorldBuilderCity", "v3", "manifest.json")));
+        if (manifest == null || manifest.adapter_version != "0.1.0-city.3")
+            throw new InvalidOperationException("city v3 agent manifest mismatch");
+
+        var player = new GameObject("Cross-bridge NavMeshAgent validation");
+        player.transform.position = new Vector3(244f, 2f, 271f);
+        var agent = player.AddComponent<NavMeshAgent>();
+        agent.enabled = false;
+        agent.agentTypeID = surface.agentTypeID;
+        agent.radius = 0.5f;
+        agent.height = 2f;
+        agent.speed = 3f;
+        agent.acceleration = 8f;
+        agent.angularSpeed = 360f;
+        agent.stoppingDistance = 0.12f;
+        var validator = player.AddComponent<WorldBuilderCityV3AgentWalkValidator>();
+        validator.sourceWorldId = manifest.source_world_id;
+        validator.sourceRevisionId = manifest.source_revision_id;
+
+        var path = Base + "CityChunkAgentWalk.unity";
+        EditorSceneManager.SaveScene(SceneManager.GetActiveScene(), path);
+        Debug.Log("WorldBuilder city v3 agent walk scene saved: " + path);
+    }
+
+    [MenuItem("World Builder/Run Chunked City Agent Walk v3")]
+    public static void RunAgentWalkValidation()
+    {
+        EditorSceneManager.OpenScene(Base + "CityChunkAgentWalk.unity", OpenSceneMode.Single);
+        EditorApplication.isPlaying = true;
+    }
+
     [MenuItem("World Builder/Validate Saved Chunked City Navigation v3")]
     public static void ValidateSaved()
     {
