@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public static class WorldBuilderCityV3Builder
 {
@@ -51,6 +52,38 @@ public static class WorldBuilderCityV3Builder
     }
 
     private const string Base = "Assets/WorldBuilderCity/v3/";
+
+    [MenuItem("World Builder/Build Chunked City Bridge Walk v3")]
+    public static void BuildBridgeWalkValidation()
+    {
+        Build();
+        var manifest = JsonUtility.FromJson<Manifest>(File.ReadAllText(
+            Path.Combine(Application.dataPath, "WorldBuilderCity", "v3", "manifest.json")));
+        var player = new GameObject("Chunk seam validation player");
+        player.transform.position = new Vector3(244f, 2.1f, 271f);
+        var controller = player.AddComponent<CharacterController>();
+        controller.height = 1.8f;
+        controller.radius = 0.25f;
+        controller.center = new Vector3(0f, 0.9f, 0f);
+        controller.stepOffset = 0.4f;
+        controller.slopeLimit = 60f;
+        var validator = player.AddComponent<WorldBuilderCityBridgeWalkValidator>();
+        validator.sourceWorldId = manifest.source_world_id;
+        validator.sourceRevisionId = manifest.source_revision_id;
+
+        var camera = new GameObject("Chunk seam first-person camera").AddComponent<Camera>();
+        camera.transform.SetParent(player.transform, false);
+        camera.transform.localPosition = new Vector3(0f, 1.6f, 0f);
+        camera.transform.localRotation = Quaternion.Euler(0f, 90f, 0f);
+        camera.tag = "MainCamera";
+        camera.clearFlags = CameraClearFlags.Skybox;
+        var overview = GameObject.Find("Overview Camera");
+        if (overview != null) overview.GetComponent<Camera>().enabled = false;
+
+        var path = Base + "CityChunkBridgeWalk.unity";
+        EditorSceneManager.SaveScene(SceneManager.GetActiveScene(), path);
+        Debug.Log("WorldBuilder city chunk seam walk scene saved: " + path);
+    }
 
     [MenuItem("World Builder/Build Chunked City v3")]
     public static void Build()

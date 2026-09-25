@@ -7,6 +7,7 @@
 - 修改范围：2026-09-25 本阶段由 root 实施五栋已生成室内建筑的 Unity 派生构件与通行验收，涉及 `src/world_builder/adapters/unity/city.py`、`tests/test_unity_city.py`、`adapters/unity/sample_project/Assets/WorldBuilderCity/`、`artifacts/unity-city/`、`docs/contracts/unity-city-v0.1.md` 及 008/000/索引。源 WIR、固定手工样件及 WIR 0.1 Schema 不改；导出版本另起 v2，不覆盖 v1 证据。
 - 修改范围：2026-09-25 后续由 root 对其余四栋生成室内建筑逐栋做 Unity Play Mode 通行验收；修改 `WorldBuilderCityV2Builder.cs`、`WorldBuilderCityInteriorWalkValidator.cs`、新场景/运行证据、008/000/索引及 Unity 城邦说明。v2 GLB 与首栋已有证据保持不变。
 - 修改范围：2026-09-25 root 继续分块子阶段；新增 v3 网格切分与多 GLB 清单、对应 Unity 静态导入和验证，修改 `city.py`、CLI、测试、`WorldBuilderCity/Editor/`、独立 v3 产物、说明及 008/000/索引。v1/v2 导出与目标证据不覆盖；导航和 007 联调另行验收。
+- 修改范围：2026-09-25 root 继续 v3 运行时接缝验收；修改 `WorldBuilderCityV3Builder.cs` 与既有 `WorldBuilderCityBridgeWalkValidator.cs` 的场景专属证据路径，新增 v3 跨桥 Play Mode 场景及运行证据、说明与 008/000/索引。保留 v1/v2 和 v3 静态导出证据；导航与 007 联调仍独立验收。
 
 ## 目标与范围
 
@@ -40,7 +41,7 @@
 - [x] ~~逐栋验证其余四栋从入口道路经东门和楼梯到二层房间的连续路线。~~
 - [ ] 完成分块、法线、导航及 007 同修订联调。
 
-其中分块与普通材质逐面法线的静态目标导入已由 v3 验证；接缝通行、切线材质、导航、性能及 007 联调尚未完成。
+其中分块与普通材质逐面法线的静态目标导入已由 v3 验证；桥面 x=256 m 的一处接缝已 Play Mode 实走通过。其它接缝、切线材质、导航、性能及 007 联调尚未完成。
 
 ## 验收标准
 
@@ -88,6 +89,9 @@
 | 2026-09-25 | root | 完成 v3 源端切分与回归 | 同一修订按 128 m 水平网格裁切盒体，独立输出 16 个 GLB、420 构件，每块有 SHA-256 与源 ID；对象级报告仍为 94 保留/107 近似/93 省略。`pytest tests/test_unity_city.py` 4 passed；测试对照 v2 验证切分体积覆盖、无越界及构件对角线小于 182 m | 在 Unity 6000.3.24f1 实际导入 v3 并核对碰撞、方向和长三角形警告 |
 | 2026-09-25 | root | 完成 v3 分块 Unity 静态导入与几何核对 | `v3-target-validation.json` 为 16/16 块、420/420 源映射和 MeshCollider、法线/绕序、桥边界均 pass，最大三角形边长 181.0193 m；批处理退出码 0，同次构建日志无长三角形警告。`CityChunks.unity`、16 个项目内 GLB 和重建说明已保存；此证据不覆盖运行时接缝通行或 NavMesh | 跑完整回归与文档检查，再做分块接缝 Play Mode、导航和 007 同修订联调 |
 | 2026-09-25 | root | 完成 v3 全量回归与文档检查 | `python -m pytest -q --basetemp artifacts/pytest-unity-city-v3-full` 为 72 passed；`python tools/check_project_docs.py` 为 34 Markdown/40 链接/5 JSON/13 工单、零错误。导出器、CLI、目标场景、报告与说明均已形成独立 v3 产物 | 只做本地提交；008 继续 in_progress，后续运行时接缝/导航/007 联调待做 |
+| 2026-09-25 | root | 认领 v3 桥面分块接缝实走 | 本地提交 `f0ec14b` 后工作树干净、相对 `origin/main` 领先 1；桥的东向 252—260 m 范围在 x=256 m 分块边界被裁切，既有 v1 桥梁控制器路线可直接验证该边界 | 构建独立 v3 Play Mode 场景，从西岸道路连续通过桥面接缝到东岸道路并留证；本轮只本地提交 |
+| 2026-09-25 | root | 完成 v3 一处桥面分块接缝 Play Mode 实走 | `CityChunkBridgeWalk.unity` 批处理重建退出码 0，`v3-seam-target-validation.json` 再次 16/16 块、420/420 构件/碰撞通过。图形 Play Mode 两次从西岸道路连续经过 x=256 m 接缝到东岸道路，均为 3/3 检查点、零侧向碰撞；复测 `v3-seam-walk-validation.json` 为 `status=pass`、4465 接地帧/1453 桥段接地帧、同次 PNG。首次运行证据独立保存于 `artifacts/unity-city/v3-seam/`，v1 历史文件已恢复 | 仅该接缝已验；其它接缝、导航、性能、切线材质及 007 同修订联调继续待做 |
+| 2026-09-25 | root | 核对接缝证据与文档 | 清单确认 `bridge_main` 在 `c01_02` 与 `c02_02` 两块的 x=256 m 交界，脚本核对 v3 `status=pass`、3/3 检查点、零侧向碰撞、截图存在且 v1 JSON 仍是 `CityBridgeWalk`；`python tools/check_project_docs.py` 为 34 Markdown/40 链接/5 JSON/13 工单零错误。Python 导出器本轮未改，沿用前阶段 72 passed | 只做本地提交；008 保持 in_progress |
 
 ## 交接说明
 

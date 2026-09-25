@@ -58,4 +58,8 @@ python tools/export_unity_city.py --source artifacts/benchmark-city-v1/city-firs
 
 将新运行的 `manifest.json` 和 `chunks/` 复制到 Unity 项目 `Assets/WorldBuilderCity/v3/`，执行菜单 `World Builder > Build Chunked City v3`，或使用批处理 `-executeMethod WorldBuilderCityV3Builder.Build`。导入器核对每个 GLB 的 SHA-256、源 ID、构件数量、法线与三角面绕序、桥合并边界、最大三角形边长，并生成 `CityChunks.unity`。`WORLD_BUILDER_UNITY_CITY_V3_VALIDATION` 可指定验证 JSON 绝对路径。GLB 使用逐面法线、固定颜色 PBR 材质；没有法线贴图和切线属性，不声称验证带切线材质的反射处理。
 
-本机批处理在 Unity `6000.3.24f1` 正常以代码 0 退出；`artifacts/unity-city/v3-target-validation.json` 记录 16/16 块、420/420 源映射和 MeshCollider、法线/绕序、桥方向与边界均通过，目标网格最大三角形边长 181.0193 m。`editor-v3-build-evidence.txt` 摘录本次日志，未出现先前的超长三角形警告。源端测试还对照 v2 验证各盒体切分后体积完整、坐标不越界。v3 目前只做静态目标导入验收；跨分块接缝的 Play Mode 漫游、导航、性能和 007 同修订查看器联调仍待执行，不能由静态检查推断通过。
+本机批处理在 Unity `6000.3.24f1` 正常以代码 0 退出；`artifacts/unity-city/v3-target-validation.json` 记录 16/16 块、420/420 源映射和 MeshCollider、法线/绕序、桥方向与边界均通过，目标网格最大三角形边长 181.0193 m。`editor-v3-build-evidence.txt` 摘录本次日志，未出现先前的超长三角形警告。源端测试还对照 v2 验证各盒体切分后体积完整、坐标不越界。静态检查本身不证明接缝通行；下述 Play Mode 路线单独验证这一点。
+
+2026-09-25 追加独立 `CityChunkBridgeWalk.unity` 运行场景。可通过菜单 `World Builder > Build Chunked City Bridge Walk v3` 或批处理方法 `WorldBuilderCityV3Builder.BuildBridgeWalkValidation` 重建；`v3-seam-target-validation.json` 再次核对 16/16 块、420/420 构件/碰撞。CharacterController 从西岸道路 `(244,2.1,271)` 出发，沿桥面经过 x=256 m 的两个 GLB 分块接缝，抵达东岸道路。此路线使用源修订的桥梁 `bridge_main`，其边界为 x=252—260 m；桥中心检查点位于切分面附近。
+
+在 Unity 图形 Play Mode 的两次独立运行中，控制器均通过西岸道路、桥中心和东岸道路 3/3 检查点，侧向碰撞帧为 0。首次运行文件保存在 `artifacts/unity-city/v3-seam/`（4998 接地帧、1562 桥段接地帧）；首次启动沿用旧默认输出路径，故先保存该次证据并恢复 v1 历史文件。刷新脚本后复测写入独立 `v3-seam-walk-validation.json` 及同名 PNG，结果 `status=pass`，4465 接地帧、1453 桥段接地帧，东岸终点约 `(267.84,2.08,271)`。新夹具按场景名选择默认输出路径，不覆盖 v1 证据。该路线证明一处桥面分块接缝在此控制器设置下可连续通过；其它接缝、NavMesh、性能及 007 联调仍待验证。

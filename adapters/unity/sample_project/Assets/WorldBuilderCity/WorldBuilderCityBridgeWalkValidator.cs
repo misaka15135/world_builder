@@ -56,7 +56,9 @@ public sealed class WorldBuilderCityBridgeWalkValidator : MonoBehaviour
         outputPath = Environment.GetEnvironmentVariable("WORLD_BUILDER_UNITY_CITY_WALK_VALIDATION");
         if (string.IsNullOrEmpty(outputPath))
             outputPath = Path.GetFullPath(Path.Combine(Application.dataPath,
-                "../../../../artifacts/unity-city/bridge-walk-validation.json"));
+                gameObject.scene.name == "CityChunkBridgeWalk"
+                    ? "../../../../artifacts/unity-city/v3-seam-walk-validation.json"
+                    : "../../../../artifacts/unity-city/bridge-walk-validation.json"));
         result = new Result {
             unity_version = Application.unityVersion,
             source_world_id = sourceWorldId,

@@ -1,0 +1,8 @@
+Unity 6000.3.24f1 chunked bridge walk scene build, 2026-09-25.
+Command: Unity.exe -batchmode -nographics -quit -projectPath adapters/unity/sample_project -executeMethod WorldBuilderCityV3Builder.BuildBridgeWalkValidation -logFile artifacts/unity-city/editor-v3-seam-build.log
+Target validation: artifacts/unity-city/v3-seam-target-validation.json
+Log excerpt:
+WorldBuilder city v3 imported: 16 chunks, 420 pieces, max triangle edge 181.0193
+WorldBuilder city chunk seam walk scene saved: Assets/WorldBuilderCity/v3/CityChunkBridgeWalk.unity
+Exiting without the bug reporter. Application will terminate with return code 0
+The separate Play Mode result is artifacts/unity-city/v3-seam-walk-validation.json with a screenshot at the same basename.
