@@ -309,7 +309,9 @@ def plan_stage(spec: PilotSpec, stage: str, records: list[dict]) -> tuple[list[d
                 block_x0, block_x1 = 1.0, void["min"][0] - 1.0
                 mid = depth / 2
                 uses = PROGRAMME_ROOMS.get(programme, PROGRAMME_ROOMS["residence"])
-                for k, (n0, n1) in enumerate(((1.0, mid), (mid, depth - 1.0))):
+                # The two rooms leave a one-metre slot between them for the
+                # declared partition, so the wall occupies neither room.
+                for k, (n0, n1) in enumerate(((1.0, mid - 1.0), (mid, depth - 1.0))):
                     use = uses[(floor + k) % len(uses)]
                     room_id = f"room_{i:03d}_{floor}_{k}"
                     room = entity(room_id, "room", floor_id, [block_x0, n0, 0.2],
@@ -327,6 +329,14 @@ def plan_stage(spec: PilotSpec, stage: str, records: list[dict]) -> tuple[list[d
                         additions.append(entity(f"furniture_{i:03d}_{floor}_{k}_{f}", "furniture", room_id,
                                                 [round(ox, 6), round(on, 6), 0.0], piece_size,
                                                 parent_origin=room["bounds"]["min"], use=item))
+                # The wall between the two rooms is source data, not an adapter
+                # invention, so every target derives the same circulation. Its
+                # opening carries the doorway the adapter has to leave clear.
+                partition = entity(f"partition_{i:03d}_{floor}", "partition", floor_id,
+                                   [block_x0, mid - 1.0, 0.2], [block_x1 - block_x0, 1.0, 2.6],
+                                   parent_origin=storey["bounds"]["min"],
+                                   opening={"side": "west", "width_m": 2.0, "height_m": 2.0})
+                additions.append(partition)
             if storeys >= 2:
                 run = 4 if spec.layout_profile == "compact" else 8
                 stair = entity(f"stair_{i:03d}", "stair", building["id"], [void["min"][0], 3, 0.2], [3, run + 2, 5.6], parent_origin=origin)

@@ -146,3 +146,23 @@ def test_outlying_districts_sit_on_a_looser_grid():
     entrances = [r for r in records if r.get("relation_type") == "entrance"]
     assert len(entrances) == 80
     assert not [c for c in check_geometry(records) if c["rule"] == "pilot.network_connected" and c["state"] != "pass"]
+
+
+def test_city_rooms_are_separated_by_declared_partitions():
+    spec = CitySpec(seed=101)
+    records = initial_records(spec)
+    for stage in STAGES:
+        additions, _ = plan_stage(spec, stage, records)
+        records.extend(additions)
+        next(r for r in records if r["record_type"] == "world_spec")["extensions"]["stage"] = stage
+    storeys = [r for r in records if r.get("kind") == "storey"]
+    walls = [r for r in records if r.get("kind") == "partition"]
+    rooms = [r for r in records if r.get("kind") == "room"]
+    assert len(walls) == len(storeys), "every storey declares its dividing wall"
+    assert len(rooms) == 2 * len(storeys)
+    for wall in walls:
+        opening = wall["attributes"]["opening"]
+        assert opening["side"] == "west" and opening["width_m"] > 0 and opening["height_m"] > 0
+    checks = check_geometry(records)
+    assert not [c for c in checks if c["rule"].startswith("city.partition") and c["state"] != "pass"]
+    assert not [c for c in checks if c["rule"] == "city.room_circulation" and c["state"] != "pass"]

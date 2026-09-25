@@ -17,7 +17,7 @@ from pathlib import Path
 
 from world_builder.wir.validator import validate_package
 
-ADAPTER_VERSION = "0.1.0-city.1"
+ADAPTER_VERSION = "0.1.0-city.2"
 PROFILE_ID = "profile_minecraft_city_12111"
 TARGET_VERSION = "1.21.11+worldedit-7.3.19+schem-v3"
 CHUNK_SIZE_M = 128
@@ -120,34 +120,30 @@ def _roof_boxes(name: str, x0: float, x1: float, n0: float, n1: float, z1: float
 
 
 def _partition_boxes(building: dict, entities: dict, storeys: list[dict]) -> list[dict]:
-    """Internal walls that show the room division, each with a two-block doorway.
+    """Walls the source declares, each with the opening it declares.
 
-    The wall sits on one whole block just inside the southern room so that the
-    quantised result is a single block thick; the opening is snapped to whole
-    blocks above the floor slab for the same reason as the east entrance.
+    The wall itself is already one block thick in the source; the opening is
+    snapped to whole blocks above the floor slab for the same reason as the
+    building's east entrance, otherwise a 2 m doorway can quantise shut.
     """
-    g = building["geometry"]
     block = "minecraft:smooth_stone"
     parts: list[dict] = []
     for storey in storeys:
-        rooms = sorted((r for r in entities.values()
-                        if r["parent_id"] == storey["id"] and r["kind"] == "room"), key=lambda r: r["id"])
-        if len(rooms) < 2:
-            continue
-        x0 = min(r["bounds"]["min"][0] for r in rooms)
-        x1 = max(r["bounds"]["max"][0] for r in rooms)
-        z0 = min(r["bounds"]["min"][2] for r in rooms)
-        z1 = max(r["bounds"]["max"][2] for r in rooms)
-        boundary = max(r["bounds"]["min"][1] for r in rooms)
-        door_w = 2.0
-        opening_low = math.ceil(z0)
-        opening_high = opening_low + 2
-        if not (x0 + door_w < x1 and z1 > opening_low):
-            continue
-        nb0, nb1 = boundary - 1.0, boundary
-        parts.append(_box(f"{building['id']}_{storey['id']}_partition", x0 + door_w, x1, nb0, nb1, z0, z1, block))
-        if z1 > opening_high:
-            parts.append(_box(f"{building['id']}_{storey['id']}_partition_head", x0, x0 + door_w, nb0, nb1, opening_high, z1, block))
+        walls = sorted((r for r in entities.values()
+                        if r["kind"] == "partition" and r["parent_id"] == storey["id"]), key=lambda r: r["id"])
+        for wall in walls:
+            opening = (wall.get("attributes") or {}).get("opening")
+            if not isinstance(opening, dict) or opening.get("side") != "west":
+                raise CityExportError("target.partition_opening", wall["id"])
+            (x0, n0, z0), (x1, n1, z1) = wall["bounds"]["min"], wall["bounds"]["max"]
+            door_w = float(opening["width_m"])
+            opening_low = math.ceil(z0)
+            opening_high = opening_low + max(2, int(opening["height_m"]))
+            if not (x0 + door_w < x1 and z1 > opening_low):
+                raise CityExportError("target.partition_geometry", wall["id"])
+            parts.append(_box(wall["id"], x0 + door_w, x1, n0, n1, z0, z1, block))
+            if z1 > opening_high:
+                parts.append(_box(wall["id"] + "_head", x0, x0 + door_w, n0, n1, opening_high, z1, block))
     return parts
 
 
@@ -383,7 +379,7 @@ def export_city(package: dict, output_dir: str | Path, *, include_interiors: boo
         elif kind == "river":
             classification, target, message = "approximated", "blocks:river_water_proxy", "static water volume; no fluid simulation"
         elif include_interiors and record["id"] in represented:
-            classification, target, message = "approximated", "blocks:" + record["id"] + "_*", "source furniture or stair volume quantised to whole blocks"
+            classification, target, message = "approximated", "blocks:" + record["id"] + "_*", "source furniture, partition or stair volume quantised to whole blocks"
         else:
             classification, target, message = "omitted", None, "source entity retained in the WIR package but not placed as blocks"
         items.append({"source_id": record["id"], "target_id": target,

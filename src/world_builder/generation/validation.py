@@ -150,4 +150,38 @@ def check_geometry(records: list[dict]) -> list[dict]:
         for a, b in combinations(siblings, 2):
             check("city.room_overlap", [a["id"], b["id"]],
                   not overlaps(a["bounds"], b["bounds"], (0, 1)), "rooms on one storey do not overlap")
+    for wall in kind("partition"):
+        storey = entities[wall["parent_id"]]
+        siblings = sorted((r for r in rooms if r["parent_id"] == storey["id"]), key=lambda r: r["id"])
+        check("city.partition_pair", [wall["id"], storey["id"]], len(siblings) == 2,
+              "a partition divides exactly two rooms")
+        if len(siblings) == 2:
+            check("city.partition_room_bounds", [wall["id"]] + [r["id"] for r in siblings],
+                  all(touches(wall["bounds"], r["bounds"]) for r in siblings)
+                  and not any(overlaps(wall["bounds"], r["bounds"], (0, 1)) for r in siblings),
+                  "the partition touches both rooms without occupying either")
+        opening = (wall.get("attributes") or {}).get("opening")
+        span_x = wall["bounds"]["max"][0] - wall["bounds"]["min"][0]
+        span_z = wall["bounds"]["max"][2] - wall["bounds"]["min"][2]
+        check("city.partition_opening", [wall["id"]],
+              isinstance(opening, dict) and 0 < opening.get("width_m", 0) < span_x
+              and 0 < opening.get("height_m", 0) < span_z,
+              "the declared opening fits inside its partition")
+    if settings.get("region_size_m") == 512:
+        # The 128 m pilot predates declared partitions and keeps its own plan,
+        # so this circulation rule is scoped to the city contract.
+        for room in rooms:
+            storey = entities[room["parent_id"]]
+            building = entities[storey["parent_id"]]
+            walls = [w for w in kind("partition") if w["parent_id"] == storey["id"]]
+            void = building["geometry"]["stair_void_local_m"]
+            base = building["bounds"]["min"]
+            void_box = {"min": [base[0] + void["min"][0], base[1] + void["min"][1], base[2] + 3],
+                        "max": [base[0] + void["max"][0], base[1] + void["max"][1], base[2] + 3.2]}
+            # Adjacency, not a path solve: the room must touch a declared
+            # partition or the stair void, which keeps the storey's
+            # circulation open.
+            check("city.room_circulation", [room["id"], building["id"]],
+                  any(touches(room["bounds"], w["bounds"]) for w in walls) or touches(room["bounds"], void_box),
+                  "room touches a declared partition or the stair void")
     return results

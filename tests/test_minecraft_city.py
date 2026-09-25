@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from world_builder.adapters.minecraft.city import CityExportError, _roof_boxes, export_city
+from world_builder.adapters.minecraft.city import CityExportError, _partition_boxes, _roof_boxes, export_city
 from world_builder.storage.worldpkg import read_worldpkg
 
 SOURCE = Path(__file__).resolve().parents[1] / "artifacts/benchmark-city-v1/city-first.worldpkg"
@@ -199,7 +199,7 @@ def test_export_does_not_modify_the_source_package(city, tmp_path: Path) -> None
     assert package == before
 
 
-def test_multi_storey_city_places_room_partitions(tmp_path: Path) -> None:
+def test_multi_storey_city_places_slabs_and_no_invented_partitions(tmp_path: Path) -> None:
     package, _ = read_worldpkg(MULTI_STOREY)
     output = tmp_path / "v2"
     export_city(package, output, include_interiors=True)
@@ -208,7 +208,10 @@ def test_multi_storey_city_places_room_partitions(tmp_path: Path) -> None:
     buildings = [r for r in package["records"] if r.get("kind") == "building"]
     assert len(buildings) == 80
     assert len({r["attributes"]["storeys"] for r in buildings}) >= 2, "storey counts should vary"
-    assert any("partition" in box["source_id"] for box in boxes), "room divisions should reach the blocks"
+    assert any("_floor" in box["source_id"] for box in boxes), "multi-storey slabs should reach the blocks"
+    # This revision predates declared partitions, so the adapter must not invent
+    # walls the source never described.
+    assert not any("partition" in box["source_id"] for box in boxes)
     for building in buildings:
         (bx0, bn0, _), (bx1, bn1, _) = building["bounds"]["min"], building["bounds"]["max"]
         own = [box for box in boxes if box["source_id"].startswith(building["id"] + "_")]
@@ -216,6 +219,24 @@ def test_multi_storey_city_places_room_partitions(tmp_path: Path) -> None:
         for box in own:
             assert bx0 - 1e-6 <= box["x0"] and box["x1"] <= bx1 + 1e-6, (building["id"], box["source_id"])
             assert -bn1 - 1e-6 <= box["z0"] and box["z1"] <= -bn0 + 1e-6, (building["id"], box["source_id"])
+
+
+def test_partitions_follow_the_source_declaration() -> None:
+    storey = {"id": "storey_x", "kind": "storey", "parent_id": "b",
+              "bounds": {"min": [0, 0, 0], "max": [16, 16, 3]}}
+    wall = {"id": "partition_x", "kind": "partition", "parent_id": "storey_x",
+            "bounds": {"min": [1, 7, 2.2], "max": [11, 8, 4.8]},
+            "attributes": {"opening": {"side": "west", "width_m": 2.0, "height_m": 2.0}}}
+    entities = {storey["id"]: storey, wall["id"]: wall}
+    parts = _partition_boxes({"id": "b"}, entities, [storey])
+    assert parts, "a declared partition must reach the blocks"
+    main = next(part for part in parts if part["source_id"] == "partition_x")
+    assert main["x0"] == 3.0, "the declared two-metre opening stays clear on the west end"
+    assert main["x1"] == 11.0 and main["z0"] == -8.0 and main["z1"] == -7.0
+    broken = copy.deepcopy(entities)
+    broken["partition_x"]["attributes"]["opening"]["side"] = "north"
+    with pytest.raises(CityExportError):
+        _partition_boxes({"id": "b"}, broken, [storey])
 
 
 def test_roof_style_drives_the_silhouette() -> None:
