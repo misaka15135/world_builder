@@ -39,6 +39,19 @@ FURNITURE_SIZES_M = {
     "long_table": [2.2, 0.9, 0.8], "chest": [0.9, 0.6, 0.7],
 }
 
+# Districts differ before individual buildings do: the plan below decides how
+# wide, how tall and what kind of programme a district's buildings draw from,
+# so the residential edge, the market band and the civic centre do not look
+# alike. Layout regularity, road width and per-era style are still open work.
+DISTRICT_PLAN = {
+    "residential": {"width_m": (10, 12, 14), "depth_m": (14, 16), "storeys": (1, 2),
+                    "programmes": ("residence", "residence", "workshop")},
+    "market": {"width_m": (14, 16), "depth_m": (14, 16, 18), "storeys": (2, 2),
+               "programmes": ("shop", "shop", "workshop", "inn")},
+    "civic": {"width_m": (16, 18, 18), "depth_m": (16, 18, 18), "storeys": (2, 3),
+              "programmes": ("library", "inn", "workshop")},
+}
+
 
 def entity(entity_id: str, kind: str, parent: str | None, origin: list,
            size: list, parent_origin=(0, 0, 0), **attributes) -> dict:
@@ -178,16 +191,16 @@ def plan_stage(spec: PilotSpec, stage: str, records: list[dict]) -> tuple[list[d
                 additions.append(lot)
     elif stage == "buildings":
         lots = sorted((r for r in records if r.get("kind") == "parcel"), key=lambda r: r["id"])
+        district_use = {r["id"]: r["attributes"].get("use") for r in records if r.get("kind") == "district"}
         for i, lot in enumerate(lots):
             rng = random.Random(int(digest([spec.seed, lot["id"], spec.generator_version])[7:23], 16))
             lot_origin = lot["bounds"]["min"]
             if size == 512:
-                # Per-building envelope and programme: a 32 m parcel takes a
-                # building of 12-18 m by 14-18 m with one to three storeys.
-                width = rng.choice((12, 14, 16, 16, 18))
-                depth = rng.choice((14, 16, 16, 18))
-                storeys = rng.choice((1, 2, 2, 2, 3))
-                programme = rng.choice(PROGRAMMES)
+                plan = DISTRICT_PLAN.get(district_use.get(lot["parent_id"]), DISTRICT_PLAN["residential"])
+                width = rng.choice(plan["width_m"])
+                depth = rng.choice(plan["depth_m"])
+                storeys = rng.choice(plan["storeys"])
+                programme = rng.choice(plan["programmes"])
                 origin = [(32 - width) / 2, (32 - depth) / 2, 2]
                 box = [width, depth, storeys * 3 + 0.4]
             else:
@@ -262,9 +275,16 @@ def plan_stage(spec: PilotSpec, stage: str, records: list[dict]) -> tuple[list[d
                                   [round(block_x1 - block_x0, 6), round(n1 - n0, 6), 2.6],
                                   parent_origin=storey["bounds"]["min"], use=use)
                     additions.append(room)
+                    room_w = round(block_x1 - block_x0, 6)
+                    room_d = round(n1 - n0, 6)
                     for f, item in enumerate(PROGRAMME_FURNITURE[use]):
+                        piece_size = list(FURNITURE_SIZES_M[item])
+                        # Keep every piece inside its room: narrow residential
+                        # rooms cannot take the default wall offset.
+                        ox = min(1.0, max(0.2, room_w - piece_size[0] - 0.2))
+                        on = min(1.0 + 2.0 * f, max(0.2, room_d - piece_size[1] - 0.2))
                         additions.append(entity(f"furniture_{i:03d}_{floor}_{k}_{f}", "furniture", room_id,
-                                                [1.0 + 2.0 * f, 1.0, 0.0], list(FURNITURE_SIZES_M[item]),
+                                                [round(ox, 6), round(on, 6), 0.0], piece_size,
                                                 parent_origin=room["bounds"]["min"], use=item))
             if storeys >= 2:
                 run = 4 if spec.layout_profile == "compact" else 8

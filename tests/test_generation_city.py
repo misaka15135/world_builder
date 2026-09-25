@@ -16,7 +16,7 @@ def test_city_contract_is_distinct_from_historical_pilot():
     city = CitySpec(seed=101)
     assert pilot.generator_version == "0.1.0-pilot.3"
     assert pilot.to_dict().get("region_size_m") is None
-    assert city.generator_version == "0.1.0-city.2"
+    assert city.generator_version == "0.1.0-city.3"
     assert city.interior_count == 80
     assert city.world_id != pilot.world_id
     with pytest.raises(ValueError, match="008/009"):
@@ -51,7 +51,8 @@ def test_city_batch_registrations_are_fixed_before_results():
     history = json.loads((root / "city_cases_v1.json").read_text(encoding="utf-8"))
     assert history["generator_version"] == "0.1.0-city.1"
     assert all(case["spec"]["interior_count"] == 5 for case in history["cases"])
-    current = json.loads((root / "city_cases_v2.json").read_text(encoding="utf-8"))
+    assert json.loads((root / "city_cases_v2.json").read_text(encoding="utf-8"))["generator_version"] == "0.1.0-city.2"
+    current = json.loads((root / "city_cases_v3.json").read_text(encoding="utf-8"))
     assert current["generator_version"] == CitySpec().generator_version
     assert len(current["cases"]) == 30
     for scenario, seed_start in (("riverside", 101), ("hillside", 201), ("dense", 301)):
@@ -79,3 +80,27 @@ def test_city_buildings_vary_and_carry_room_programmes():
     assert len(furniture) >= len(rooms)
     assert all(r["attributes"].get("use") for r in furniture)
     assert not [c for c in check_geometry(records) if c["severity"] == "hard" and c["state"] != "pass"]
+
+
+def test_city_districts_drive_building_scale_and_programme():
+    spec = CitySpec(seed=101)
+    records = initial_records(spec)
+    for stage in STAGES:
+        additions, _ = plan_stage(spec, stage, records)
+        records.extend(additions)
+        next(r for r in records if r["record_type"] == "world_spec")["extensions"]["stage"] = stage
+    districts = {r["id"]: r["attributes"]["use"] for r in records if r.get("kind") == "district"}
+    parcels = {r["id"]: r["parent_id"] for r in records if r.get("kind") == "parcel"}
+    heights: dict[str, list] = {}
+    programmes: dict[str, list] = {}
+    for building in (r for r in records if r.get("kind") == "building"):
+        use = districts[parcels[building["parent_id"]]]
+        heights.setdefault(use, []).append(building["geometry"]["size_m"][2])
+        programmes.setdefault(use, []).append(building["attributes"]["programme"])
+    assert set(heights) == {"residential", "market", "civic"}
+    assert max(heights["residential"]) <= max(heights["civic"]), "the civic band should not be shorter than the edge"
+    mean = lambda values: sum(values) / len(values)
+    assert mean(heights["civic"]) > mean(heights["residential"])
+    assert mean(heights["civic"]) > mean(heights["market"]) > mean(heights["residential"])
+    assert "library" not in programmes["residential"]
+    assert programmes["residential"].count("residence") >= len(programmes["residential"]) // 2
