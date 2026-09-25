@@ -75,6 +75,29 @@ def _box(source_id: str, x0: float, x1: float, n0: float, n1: float, u0: float, 
             "z0": -n1, "z1": -n0, "block": block}
 
 
+def _roof_boxes(name: str, x0: float, x1: float, n0: float, n1: float, z1: float,
+                roof_h: float, style: str, block: str) -> list[dict]:
+    """Stepped roof geometry driven by the declared style and roof height.
+
+    A flat or very thin roof stays a single slab. A gable narrows along the
+    north axis only, a spire narrows on both horizontal axes, so the three
+    silhouettes read differently from the street. Steps are one block high on
+    purpose: thinner slices would quantise into the same cell and disappear.
+    """
+    if style not in {"gable", "spire"} or roof_h < 1.0:
+        return [_box(name + "_flat_roof_proxy", x0, x1, n0, n1, z1 - roof_h, z1, block)]
+    steps = max(2, min(4, int(round(roof_h))))
+    parts: list[dict] = []
+    for index in range(steps):
+        low = z1 - roof_h + roof_h * index / steps
+        high = z1 - roof_h + roof_h * (index + 1) / steps
+        inset_n = (n1 - n0) * index / (2 * steps)
+        inset_x = (x1 - x0) * index / (2 * steps) if style == "spire" else 0.0
+        parts.append(_box(f"{name}_roof_{index:02}", x0 + inset_x, x1 - inset_x,
+                          n0 + inset_n, n1 - inset_n, low, high, block))
+    return parts
+
+
 def _partition_boxes(building: dict, entities: dict, storeys: list[dict]) -> list[dict]:
     """Internal walls that show the room division, each with a two-block doorway.
 
@@ -173,7 +196,7 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool) -> l
     ])
     if lintel_low < z1 - roof:
         parts.append(_box(name + "_east_door_lintel", x1 - wall, x1, door_n0, door_n1, lintel_low, z1 - roof, shell))
-    parts.append(_box(name + "_flat_roof_proxy", x0, x1, n0, n1, z1 - roof, z1, plank))
+    parts.extend(_roof_boxes(name, x0, x1, n0, n1, z1, roof, g.get("roof_style", "flat"), plank))
     if not with_interior:
         return parts
     children = [r for r in entities.values() if r["parent_id"] == building["id"]]

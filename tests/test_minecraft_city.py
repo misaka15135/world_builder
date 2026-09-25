@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from world_builder.adapters.minecraft.city import CityExportError, export_city
+from world_builder.adapters.minecraft.city import CityExportError, _roof_boxes, export_city
 from world_builder.storage.worldpkg import read_worldpkg
 
 SOURCE = Path(__file__).resolve().parents[1] / "artifacts/benchmark-city-v1/city-first.worldpkg"
@@ -205,3 +205,17 @@ def test_multi_storey_city_places_room_partitions(tmp_path: Path) -> None:
         for box in own:
             assert bx0 - 1e-6 <= box["x0"] and box["x1"] <= bx1 + 1e-6, (building["id"], box["source_id"])
             assert -bn1 - 1e-6 <= box["z0"] and box["z1"] <= -bn0 + 1e-6, (building["id"], box["source_id"])
+
+
+def test_roof_style_drives_the_silhouette() -> None:
+    flat = _roof_boxes("b", 0, 10, 0, 12, 20, 0.4, "flat", "minecraft:oak_planks")
+    assert len(flat) == 1
+    gable = _roof_boxes("b", 0, 10, 0, 12, 20, 1.2, "gable", "minecraft:oak_planks")
+    assert len(gable) == 2
+    assert gable[-1]["z0"] > gable[0]["z0"] and gable[-1]["z1"] < gable[0]["z1"], "a gable narrows along the north axis"
+    assert gable[-1]["x0"] == gable[0]["x0"], "a gable keeps its east-west span"
+    spire = _roof_boxes("b", 0, 10, 0, 12, 20, 3.0, "spire", "minecraft:oak_planks")
+    assert len(spire) == 3
+    assert spire[-1]["x0"] > spire[0]["x0"] and spire[-1]["z0"] > spire[0]["z0"], "a spire narrows on both axes"
+    assert spire[-1]["y1"] == 20 and spire[0]["y0"] == 17, "steps stack from the eaves to the ridge"
+    assert spire[0]["x0"] == 0 and spire[0]["z1"] == 0, "the lowest step still covers the footprint"

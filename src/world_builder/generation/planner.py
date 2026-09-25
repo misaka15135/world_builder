@@ -11,13 +11,15 @@ STAGES = ("terrain", "network", "parcels", "buildings", "interiors")
 # Per-building programmes for the 512 m city. Each programme decides how a
 # storey is divided and what furniture the rooms hold; the shapes stay template
 # driven, so everything below is adapter-side policy, not recovered source data.
-PROGRAMMES = ("residence", "shop", "workshop", "library", "inn")
+PROGRAMMES = ("residence", "shop", "workshop", "library", "inn", "temple", "town_hall")
 PROGRAMME_ROOMS = {
     "residence": ("living_room", "bedroom"),
     "shop": ("shopfront", "stockroom"),
     "workshop": ("workshop", "tool_store"),
     "library": ("reading_room", "book_stack"),
     "inn": ("common_room", "guest_room"),
+    "temple": ("nave", "vestry"),
+    "town_hall": ("council_chamber", "records_room"),
 }
 PROGRAMME_FURNITURE = {
     "living_room": ("hearth", "bench"),
@@ -30,6 +32,10 @@ PROGRAMME_FURNITURE = {
     "book_stack": ("shelf", "shelf"),
     "common_room": ("long_table", "bench"),
     "guest_room": ("bed", "chest"),
+    "nave": ("altar", "pew"),
+    "vestry": ("cabinet",),
+    "council_chamber": ("long_table", "chair"),
+    "records_room": ("shelf", "shelf"),
 }
 FURNITURE_SIZES_M = {
     "hearth": [1.6, 0.8, 1.0], "bench": [1.6, 0.6, 0.5], "bed": [1.0, 2.0, 0.6],
@@ -37,6 +43,20 @@ FURNITURE_SIZES_M = {
     "workbench": [1.8, 0.8, 0.9], "anvil": [0.8, 0.6, 0.8], "tool_rack": [1.2, 0.4, 1.6],
     "reading_table": [1.4, 0.9, 0.8], "chair": [0.6, 0.6, 0.9], "shelf": [1.6, 0.4, 1.8],
     "long_table": [2.2, 0.9, 0.8], "chest": [0.9, 0.6, 0.7],
+    "altar": [1.6, 0.9, 1.2], "pew": [2.0, 0.6, 0.9], "cabinet": [1.0, 0.5, 1.6],
+}
+
+# Silhouette follows function: the roof style and its height are declared per
+# programme instead of being drawn at random, so a temple, a shop and a house
+# do not share one outline.
+PROGRAMME_ROOF = {
+    "residence": ("gable", 1.2),
+    "shop": ("flat", 0.4),
+    "workshop": ("flat", 0.4),
+    "library": ("spire", 2.4),
+    "inn": ("gable", 1.6),
+    "temple": ("spire", 3.0),
+    "town_hall": ("gable", 2.0),
 }
 
 # Districts differ before individual buildings do: the plan below decides how
@@ -49,7 +69,7 @@ DISTRICT_PLAN = {
     "market": {"road_width_m": 4, "width_m": (14, 16), "depth_m": (14, 16, 18), "storeys": (2, 2),
                "programmes": ("shop", "shop", "workshop", "inn")},
     "civic": {"road_width_m": 6, "width_m": (16, 18, 18), "depth_m": (16, 18, 18), "storeys": (2, 3),
-              "programmes": ("library", "inn", "workshop")},
+              "programmes": ("library", "inn", "temple", "town_hall", "workshop")},
 }
 DISTRICT_USES = ("residential", "market", "civic")
 
@@ -182,7 +202,7 @@ def plan_stage(spec: PilotSpec, stage: str, records: list[dict]) -> tuple[list[d
                         i = row * 10 + bank * 5 + col
                         x = (8 if bank == 0 else 292) + col * x_pitch
                         additions.append(entity(f"parcel_{i:03d}", "parcel", f"district_{district}",
-                                                [x, y - boundaries[district], 4], [32, 32, 12],
+                                                [x, y - boundaries[district], 4], [32, 32, 16],
                                                 parent_origin=[0, boundaries[district], -4], bank=bank, column=col,
                                                 raw_height_range_m=[height(spec, x, y), height(spec, x + 32, y + 32)],
                                                 platform_z_m=2, construction="level_platform_with_foundation"))
@@ -210,19 +230,21 @@ def plan_stage(spec: PilotSpec, stage: str, records: list[dict]) -> tuple[list[d
                 depth = rng.choice(plan["depth_m"])
                 storeys = rng.choice(plan["storeys"])
                 programme = rng.choice(plan["programmes"])
+                roof_style, roof_height = PROGRAMME_ROOF[programme]
                 origin = [(32 - width) / 2, (32 - depth) / 2, 2]
-                box = [width, depth, storeys * 3 + 0.4]
+                box = [width, depth, storeys * 3 + roof_height]
             else:
                 width = depth = 16
                 storeys, programme = 2, "residence"
+                roof_style, roof_height = "gable", 0.4
                 origin, box = [8, 6, 2], [16, 16, 6.4]
             building = entity(f"building_{i:03d}", "building", lot["id"], origin, box,
                               parent_origin=lot_origin, storeys=storeys, interior_state="deferred",
-                              programme=programme, roof_style=rng.choice(["gable", "spire"]),
+                              programme=programme, roof_style=roof_style,
                               style_profile="arcane_city_template_v1" if size == 512 else "arcane_pilot_v1")
             building["semantic_completeness"] = "shell_only"
             building["geometry"].update({"representation": "parametric_building", "storey_height_m": 3,
-                "wall_thickness_m": 0.2, "floor_thickness_m": 0.2, "roof_height_m": 0.4,
+                "wall_thickness_m": 0.2, "floor_thickness_m": 0.2, "roof_height_m": roof_height,
                 "stair_void_local_m": {"min": [width - 5, 3, 3],
                                        "max": [width - 2, 9 if spec.layout_profile == "compact" else 13, 3.2]},
                 "entry": {"side": "east" if size == 512 or i % 2 == 0 else "west", "offset_m": 2, "width_m": 2, "height_m": 2.4}})
