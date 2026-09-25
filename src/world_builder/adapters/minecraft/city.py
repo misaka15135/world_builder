@@ -31,6 +31,27 @@ PALETTE = {
     "minecraft:water": 4,
     "minecraft:grass_block": 5,
     "minecraft:smooth_stone": 6,
+    "minecraft:oak_slab": 7,
+    "minecraft:bookshelf": 8,
+    "minecraft:barrel": 9,
+    "minecraft:crafting_table": 10,
+    "minecraft:anvil": 11,
+    "minecraft:furnace": 12,
+    "minecraft:chest": 13,
+    "minecraft:red_bed": 14,
+    "minecraft:oak_fence": 15,
+    "minecraft:chiseled_quartz_block": 16,
+}
+
+# Furniture is still a box proxy, but the block picks up the room's function so
+# a bedroom, a workshop and a chapel do not read the same from inside.
+FURNITURE_BLOCKS = {
+    "hearth": "minecraft:furnace", "bench": "minecraft:oak_slab", "bed": "minecraft:red_bed",
+    "counter": "minecraft:oak_fence", "display_rack": "minecraft:barrel", "crate_stack": "minecraft:barrel",
+    "workbench": "minecraft:crafting_table", "anvil": "minecraft:anvil", "tool_rack": "minecraft:oak_fence",
+    "reading_table": "minecraft:oak_slab", "chair": "minecraft:oak_slab", "shelf": "minecraft:bookshelf",
+    "long_table": "minecraft:oak_planks", "chest": "minecraft:chest",
+    "altar": "minecraft:chiseled_quartz_block", "pew": "minecraft:oak_slab", "cabinet": "minecraft:barrel",
 }
 
 
@@ -204,6 +225,14 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool) -> l
     if len(storeys) != storey_count:
         raise CityExportError("target.interior_plan", building["id"])
     parts.extend(_partition_boxes(building, entities, storeys))
+    room_ids = {r["id"] for r in entities.values() if r["kind"] == "room" and r["parent_id"] in {s["id"] for s in storeys}}
+    for item in sorted((r for r in entities.values()
+                        if r["kind"] == "furniture" and r["parent_id"] in room_ids), key=lambda r: r["id"]):
+        block = FURNITURE_BLOCKS.get(item["attributes"].get("use"))
+        if block is None:
+            raise CityExportError("target.furniture_use", item["id"])
+        low, high = item["bounds"]["min"], item["bounds"]["max"]
+        parts.append(_box(item["id"], low[0], high[0], low[1], high[1], low[2], high[2], block))
     stairs = [r for r in children if r["kind"] == "stair"]
     if storey_count < 2:
         if stairs:

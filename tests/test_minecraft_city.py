@@ -173,6 +173,17 @@ def test_report_accounts_for_every_source_entity(city) -> None:
     assert report["extensions"]["walkthrough"] == "not_run"
 
 
+def test_furnished_buildings_place_furniture_blocks(city) -> None:
+    boxes = city["manifest"]["boxes"]
+    placed = [box for box in boxes if box["source_id"].startswith("furniture_")]
+    assert placed, "furniture should reach the blocks, not stay a sidecar record"
+    # The city.1 hand interiors only hold reading tables.
+    assert {box["block"] for box in placed} == {"minecraft:oak_slab"}
+    report = json.loads((Path(city["result"]["output"]) / "export_report.json").read_text(encoding="utf-8"))
+    items = {item["source_id"]: item["classification"] for item in report["items"]}
+    assert items[placed[0]["source_id"]] == "approximated"
+
+
 def test_non_city_snapshot_fails_closed(tmp_path: Path) -> None:
     package, _ = read_worldpkg(SOURCE)
     broken = copy.deepcopy(package)

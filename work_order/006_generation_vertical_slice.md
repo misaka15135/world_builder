@@ -121,6 +121,8 @@ city.3 预登记批次结果（同日）：`artifacts/benchmark-city-v3-batch/re
 
 建筑轮廓原型补充（同日，开发中）：`roof_style` 以前只是记录字段，适配器一律建平屋顶，所以从外面看每栋都是盒子。现在**屋顶样式与高度由功能声明**：住宅 gable 1.2 m、商铺与工坊 flat 0.4 m、图书馆 spire 2.4 m、旅店 gable 1.6 m，并新增 **教堂 `temple`（spire 3.0 m）与市政厅 `town_hall`（gable 2.0 m）**两种功能及各自的房间与家具（nave/vestry、council_chamber/records_room、altar/pew/cabinet）。适配器按样式落成阶梯式双坡（只收南北）或尖塔（两个水平轴同时收），台阶刻意取一格高，否则薄片会被量化进同一格而消失。城邦地块竖向净空由 12 m 提到 16 m——否则"3 层 + 3 m 尖顶"会顶出地块触发包含关系硬失败。完整回归 81 passed（含屋顶几何单测）。
 
+家具落块补充（同日，开发中）：家具此前只是源里的语义记录，目标平台看不到。现在适配器按用途落成方块——床 `red_bed`、书架/书堆 `bookshelf`、工作台 `crafting_table`、铁砧 `anvil`、壁炉 `furnace`、柜台/木箱 `barrel`、长凳/座椅/读桌/长椅 `oak_slab`、储物柜 `barrel`、祭坛 `chiseled_quartz_block`、围栏 `oak_fence`、箱子 `chest`——未知用途直接失败而不是静默丢弃。调色板扩到 17 项。`pytest tests/test_minecraft_city.py` 8 passed（新增家具落块与报告分类断言）。
+
 ### 建筑形态与室内 programme 子阶段（2026-09-25）
 
 分区驱动补充（同日）：`0.1.0-city.3` 让三个分区各自决定建筑宽度、进深、层数与功能倾向——外缘 10—14 m/1—2 层以住宅为主，中部 14—16 m/2 层以商铺为主，中心带 16—18 m/2—3 层以图书馆、旅店、工坊为主；家具偏移按房间实际尺寸收缩，修掉窄房间的包含关系硬失败。分区策略记入规格字段 `plan_profile: district_v1`，因此世界身份随之更新（`world_157e6995219b02bc`，与 city.2 不同），避免同一 ID 对应不同内容。单例 50 秒、1269 实体、7516 检查、首候选 feasible；`benchmarks/city_cases_v3.json` 已冻结。city.2 的批次因在修改前启动已中止、不产生结论。
