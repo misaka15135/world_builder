@@ -64,11 +64,11 @@ PROGRAMME_ROOF = {
 # so the residential edge, the market band and the civic centre do not look
 # alike. Layout regularity, road width and per-era style are still open work.
 DISTRICT_PLAN = {
-    "residential": {"road_width_m": 3, "width_m": (10, 12, 14), "depth_m": (14, 16), "storeys": (1, 2),
+    "residential": {"road_width_m": 3, "parcel_jitter_m": 6, "width_m": (10, 12, 14), "depth_m": (14, 16), "storeys": (1, 2),
                     "programmes": ("residence", "residence", "workshop")},
-    "market": {"road_width_m": 4, "width_m": (14, 16), "depth_m": (14, 16, 18), "storeys": (2, 2),
+    "market": {"road_width_m": 4, "parcel_jitter_m": 3, "width_m": (14, 16), "depth_m": (14, 16, 18), "storeys": (2, 2),
                "programmes": ("shop", "shop", "workshop", "inn")},
-    "civic": {"road_width_m": 6, "width_m": (16, 18, 18), "depth_m": (16, 18, 18), "storeys": (2, 3),
+    "civic": {"road_width_m": 6, "parcel_jitter_m": 0, "width_m": (16, 18, 18), "depth_m": (16, 18, 18), "storeys": (2, 3),
               "programmes": ("library", "inn", "temple", "town_hall", "workshop")},
 }
 DISTRICT_USES = ("residential", "market", "civic")
@@ -201,10 +201,18 @@ def plan_stage(spec: PilotSpec, stage: str, records: list[dict]) -> tuple[list[d
                     for col in range(5):
                         i = row * 10 + bank * 5 + col
                         x = (8 if bank == 0 else 292) + col * x_pitch
+                        # Outlying districts sit on a looser grid than the civic
+                        # centre: only the north offset moves, so the spine and
+                        # access roads keep their geometry.
+                        jitter = DISTRICT_PLAN[DISTRICT_USES[district]]["parcel_jitter_m"]
+                        py = y
+                        if jitter:
+                            rng = random.Random(int(digest([spec.seed, f"parcel_{i:03d}", spec.generator_version])[7:23], 16))
+                            py = y + rng.uniform(-jitter, jitter)
                         additions.append(entity(f"parcel_{i:03d}", "parcel", f"district_{district}",
-                                                [x, y - boundaries[district], 4], [32, 32, 16],
+                                                [x, py - boundaries[district], 4], [32, 32, 16],
                                                 parent_origin=[0, boundaries[district], -4], bank=bank, column=col,
-                                                raw_height_range_m=[height(spec, x, y), height(spec, x + 32, y + 32)],
+                                                raw_height_range_m=[height(spec, x, py), height(spec, x + 32, py + 32)],
                                                 platform_z_m=2, construction="level_platform_with_foundation"))
         else:
             pitch, inset = (32, 2) if spec.scenario == "dense" else (40, 8)

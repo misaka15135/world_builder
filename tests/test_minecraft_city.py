@@ -135,7 +135,7 @@ def test_block_types_land_at_the_source_coordinates(city) -> None:
     lookup = {tuple(c["world_min"]): tuple(c["world_min"]) for c in city["manifest"]["chunks"]}
 
     def at(x: int, y: int, z: int) -> str:
-        key = ((x // 128) * 128, -4, (z // 128) * 128)
+        key = ((x // 128) * 128, city["manifest"]["region_y_m"][0], (z // 128) * 128)
         assert key in lookup, f"no chunk for {(x, y, z)}"
         return _block(schematics, list(key), x, y, z)
 

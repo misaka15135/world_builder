@@ -127,3 +127,22 @@ def test_city_roads_widen_towards_the_centre():
     for relation in records:
         if relation.get("relation_type") == "connects" and relation["source_id"] in road_ids:
             assert set(relation["target_ids"]) <= road_ids, relation["id"]
+
+
+def test_outlying_districts_sit_on_a_looser_grid():
+    spec = CitySpec(seed=101)
+    records = initial_records(spec)
+    for stage in STAGES:
+        additions, _ = plan_stage(spec, stage, records)
+        records.extend(additions)
+        next(r for r in records if r["record_type"] == "world_spec")["extensions"]["stage"] = stage
+    rows: dict[str, set] = {}
+    for parcel in (r for r in records if r.get("kind") == "parcel"):
+        rows.setdefault(parcel["parent_id"], set()).add(round(parcel["bounds"]["min"][1], 3))
+    assert len(rows["district_0"]) == 30, "the residential edge should not sit on one line per row"
+    assert len(rows["district_1"]) == 30
+    assert len(rows["district_2"]) == 2, "the civic centre keeps a tidy grid"
+    # every building still reaches a road, and the road network stays connected
+    entrances = [r for r in records if r.get("relation_type") == "entrance"]
+    assert len(entrances) == 80
+    assert not [c for c in check_geometry(records) if c["rule"] == "pilot.network_connected" and c["state"] != "pass"]
