@@ -1,0 +1,43 @@
+riverside_1: completed
+riverside_2: completed
+riverside_3: completed
+riverside_4: completed
+riverside_5: completed
+riverside_6: completed
+riverside_7: completed
+riverside_8: completed
+riverside_9: completed
+riverside_10: completed
+hillside_1: completed
+hillside_2: completed
+hillside_3: completed
+hillside_4: completed
+hillside_5: completed
+hillside_6: completed
+hillside_7: completed
+hillside_8: completed
+hillside_9: completed
+hillside_10: completed
+dense_1: completed
+dense_2: completed
+dense_3: completed
+dense_4: completed
+dense_5: completed
+dense_6: completed
+dense_7: completed
+dense_8: completed
+dense_9: completed
+dense_10: completed
+{
+  "total": 30,
+  "completed": 30,
+  "succeeded": 30,
+  "first_attempt_passed": 15,
+  "by_scenario": {
+    "riverside": 10,
+    "hillside": 10,
+    "dense": 10
+  },
+  "source_city_threshold_met": true,
+  "full_city_acceptance": false
+}

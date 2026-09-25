@@ -137,6 +137,12 @@ python tools/check_project_docs.py
 
 本机 `--city --seed 101` 实测：50 秒、1269 实体、7516 检查、首候选 feasible，世界身份 `world_157e6995219b02bc`（与 city.2 的 `world_e89db4bf2190762b` 不同）。新的预登记文件为 `benchmarks/city_cases_v3.json`；city.1 与 city.2 的登记与产物作为历史保留，city.2 的批次因在修改前启动而被中止、未产生结论。
 
+### city.3 预登记批次结果（2026-09-25）
+
+`artifacts/benchmark-city-v3-batch/report.json`：**30/30 完成、30/30 feasible、首候选通过 15/30**（每个场景各 5），达到预登记的"总计至少 27/30 且每类至少 8/10"门槛，`source_city_threshold_met=true`、`full_city_acceptance=false`。单世界耗时 44,428—73,735 ms，独立工作进程峰值工作集 80,117,760—89,821,184 bytes，模型调用为 0。报告记录 `implementation_hash` 与 `registration_hash`。
+
+首候选通过率与前两版一致（15/30）：compact 布局的 15 个输入仍需要候选修复，standard 的 15 个一次通过。这属于既有设计，不是回归。
+
 Minecraft 适配器从该修订导出 16 分块、2,451 盒、622,535 方块（含 150 个房间隔墙）。**目标世界的重贴尚未执行**，世界里仍是 city.2 的结果。
 
 **尚未实现**：道路宽度随分区变化（脊柱仍为固定 4 m）、路网与河道仍是正交直线、分区形状仍是南北条带而非真正的"若干街区归属同一城堡"、建筑外形仍是盒体加平屋顶（没有教堂/市政厅/城墙等原型）、样式不随时代背景变化。这些需要在 006 的分区规划上继续扩展，或按 012 重开范围。
