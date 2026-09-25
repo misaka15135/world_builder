@@ -95,6 +95,12 @@ The clipboard has been pasted at (128,-64,-384)
 
 city.3 的源端预登记批次为 30/30 完成、30/30 feasible、首候选 15/30，达到门槛。
 
+### city.4 修订与粘贴基线修正（2026-09-26）
+
+生成器升到 `0.1.0-city.4`（分区道路宽度、按功能声明屋顶、新增教堂与市政厅、家具落块）后重新导出：源修订 `revision_91ca2601de09e2582ca10c03`、世界 `world_c425eb1936058eda`，16 分块、**3,057 盒**、643,086 方块；家具按用途落成方块（red_bed 57、bookshelf 36、crafting_table 50、anvil 50、chiseled_quartz_block 8、furnace 34、barrel 60、oak_fence 76、oak_slab 91、chest 23），报告 1 preserved / 713 approximated / 625 omitted。
+
+**粘贴基线修正**：导出的区域下界原为源 `z=-4`，粘贴基线因此落在世界最底层 `y=-64`——玩家被传送到那里会嵌进基岩并被挤出世界，实测两次摔出世界死亡。区域下界改为源 `z=-1`，剪贴板高度 36→33，粘贴基线变为 `(cx×128, -61, cz×128)`：玩家落在草地里、会被顶到地表而不会坠落，源 `z=0` 仍落在世界 `y=-60`。重贴 16 块后街面与俯瞰均正常。
+
 `building_000` 是 5 栋 `interior_state: generated` 建筑之一，位于世界 `x 16—32`、`z -30—-14`。实测：
 
 ```text

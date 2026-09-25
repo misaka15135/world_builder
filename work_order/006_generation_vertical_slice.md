@@ -123,6 +123,8 @@ city.3 预登记批次结果（同日）：`artifacts/benchmark-city-v3-batch/re
 
 家具落块补充（同日，开发中）：家具此前只是源里的语义记录，目标平台看不到。现在适配器按用途落成方块——床 `red_bed`、书架/书堆 `bookshelf`、工作台 `crafting_table`、铁砧 `anvil`、壁炉 `furnace`、柜台/木箱 `barrel`、长凳/座椅/读桌/长椅 `oak_slab`、储物柜 `barrel`、祭坛 `chiseled_quartz_block`、围栏 `oak_fence`、箱子 `chest`——未知用途直接失败而不是静默丢弃。调色板扩到 17 项。`pytest tests/test_minecraft_city.py` 8 passed（新增家具落块与报告分类断言）。
 
+city.4 发布周期（2026-09-26，进行中）：生成器升到 `0.1.0-city.4`，规格字段 `plan_profile` 同步改为 `district_v2`（v1 是 city.3 的历史值）——**生成器版本字符串不进规格、不改变世界身份**，所以内容变化必须靠规格字段区分，否则同一 `world_id` 会覆盖两份不同内容。新身份 `world_c425eb1936058eda`，单例 1339 实体、7917 检查、首候选 feasible。`benchmarks/city_cases_v4.json` 已冻结，30 输入批次已在后台启动。Minecraft 侧导出 3,057 盒、643,086 方块并重贴目标世界。**批次结果尚未回填**。
+
 ### 建筑形态与室内 programme 子阶段（2026-09-25）
 
 分区驱动补充（同日）：`0.1.0-city.3` 让三个分区各自决定建筑宽度、进深、层数与功能倾向——外缘 10—14 m/1—2 层以住宅为主，中部 14—16 m/2 层以商铺为主，中心带 16—18 m/2—3 层以图书馆、旅店、工坊为主；家具偏移按房间实际尺寸收缩，修掉窄房间的包含关系硬失败。分区策略记入规格字段 `plan_profile: district_v1`，因此世界身份随之更新（`world_157e6995219b02bc`，与 city.2 不同），避免同一 ID 对应不同内容。单例 50 秒、1269 实体、7516 检查、首候选 feasible；`benchmarks/city_cases_v3.json` 已冻结。city.2 的批次因在修改前启动已中止、不产生结论。

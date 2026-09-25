@@ -16,7 +16,7 @@ def test_city_contract_is_distinct_from_historical_pilot():
     city = CitySpec(seed=101)
     assert pilot.generator_version == "0.1.0-pilot.3"
     assert pilot.to_dict().get("region_size_m") is None
-    assert city.generator_version == "0.1.0-city.3"
+    assert city.generator_version == "0.1.0-city.4"
     assert city.interior_count == 80
     assert city.world_id != pilot.world_id
     with pytest.raises(ValueError, match="008/009"):
@@ -52,7 +52,8 @@ def test_city_batch_registrations_are_fixed_before_results():
     assert history["generator_version"] == "0.1.0-city.1"
     assert all(case["spec"]["interior_count"] == 5 for case in history["cases"])
     assert json.loads((root / "city_cases_v2.json").read_text(encoding="utf-8"))["generator_version"] == "0.1.0-city.2"
-    current = json.loads((root / "city_cases_v3.json").read_text(encoding="utf-8"))
+    assert json.loads((root / "city_cases_v3.json").read_text(encoding="utf-8"))["generator_version"] == "0.1.0-city.3"
+    current = json.loads((root / "city_cases_v4.json").read_text(encoding="utf-8"))
     assert current["generator_version"] == CitySpec().generator_version
     assert len(current["cases"]) == 30
     for scenario, seed_start in (("riverside", 101), ("hillside", 201), ("dense", 301)):

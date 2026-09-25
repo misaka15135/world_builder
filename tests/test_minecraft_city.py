@@ -125,7 +125,7 @@ def test_city_export_covers_the_revision_with_blocks(city) -> None:
         data = (Path(result["output"]) / chunk["path"]).read_bytes()
         assert "sha256:" + hashlib.sha256(data).hexdigest() == chunk["schem_sha256"]
         palette, values, width, height, length = city["schematics"][tuple(chunk["world_min"])]
-        assert (width, height, length) == (128, 36, 128)
+        assert (width, height, length) == (128, 33, 128)
         assert len(values) == width * height * length
         assert sum(1 for value in values if value) == chunk["non_air_blocks"] > 0
 

@@ -327,7 +327,7 @@ def voxelize(boxes: list[dict], y0: int, y1: int) -> dict[tuple[int, int], bytea
     return chunks
 
 
-def schematic_bytes(grid: bytearray, data_version: int) -> bytes:
+def schematic_bytes(grid: bytearray, data_version: int, height: int) -> bytes:
     if type(data_version) is not int or not 1 <= data_version <= 2**31 - 1:
         raise CityExportError("target.data_version", "positive Java DataVersion is required")
     palette = _compound(*(_tag(3, block, struct.pack(">i", index)) for block, index in PALETTE.items()))
@@ -339,7 +339,7 @@ def schematic_bytes(grid: bytearray, data_version: int) -> bytes:
         _tag(3, "Version", struct.pack(">i", 3)),
         _tag(3, "DataVersion", struct.pack(">i", data_version)),
         _tag(2, "Width", struct.pack(">h", CHUNK_SIZE_M)),
-        _tag(2, "Height", struct.pack(">h", 36)),
+        _tag(2, "Height", struct.pack(">h", height)),
         _tag(2, "Length", struct.pack(">h", CHUNK_SIZE_M)),
         _tag(11, "Offset", struct.pack(">i", 3) + struct.pack(">iii", 0, 0, 0)),
         _tag(10, "Metadata", _compound(_tag(8, "Name", _utf8("WIR 512 m city chunk")),
@@ -356,7 +356,11 @@ def schematic_bytes(grid: bytearray, data_version: int) -> bytes:
 def export_city(package: dict, output_dir: str | Path, *, include_interiors: bool = False,
                 data_version: int = DEFAULT_DATA_VERSION) -> dict:
     boxes = city_boxes(package, include_interiors=include_interiors)
-    y0, y1 = -4, 32
+    # The region starts just below the city's own ground so the paste base lands
+    # on a solid block. Starting at the overworld floor would put the player
+    # inside bedrock, which pushes them out of the world instead of anchoring
+    # the clipboard there.
+    y0, y1 = -1, 32
     chunks = voxelize(boxes, y0, y1)
     entities = sorted((r for r in package["records"] if r["record_type"] == "entity"), key=lambda r: r["id"])
     source_hash = "sha256:" + hashlib.sha256(json.dumps(package, ensure_ascii=False, sort_keys=True,
@@ -409,7 +413,7 @@ def export_city(package: dict, output_dir: str | Path, *, include_interiors: boo
     (output / "schematics").mkdir()
     index = []
     for (cx, cz), grid in sorted(chunks.items()):
-        data = schematic_bytes(grid, data_version)
+        data = schematic_bytes(grid, data_version, y1 - y0)
         name = f"city_c{cx:02d}_{abs(cz):02d}"
         path = f"schematics/{name}.schem"
         (output / path).write_bytes(data)
