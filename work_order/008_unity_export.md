@@ -11,6 +11,7 @@
 - 修改范围：2026-09-25 root 继续 v3 导航子阶段；新增独立 Unity 导航场景、Editor 重建及目标 NavMesh 路径验证、对应证据与说明，同步 008/000/索引。限定道路与桥梁导航，保留既有 v1/v2/v3 场景和运行证据；007 联调、其它接缝与性能另行验收。仅本地提交。
 - 修改范围：2026-09-25 root 继续 v3 NavMeshAgent 运行验收；新增独立运行场景、运行时记录组件和批处理/Play Mode 启动入口，修改 `WorldBuilderCityV3NavBuilder.cs`、`Assets/WorldBuilderCity/`、独立证据、Unity 城邦说明及 008/000/索引。复用已保存的 v3 NavMesh，不覆盖先前静态/控制器/NavMesh 证据；室内导航和 007 联调不在本阶段。仅本地提交。
 - 修改范围：2026-09-25 root 继续 v2 首栋室内导航子阶段；从已验收的 `CityInteriors.unity` 派生独立 NavMesh 场景及目标路径验证，新增 `WorldBuilderCity/Editor/` 构建器、独立证据、说明和 008/000/索引。先验证 `building_000` 道路—东门—楼梯—二层房间，不改源 WIR、v2 GLB 或既有运行证据；其余四栋及 Agent 室内实走另行验收。仅本地提交。
+- 修改范围：2026-09-25 root 继续 v2 首栋室内 NavMeshAgent 运行验收；修改 `WorldBuilderCityV2InteriorNavBuilder.cs` 并新增独立运行组件、场景、JSON/日志摘录、说明和 008/000/索引。验证已保存导航面上道路—东门—楼梯—二层房间的实际 Agent 运动；不覆盖先前导航/控制器证据。开工时发现 `v3-agent-walk-validation.json` 有阶段外未提交变化，保留原状且不纳入本次提交。仅本地提交。
 
 ## 目标与范围
 
@@ -46,11 +47,12 @@
 
 其中分块与普通材质逐面法线的静态目标导入已由 v3 验证；桥面 x=256 m 的一处接缝已 Play Mode 实走通过。其它接缝、切线材质、完整导航、性能及 007 联调尚未完成。
 
-道路与桥梁的独立 v3 NavMesh 已完成烘焙、保存场景重载路径验证和独立 NavMeshAgent Play Mode 跨桥运动；v2 首栋室内静态导航已验证道路—东门—楼梯—二层房间路径。其余四栋、室内 Agent 运动、其它接缝及性能仍待验。
+道路与桥梁的独立 v3 NavMesh 已完成烘焙、保存场景重载路径验证和独立 NavMeshAgent Play Mode 跨桥运动；v2 首栋室内已验证道路—东门—楼梯—二层房间的静态路径及 Agent Play Mode 运动。其余四栋室内导航、其它接缝及性能仍待验。
 
 - [x] ~~为 v3 主路、接入道路和桥梁生成独立 NavMesh，并在保存场景重载后验证跨桥完整路径。~~
 - [x] ~~在独立 Play Mode 场景中验证 NavMeshAgent 沿已保存的导航面连续跨桥。~~
 - [x] ~~验证 v2 首栋从入口道路经东门、楼梯到二层房间的 NavMesh 完整路径及保存场景重载。~~
+- [x] ~~在独立 Play Mode 场景中验证 v2 首栋 NavMeshAgent 经东门、梯级到二层房间。~~
 
 ## 验收标准
 
@@ -110,6 +112,13 @@
 | 2026-09-25 | root | 增加东门连接并通过首栋室内 NavMesh 路径 | 在 x=32 m、z=16.5 m 源门洞添加 1.2 m 宽双向 NavMeshLink；Unity 6000.3.24f1 批处理退出码 0。`v2-interior-nav-validation.json` 为 `status=pass`、入口到二层房间 `PathComplete`、18.61 m，四段检查点全部完整；直接路径穿过东门且在楼梯区域由低至高。源端 v2 GLB 与已验收场景未覆盖 | 独立进程重开导航场景并复核资产/连接，再同步说明与索引 |
 | 2026-09-25 | root | 完成首栋室内导航场景重载验证 | 另一个 Unity 6000.3.24f1 批处理进程重开 `CityInteriorNavigation.unity`，核对 `CityInterior000NavMesh.asset` 引用与东门双向 Link，`v2-interior-nav-reopen-validation.json` 再次为 `status=pass`、`PathComplete`、18.61 m，退出码 0；工单仅勾选首栋静态路径，不将其余四栋或室内 Agent 视为已验 | 文档/索引检查后只本地提交；继续其余四栋、室内 Agent、性能及 007 联调 |
 | 2026-09-25 | root | 核对室内导航交付文件与工单 | 场景 YAML 包含 33 个 `NavMeshModifier` 和 1 个东门 `NavMeshLink`；整理后另一编辑器进程重载仍 `PathComplete`、18.61 m，四段路径 4/4 完整。`python tools/check_project_docs.py` 检查 34 Markdown/40 链接/5 JSON/13 工单零错误；本阶段未修改 Python 导出器 | 只本地提交，008 保持 in_progress |
+| 2026-09-25 | root | 认领首栋室内 NavMeshAgent 实际运行 | 上阶段本地提交 `b733be4`；首栋静态路径及保存场景重载已通过，Agent 尚未运行。本轮范围见文件头；工作树中原有 `v3-agent-walk-validation.json` 未提交变化属于阶段外证据，保持原状 | 构建独立 Play Mode 夹具并观察东门 Link、楼梯支撑与二层终点 |
+| 2026-09-25 | root | 首次室内 Agent Play Mode 完整通过 | `CityInteriorAgentWalk.unity` 在 Unity 6000.3.24f1 批处理建场景及无图形 Play Mode 均以代码 0 退出；首次 `v2-interior-agent-validation.json` 为 `status=pass`、`PathComplete`、9.29 秒抵达二层房间，越过东门、梯级支撑移动 22 帧，0 帧离开 NavMesh。无图形模式单帧最大位移接近当前守卫阈值；将补充门 Link 实际位移与终点楼板来源后复测，再固定最终证据 | 加强运行证据，确认终点支撑并复测 |
+| 2026-09-25 | root | 复测发现帧数阈值不适于无图形 Agent 验收 | 增加门 Link 位移及终点楼板来源后，Agent 仍约 9.29 秒到二层、`PathComplete`，门 Link 有实际位移、终点由 `storey_000_1` 支撑；但无图形模式的楼梯射线命中位移帧降至 7、楼层移动帧为 0，触发自设阈值，进程退出码 1。该失败属于采样频率敏感的验收指标，不据此断言楼梯不可达 | 改为沿位移段按固定距离采样楼梯支撑，并以经过楼梯高点、终点楼板来源和位移距离验收 |
+| 2026-09-25 | root | 固定间隔初版仍低估路径长度 | Agent 再次约 9.29 秒到达二层、`PathComplete`，但记录器只累计单帧大于 1 mm 的位移，得到不合理的 1.65 m、梯级支撑 0.03 m，触发阈值并退出码 1。无图形模式大量微小位移被过滤；此为证据采样缺陷，不是目标路径失败 | 累计全部位移，按空间累积到固定间隔后再做楼梯支撑射线抽样 |
+| 2026-09-25 | root | 修正室内 Agent 证据采样并通过运行 | `v2-interior-agent-validation.json` 为 `status=pass`、`PathComplete`、9.29 秒抵达二层房间；全程 18.62 m、东门 Link 段 3.03 m、源梯级支撑 9.88 m，终点由 `storey_000_1` 楼板支撑，0 帧离开 NavMesh，进程退出码 0。改为累计全部微小位移并按 0.05 m 空间间隔采样，避免无图形帧率左右距离证据 | 再做独立运行确认稳定性，随后整理说明和提交 |
+| 2026-09-25 | root | 独立复测室内 Agent 运动 | `v2-interior-agent-validation-repeat.json` 为 `status=pass`、`PathComplete`、9.29 秒、总位移 18.61 m、东门 Link 3.02 m、梯级支撑 9.88 m，终点仍为 `storey_000_1`、0 帧离开 NavMesh，进程退出码 0。两次空间距离指标一致；无图形模式单帧最大位移不同，不据此推断运行性能 | 固定两份结构化证据、场景与说明，文档检查后本地提交 |
+| 2026-09-25 | root | 核对整理后的独立 Agent 场景 | 清理新 Unity 场景序列化的尾部空格后，另一无图形 Play Mode 进程再次 `status=pass`、`PathComplete`、梯级支撑约 9.83 m、退出码 0；此次临时复核 JSON/日志在系统临时目录，不覆盖两份交付证据。`python tools/check_project_docs.py` 检查 34 Markdown/40 链接/5 JSON/13 工单零错误。阶段外的 `v3-agent-walk-validation.json` 未提交变化仍保留 | 暂存区检查后只提交本阶段文件，008 继续 in_progress |
 
 ## 交接说明
 

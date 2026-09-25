@@ -1,0 +1,19 @@
+Unity 6000.3.24f1 batch scene build, WorldBuilderCityV2InteriorNavBuilder.BuildAgentWalkValidation:
+WorldBuilder first city interior agent walk scene saved: Assets/WorldBuilderCity/v2/CityInteriorAgentWalk.unity
+Exiting without the bug reporter. Application will terminate with return code 0
+PowerShell process wait: UNITY_EXIT_CODE=0
+
+Final two independent no-graphics Play Mode runs, WorldBuilderCityV2InteriorNavBuilder.RunAgentWalkValidation:
+WorldBuilder first city interior agent walk: pass (agent_entered_and_ascended_on_saved_navmesh) at (25.63, 5.23, 26.15)
+PowerShell process wait: UNITY_EXIT_CODE=0 (each run)
+Result A: 18.615 m traveled, 3.027 m on east-door link, 9.878 m supported by stair_000.
+Result B: 18.612 m traveled, 3.024 m on east-door link, 9.876 m supported by stair_000.
+Both ended on storey_000_1 with PathComplete and zero off-NavMesh frames.
+
+Earlier development runs reached the upper room but failed frame-count or movement-threshold
+checks because batch-mode Update frequency varied. The final validator accumulates all movement
+and samples stair support at spatial intervals; earlier failed checks are recorded in work order 008.
+
+Structured final results: v2-interior-agent-validation.json and
+v2-interior-agent-validation-repeat.json. Full local final-run logs:
+editor-v2-interior-agent-walk.log and editor-v2-interior-agent-repeat.log.

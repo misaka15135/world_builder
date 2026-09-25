@@ -66,6 +66,46 @@ public static class WorldBuilderCityV2InteriorNavBuilder
         new Vector3(25.5f, 5.2f, 26f)
     };
 
+    [MenuItem("World Builder/Build First City Interior Agent Walk v2")]
+    public static void BuildAgentWalkValidation()
+    {
+        EditorSceneManager.OpenScene(Base + "CityInteriorNavigation.unity", OpenSceneMode.Single);
+        var surface = UnityEngine.Object.FindFirstObjectByType<NavMeshSurface>();
+        var links = UnityEngine.Object.FindObjectsByType<NavMeshLink>(FindObjectsSortMode.None);
+        if (surface == null || surface.navMeshData == null || links.Length != 1)
+            throw new InvalidOperationException("saved first interior navigation is incomplete");
+        var manifest = JsonUtility.FromJson<Manifest>(File.ReadAllText(Path.Combine(
+            Application.dataPath, "WorldBuilderCity", "v2", "manifest.json")));
+        if (manifest == null || manifest.adapter_version != "0.1.0-city.2")
+            throw new InvalidOperationException("city v2 interior agent manifest mismatch");
+
+        var player = new GameObject("Building 000 NavMeshAgent validation");
+        player.transform.position = Checkpoints[0];
+        var agent = player.AddComponent<NavMeshAgent>();
+        agent.enabled = false;
+        agent.agentTypeID = surface.agentTypeID;
+        agent.radius = 0.5f;
+        agent.height = 2f;
+        agent.speed = 1.8f;
+        agent.acceleration = 8f;
+        agent.angularSpeed = 360f;
+        agent.stoppingDistance = 0.12f;
+        var validator = player.AddComponent<WorldBuilderCityV2InteriorAgentValidator>();
+        validator.sourceWorldId = manifest.source_world_id;
+        validator.sourceRevisionId = manifest.source_revision_id;
+
+        var path = Base + "CityInteriorAgentWalk.unity";
+        EditorSceneManager.SaveScene(SceneManager.GetActiveScene(), path);
+        Debug.Log("WorldBuilder first city interior agent walk scene saved: " + path);
+    }
+
+    [MenuItem("World Builder/Run First City Interior Agent Walk v2")]
+    public static void RunAgentWalkValidation()
+    {
+        EditorSceneManager.OpenScene(Base + "CityInteriorAgentWalk.unity", OpenSceneMode.Single);
+        EditorApplication.isPlaying = true;
+    }
+
     [MenuItem("World Builder/Validate Saved First City Interior Navigation v2")]
     public static void ValidateSaved()
     {

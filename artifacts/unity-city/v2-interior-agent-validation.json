@@ -1,0 +1,47 @@
+{
+    "status": "pass",
+    "reason": "agent_entered_and_ascended_on_saved_navmesh",
+    "unity_version": "6000.3.24f1",
+    "source_world_id": "world_e98d1d4d587fb96f",
+    "source_revision_id": "revision_c1b82ea36c16a34c95f97c42",
+    "source_building_id": "building_000",
+    "scene": "CityInteriorAgentWalk",
+    "agent_type_id": 0,
+    "agent_radius_m": 0.5,
+    "agent_height_m": 2.0,
+    "elapsed_seconds": 9.285594940185547,
+    "movement_frames": 107,
+    "door_link_frames": 3280,
+    "door_link_moving_frames": 82,
+    "stair_supported_moving_frames": 197,
+    "travel_distance_m": 18.6152400970459,
+    "door_link_distance_m": 3.0271828174591066,
+    "stair_supported_distance_m": 9.878053665161133,
+    "end_support_source_id": "storey_000_1",
+    "off_navmesh_frames": 0,
+    "max_frame_step_m": 0.3529290556907654,
+    "max_height_m": 5.250001907348633,
+    "crossed_east_door": true,
+    "ascended_stair": true,
+    "path_status": "PathComplete",
+    "start_position": {
+        "x": 34.00068283081055,
+        "y": 2.0249998569488527,
+        "z": 16.414804458618165
+    },
+    "door_position": {
+        "x": 31.999855041503908,
+        "y": 2.1000146865844728,
+        "z": 16.307281494140626
+    },
+    "stair_high_position": {
+        "x": 28.49730110168457,
+        "y": 4.5,
+        "z": 22.665285110473634
+    },
+    "end_position": {
+        "x": 25.630680084228517,
+        "y": 5.224999904632568,
+        "z": 26.151382446289064
+    }
+}
