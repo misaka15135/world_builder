@@ -123,7 +123,13 @@ city.3 预登记批次结果（同日）：`artifacts/benchmark-city-v3-batch/re
 
 家具落块补充（同日，开发中）：家具此前只是源里的语义记录，目标平台看不到。现在适配器按用途落成方块——床 `red_bed`、书架/书堆 `bookshelf`、工作台 `crafting_table`、铁砧 `anvil`、壁炉 `furnace`、柜台/木箱 `barrel`、长凳/座椅/读桌/长椅 `oak_slab`、储物柜 `barrel`、祭坛 `chiseled_quartz_block`、围栏 `oak_fence`、箱子 `chest`——未知用途直接失败而不是静默丢弃。调色板扩到 17 项。`pytest tests/test_minecraft_city.py` 8 passed（新增家具落块与报告分类断言）。
 
-city.4 发布周期（2026-09-26，进行中）：生成器升到 `0.1.0-city.4`，规格字段 `plan_profile` 同步改为 `district_v2`（v1 是 city.3 的历史值）——**生成器版本字符串不进规格、不改变世界身份**，所以内容变化必须靠规格字段区分，否则同一 `world_id` 会覆盖两份不同内容。新身份 `world_c425eb1936058eda`，单例 1339 实体、7917 检查、首候选 feasible。`benchmarks/city_cases_v4.json` 已冻结，30 输入批次已在后台启动。Minecraft 侧导出 3,057 盒、643,086 方块并重贴目标世界。**批次结果尚未回填**。
+city.4 发布周期（2026-09-26）：生成器升到 `0.1.0-city.4`，规格字段 `plan_profile` 同步改为 `district_v2`（v1 是 city.3 的历史值）——**生成器版本字符串不进规格、不改变世界身份**，所以内容变化必须靠规格字段区分，否则同一 `world_id` 会覆盖两份不同内容。新身份 `world_c425eb1936058eda`，单例 1339 实体、7917 检查、首候选 feasible。Minecraft 侧导出 3,057 盒、643,086 方块并重贴目标世界。
+
+**city.4 首发批次未达门槛（如实保留）**：`artifacts/benchmark-city-v4-batch/report.json` 为 30/30 完成、首候选 15/30，但**成功 27/30、河畔仅 7/10，`source_city_threshold_met=false`**（总数满足 ≥27/30，每类 ≥8/10 不满足）。3 次失败全部是 `execution.timeout`：`riverside_7/8/9`（compact、需 3 次候选）耗时 124.2 / 141.5 / 147.1 秒，超出 120 秒世界预算；成功用例 46.9—119.1 秒，最慢者仅贴线。**首发结果不撤回、不换分母。**
+
+**归因（不是生成器回归）**：同机空闲时对同样 3 个输入复测，全部成功且耗时 **71.5 / 71.6 / 71.5 秒**；city.3 的同批 compact 用例为 73.1—73.7 秒，量级一致。首发批次运行期间本机同时在 Minecraft 里执行 `//set air`（清除 890 万方块）并重贴 16 个分块，CPU/磁盘争用才是超时原因。
+
+据此登记**有记录的干净重跑** `benchmarks/city_cases_v4_rerun.json`（同样 30 输入、同样阈值，注明重跑动机），输出到 `artifacts/benchmark-city-v4-rerun/`，正在运行。**流程教训**：预登记批次不得与目标平台的重贴操作并发执行。
 
 ### 建筑形态与室内 programme 子阶段（2026-09-25）
 
