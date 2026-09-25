@@ -78,7 +78,7 @@ class CitySpec(PilotSpec):
     """Fixed 512 m source-data city; target-adapter validation is separate."""
 
     building_count: int = 80
-    interior_count: int = 5
+    interior_count: int = 80
     source_prompt: str = "An editable arcane city across a river."
     region_size_m: int = 512
 
@@ -87,8 +87,8 @@ class CitySpec(PilotSpec):
             raise ValueError("city region_size_m must be 512")
         if type(self.building_count) is not int or self.building_count != 80:
             raise ValueError("city building_count must be 80")
-        if type(self.interior_count) is not int or self.interior_count != 5:
-            raise ValueError("city interior_count must be 5")
+        if type(self.interior_count) is not int or not 1 <= self.interior_count <= self.building_count:
+            raise ValueError("city interior_count must be between 1 and building_count")
         if self.accepted_response_hash is not None or self.model_provenance is not None:
             raise ValueError("city specification currently supports offline fixed inputs only")
         # Reuse common field validation without accepting the pilot count limits.

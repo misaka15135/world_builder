@@ -82,7 +82,7 @@ def main(argv: list[str] | None = None) -> int:
             spec_type = CitySpec if args.city else PilotSpec
             spec = spec_type(seed=args.seed, scenario=args.scenario,
                              building_count=args.buildings if args.buildings is not None else (80 if args.city else 6),
-                             interior_count=args.interiors if args.interiors is not None else (5 if args.city else 2),
+                             interior_count=args.interiors if args.interiors is not None else (80 if args.city else 2),
                              layout_profile=args.layout_profile, lock_stair_void=args.lock_stair_void)
     except (ValueError, OSError) as exc:
         print(json.dumps({"code": getattr(exc, "code", "contract.model_error"), "message": str(exc)}, ensure_ascii=False))

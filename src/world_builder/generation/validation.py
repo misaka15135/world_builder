@@ -112,7 +112,9 @@ def check_geometry(records: list[dict]) -> list[dict]:
         check("pilot.entrance_access", [building["id"]], any(a["bounds"]["min"][0] <= x <= a["bounds"]["max"][0] and a["bounds"]["min"][1] <= y <= a["bounds"]["max"][1] and abs(a["attributes"]["surface_z_m"]-building["bounds"]["min"][2]) < 1e-6 for a in access), "entry point joins a road at the same elevation")
         if building["attributes"]["interior_state"] == "generated":
             stairs = [s for s in kind("stair") if s["parent_id"] == building["id"]]
-            check("pilot.stair_required", [building["id"]], bool(stairs), "detailed two-storey building has a stair")
+            needs_stair = building["attributes"]["storeys"] >= 2
+            check("pilot.stair_required", [building["id"]], bool(stairs) == needs_stair,
+                  "a building with more than one storey has a stair, a single-storey one does not")
     for stair in kind("stair"):
         g, building = stair["geometry"], entities[stair["parent_id"]]
         check("pilot.stair_dimensions", [stair["id"]], g["clear_width_m"] >= 1.2 and g["run_m"] > 0 and g["rise_m"] / g["run_m"] <= 0.5 and g["steps"] > 0 and g["rise_m"]/g["steps"] <= 0.2 and g["headroom_m"] >= 2 and g["landing_length_m"] >= 1.2, "template width, slope, riser, headroom and landing thresholds")
@@ -126,6 +128,26 @@ def check_geometry(records: list[dict]) -> list[dict]:
     for furniture in kind("furniture"):
         room = entities[furniture["parent_id"]]
         check("pilot.furniture_floor", [furniture["id"], room["id"]], abs(furniture["bounds"]["min"][2]-room["bounds"]["min"][2]) < 1e-6, "furniture rests on room floor")
+        building_id = entities[room["parent_id"]]["parent_id"]
         for stair in kind("stair"):
+            if stair["parent_id"] != building_id:
+                continue
             check("pilot.furniture_stair", [furniture["id"], stair["id"]], not overlaps(furniture["bounds"], stair["bounds"], (0, 1, 2)), "furniture does not obstruct stair envelope")
+    rooms = kind("room")
+    for room in rooms:
+        storey = entities[room["parent_id"]]
+        building = entities[storey["parent_id"]]
+        check("city.room_storey_bounds", [room["id"], storey["id"]],
+              contains(storey["bounds"], room["bounds"]), "room stays inside its storey")
+        void = building["geometry"]["stair_void_local_m"]
+        base = building["bounds"]["min"]
+        void_box = {"min": [base[0] + void["min"][0], base[1] + void["min"][1], base[2] + 3],
+                    "max": [base[0] + void["max"][0], base[1] + void["max"][1], base[2] + 3.2]}
+        check("city.room_stair_void", [room["id"], building["id"]],
+              not overlaps(room["bounds"], void_box, (0, 1)), "room clears the stair reservation")
+    for storey in kind("storey"):
+        siblings = sorted((r for r in rooms if r["parent_id"] == storey["id"]), key=lambda r: r["id"])
+        for a, b in combinations(siblings, 2):
+            check("city.room_overlap", [a["id"], b["id"]],
+                  not overlaps(a["bounds"], b["bounds"], (0, 1)), "rooms on one storey do not overlap")
     return results

@@ -5,6 +5,7 @@
 - 执行者：root
 - 依赖：005
 - 修改范围：`src/world_builder/generation/`、`src/world_builder/storage/`、`tests/test_generation*.py`、`tools/generate_world.py`、`tools/benchmark_generation.py`、`tools/check_project_docs.py`、`benchmarks/`、生成证据 `artifacts/`、`docs/contracts/generation-v0.1.md`、项目入口/配置、环境记录及 000/006/索引；不改变冻结的 WIR 0.1 Schema。
+- 修改范围：2026-09-25 root 登记建筑形态与室内 programme 子阶段；修改 `src/world_builder/generation/{planner,validation,spec}.py`、`tests/test_generation_city.py`、`docs/contracts/generation-v0.1.md`、006/000/索引。城邦生成器升级为 `0.1.0-city.2`，旧 `0.1.0-city.1` 修订、基准与 008/009 已验收证据保持不变。
 
 ## 目标与范围
 
@@ -17,8 +18,8 @@
 - [x] ~~读取 005 契约，先实现不依赖云端的固定 WorldSpec 与随机种子路径。~~
 - [x] ~~以 `schemas/wir-package-0.1.0.schema.json` 和 `docs/contracts/module-interfaces.md` 为接口基线；所有提交前调用 Schema 与语义验证器。~~
 - [ ] 接入可替换模型服务，将自然语言转换为经过 Schema 校验的规格；保存已接受响应、来源和预算。
-- [ ] 实现地形/水系、建设适宜度、道路/桥、分区/地块、建筑体量生成并按阶段提交。
-- [ ] 实现少量房间和家具模板，在楼层规划时预留出入口与上下楼梯。
+- [x] ~~实现地形/水系、建设适宜度、道路/桥、分区/地块、建筑体量生成并按阶段提交。~~
+- [x] ~~实现少量房间和家具模板，在楼层规划时预留出入口与上下楼梯。~~
 - [ ] 实现硬/软约束、有限修复、上层反馈、取消和失败恢复；区分无解与超时。
 - [x] ~~分别记录执行终止原因与可行性；候选失败、候选预算耗尽、取消、超时和错误均返回 unknown，未实现的无解证明分支不伪造结果。~~
 - [ ] 实现源数据持久化、不可变资源引用、复现清单和按需室内状态。
@@ -109,6 +110,20 @@ HTTPS 适配器仅验证了本地模拟合同，尚无具体云服务端点的�
 | 2026-09-24 | root | 同步 008 手工样件目标通行门槛 | Unity 6000.3.24f1 图形 Play Mode 的连续控制器路线经过南门、一层、楼梯至二层房间；`artifacts/unity-sample/walk-validation.json` 为 `status=pass`、5/5 检查点，`walk-validation.png` 留证。008/009 固定样件门槛均已通过 | 可规划下一轮更大范围试验；006 仍需真实模型服务、几何/修复扩展及完整城邦验证 |
 | 2026-09-24 | root | 建立并验证独立 512 m 固定城邦源端模式 | `CitySpec` 为 80 栋/5 室内、独立 `0.1.0-city.1`，旧 pilot 版本和身份保持；三类布局的道路连接、80 栋无交叠与碰撞注入检查通过。单例与紧凑样例均完成，紧凑样例第 3 次候选通过；已有 26 项旧生成专项测试及 5 项新城邦测试通过 | 按预登记运行 30 输入与完整回归 |
 | 2026-09-24 | root | 完成城邦预登记源端基准及世界包核对 | `benchmarks/city_cases_v1.json` 文件 SHA-256 `8ecc7a59f86a38f19177e8ec8e8204816250c3f23e4c09cf399cd9df38da1cb8`；`artifacts/benchmark-city-v1/report.json` 为 30/30 成功、首次 15/30、三类各 10/10，22,516.487—30,015.911 ms/世界，峰值工作集 55,349,248—56,303,616 bytes；首个 2,156 记录世界的 `city-first.worldpkg` 导出、校验与导入成功，`package-validation.json` 记录非验证记录一致及零硬失败。完整 Python 回归 68 passed，文档检查 33 Markdown/40 链接/5 JSON/13 工单零错误 | 006 仍 in_progress，下一步验证真实模型服务、复杂地形及目标平台同修订城邦通行 |
+
+| 2026-09-25 | root | 按用户要求实现建筑形态多样化与室内 programme | 城邦生成器升级为 `0.1.0-city.2`（历史 `0.1.0-city.1` 修订、基准与 008/009 证据不动；128 m pilot 路径逐字未改）。每栋由种子确定 12/14/16/18 m 宽、14/16/18 m 深、1—3 层与 `residence/shop/workshop/library/inn` 之一；每层在楼梯井以西切两间按 programme 命名的房间并放入匹配家具（hearth/counter/workbench/shelf/bed 等，各带尺寸）；单层楼不再需要楼梯。新增 `city.room_storey_bounds`、`city.room_stair_void`、`city.room_overlap` 规则，`pilot.stair_required` 改为按层数判定；修正 `pilot.furniture_stair` 的"每件家具 × 每座楼梯"二次方缺陷（曾使生成超过 5 分钟）。`--city --seed 101` 实测 65 秒、1379 实体、8175 检查、首候选 feasible；`tests/test_generation_city.py` 6 passed；新增预登记 `benchmarks/city_cases_v2.json`（30 输入、80 栋全带室内） | 运行 v2 的 30 输入预登记批次；把 Minecraft 适配器扩展到 N 层与房间隔墙后按新修订重导 |
+
+### 建筑形态与室内 programme 子阶段（2026-09-25）
+
+执行者 root，状态 in_progress。范围见文件头新增行。目标是让城邦不再是"每栋一样的火柴盒"：体量与功能按种子分异，每层有带用途的房间与匹配家具，同时保留旧版本的世界身份与验收证据。
+
+- [x] ~~按种子为每栋生成不同的体量（宽度、进深、层数）与功能 programme，并保持楼梯井与梯段几何仍然成立。~~
+- [x] ~~为每层生成带用途的房间与匹配家具，并加入房间边界、让开楼梯井、同层不重叠三条独立规则。~~
+- [ ] 运行 `benchmarks/city_cases_v2.json` 的 30 输入预登记批次并记录首候选通过率与最终成功率。
+- [ ] 把 Minecraft/Unity 适配器扩展到多层与房间隔墙，使新修订的形态分异与室内划分在目标平台可见。
+- [ ] 为房间加入连通性检查（门洞或走廊），家具从盒代理升级为可识别的构件。
+
+本子阶段仍只覆盖轴对齐模板；家具是盒代理，三层建筑只在 1—2 层之间设楼梯，生态与街道家具未实现。
 
 ## 交接说明
 

@@ -8,6 +8,37 @@ from .spec import PilotSpec, canonical, digest
 
 STAGES = ("terrain", "network", "parcels", "buildings", "interiors")
 
+# Per-building programmes for the 512 m city. Each programme decides how a
+# storey is divided and what furniture the rooms hold; the shapes stay template
+# driven, so everything below is adapter-side policy, not recovered source data.
+PROGRAMMES = ("residence", "shop", "workshop", "library", "inn")
+PROGRAMME_ROOMS = {
+    "residence": ("living_room", "bedroom"),
+    "shop": ("shopfront", "stockroom"),
+    "workshop": ("workshop", "tool_store"),
+    "library": ("reading_room", "book_stack"),
+    "inn": ("common_room", "guest_room"),
+}
+PROGRAMME_FURNITURE = {
+    "living_room": ("hearth", "bench"),
+    "bedroom": ("bed",),
+    "shopfront": ("counter", "display_rack"),
+    "stockroom": ("crate_stack",),
+    "workshop": ("workbench", "anvil"),
+    "tool_store": ("tool_rack",),
+    "reading_room": ("reading_table", "chair"),
+    "book_stack": ("shelf", "shelf"),
+    "common_room": ("long_table", "bench"),
+    "guest_room": ("bed", "chest"),
+}
+FURNITURE_SIZES_M = {
+    "hearth": [1.6, 0.8, 1.0], "bench": [1.6, 0.6, 0.5], "bed": [1.0, 2.0, 0.6],
+    "counter": [1.8, 0.8, 1.0], "display_rack": [1.0, 0.6, 1.6], "crate_stack": [1.0, 1.0, 1.2],
+    "workbench": [1.8, 0.8, 0.9], "anvil": [0.8, 0.6, 0.8], "tool_rack": [1.2, 0.4, 1.6],
+    "reading_table": [1.4, 0.9, 0.8], "chair": [0.6, 0.6, 0.9], "shelf": [1.6, 0.4, 1.8],
+    "long_table": [2.2, 0.9, 0.8], "chest": [0.9, 0.6, 0.7],
+}
+
 
 def entity(entity_id: str, kind: str, parent: str | None, origin: list,
            size: list, parent_origin=(0, 0, 0), **attributes) -> dict:
@@ -150,21 +181,35 @@ def plan_stage(spec: PilotSpec, stage: str, records: list[dict]) -> tuple[list[d
         for i, lot in enumerate(lots):
             rng = random.Random(int(digest([spec.seed, lot["id"], spec.generator_version])[7:23], 16))
             lot_origin = lot["bounds"]["min"]
-            building = entity(f"building_{i:03d}", "building", lot["id"], [8, 6, 2], [16, 16, 6.4],
-                              parent_origin=lot_origin, storeys=2, interior_state="deferred",
-                              roof_style=rng.choice(["gable", "spire"]),
+            if size == 512:
+                # Per-building envelope and programme: a 32 m parcel takes a
+                # building of 12-18 m by 14-18 m with one to three storeys.
+                width = rng.choice((12, 14, 16, 16, 18))
+                depth = rng.choice((14, 16, 16, 18))
+                storeys = rng.choice((1, 2, 2, 2, 3))
+                programme = rng.choice(PROGRAMMES)
+                origin = [(32 - width) / 2, (32 - depth) / 2, 2]
+                box = [width, depth, storeys * 3 + 0.4]
+            else:
+                width = depth = 16
+                storeys, programme = 2, "residence"
+                origin, box = [8, 6, 2], [16, 16, 6.4]
+            building = entity(f"building_{i:03d}", "building", lot["id"], origin, box,
+                              parent_origin=lot_origin, storeys=storeys, interior_state="deferred",
+                              programme=programme, roof_style=rng.choice(["gable", "spire"]),
                               style_profile="arcane_city_template_v1" if size == 512 else "arcane_pilot_v1")
             building["semantic_completeness"] = "shell_only"
             building["geometry"].update({"representation": "parametric_building", "storey_height_m": 3,
                 "wall_thickness_m": 0.2, "floor_thickness_m": 0.2, "roof_height_m": 0.4,
-                "stair_void_local_m": {"min": [11, 3, 3], "max": [14, 9 if spec.layout_profile == "compact" else 13, 3.2]},
+                "stair_void_local_m": {"min": [width - 5, 3, 3],
+                                       "max": [width - 2, 9 if spec.layout_profile == "compact" else 13, 3.2]},
                 "entry": {"side": "east" if size == 512 or i % 2 == 0 else "west", "offset_m": 2, "width_m": 2, "height_m": 2.4}})
             if spec.lock_stair_void:
                 building["locks"].append({"json_pointer": "/geometry/stair_void_local_m", "mode": "subtree", "reason": "user locked the initial stair reservation"})
             additions.append(building)
             x0, y0, _ = building["bounds"]["min"]
             if size == 512:
-                start, end = x0 + 16, lot_origin[0] + 32
+                start, end = x0 + width, lot_origin[0] + 32
                 road_id = f"road_{'west' if lot['attributes']['bank'] == 0 else 'east'}_{lot['attributes']['column']}"
             else:
                 start, end = (x0 + 16, 46) if i % 2 == 0 else (82, x0)
@@ -176,22 +221,59 @@ def plan_stage(spec: PilotSpec, stage: str, records: list[dict]) -> tuple[list[d
         buildings = sorted((r for r in records if r.get("kind") == "building"), key=lambda r: r["id"])
         for i, building in enumerate(buildings[:spec.interior_count]):
             origin = building["bounds"]["min"]
+            if size != 512:
+                # The frozen 128 m pilot keeps its original single-room plan.
+                building["attributes"]["interior_state"] = "generated"
+                building["semantic_completeness"] = "component"
+                room_ids = []
+                for floor in range(2):
+                    floor_id, room_id = f"storey_{i:03d}_{floor}", f"room_{i:03d}_{floor}"
+                    storey = entity(floor_id, "storey", building["id"], [0, 0, floor * 3], [16, 16, 3], parent_origin=origin)
+                    room = entity(room_id, "room", floor_id, [1, 1, 0.2], [9, 14, 2.6], parent_origin=storey["bounds"]["min"])
+                    furniture = entity(f"furniture_{i:03d}_{floor}", "furniture", room_id, [2, 5, 0], [1, 1, 1], parent_origin=room["bounds"]["min"], use="reading_table")
+                    room_ids.append(room_id)
+                    additions.extend([storey, room, furniture])
+                run = 4 if spec.layout_profile == "compact" else 8
+                stair = entity(f"stair_{i:03d}", "stair", building["id"], [11, 3, 0.2], [3, run + 2, 5.6], parent_origin=origin)
+                stair["geometry"] = {"representation": "straight_stair", "size_m": [3, run + 2, 5.6], "rise_m": 3,
+                                     "run_m": run, "clear_width_m": 2, "headroom_m": 2.4,
+                                     "steps": 20, "landing_length_m": 2, "floor_levels_m": [2.2, 5.2]}
+                additions.extend([stair, relation(f"relation_stair_{i:03d}", "connects", stair["id"], room_ids)])
+                continue
+            width, depth, _ = building["geometry"]["size_m"]
+            storeys = building["attributes"]["storeys"]
+            programme = building["attributes"].get("programme", "residence")
+            void = building["geometry"]["stair_void_local_m"]
             building["attributes"]["interior_state"] = "generated"
             building["semantic_completeness"] = "component"
-            room_ids = []
-            for floor in range(2):
-                floor_id, room_id = f"storey_{i:03d}_{floor}", f"room_{i:03d}_{floor}"
-                storey = entity(floor_id, "storey", building["id"], [0, 0, floor*3], [16, 16, 3], parent_origin=origin)
-                room = entity(room_id, "room", floor_id, [1, 1, 0.2], [9, 14, 2.6], parent_origin=storey["bounds"]["min"])
-                furniture = entity(f"furniture_{i:03d}_{floor}", "furniture", room_id, [2, 5, 0], [1, 1, 1], parent_origin=room["bounds"]["min"], use="reading_table")
-                room_ids.append(room_id)
-                additions.extend([storey, room, furniture])
-            run = 4 if spec.layout_profile == "compact" else 8
-            stair = entity(f"stair_{i:03d}", "stair", building["id"], [11, 3, 0.2], [3, run+2, 5.6], parent_origin=origin)
-            stair["geometry"] = {"representation": "straight_stair", "size_m": [3, run+2, 5.6], "rise_m": 3,
-                                 "run_m": run, "clear_width_m": 2, "headroom_m": 2.4,
-                                 "steps": 20, "landing_length_m": 2, "floor_levels_m": [2.2, 5.2]}
-            additions.extend([stair, relation(f"relation_stair_{i:03d}", "connects", stair["id"], room_ids)])
+            for floor in range(storeys):
+                floor_id = f"storey_{i:03d}_{floor}"
+                storey = entity(floor_id, "storey", building["id"], [0, 0, floor * 3], [width, depth, 3], parent_origin=origin)
+                additions.append(storey)
+                # The stair keeps the east strip; the rest of the storey splits
+                # into two rooms along the north axis.
+                block_x0, block_x1 = 1.0, void["min"][0] - 1.0
+                mid = depth / 2
+                uses = PROGRAMME_ROOMS.get(programme, PROGRAMME_ROOMS["residence"])
+                for k, (n0, n1) in enumerate(((1.0, mid), (mid, depth - 1.0))):
+                    use = uses[(floor + k) % len(uses)]
+                    room_id = f"room_{i:03d}_{floor}_{k}"
+                    room = entity(room_id, "room", floor_id, [block_x0, n0, 0.2],
+                                  [round(block_x1 - block_x0, 6), round(n1 - n0, 6), 2.6],
+                                  parent_origin=storey["bounds"]["min"], use=use)
+                    additions.append(room)
+                    for f, item in enumerate(PROGRAMME_FURNITURE[use]):
+                        additions.append(entity(f"furniture_{i:03d}_{floor}_{k}_{f}", "furniture", room_id,
+                                                [1.0 + 2.0 * f, 1.0, 0.0], list(FURNITURE_SIZES_M[item]),
+                                                parent_origin=room["bounds"]["min"], use=item))
+            if storeys >= 2:
+                run = 4 if spec.layout_profile == "compact" else 8
+                stair = entity(f"stair_{i:03d}", "stair", building["id"], [void["min"][0], 3, 0.2], [3, run + 2, 5.6], parent_origin=origin)
+                stair["geometry"] = {"representation": "straight_stair", "size_m": [3, run + 2, 5.6], "rise_m": 3,
+                                     "run_m": run, "clear_width_m": 2, "headroom_m": 2.4,
+                                     "steps": 20, "landing_length_m": 2, "floor_levels_m": [2.2, 5.2]}
+                additions.extend([stair, relation(f"relation_stair_{i:03d}", "connects", stair["id"],
+                                                  [f"room_{i:03d}_0_0", f"room_{i:03d}_1_0"])])
     else:
         raise ValueError(f"unknown stage {stage}")
     for item in additions:
