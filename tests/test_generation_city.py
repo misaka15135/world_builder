@@ -104,3 +104,25 @@ def test_city_districts_drive_building_scale_and_programme():
     assert mean(heights["civic"]) > mean(heights["market"]) > mean(heights["residential"])
     assert "library" not in programmes["residential"]
     assert programmes["residential"].count("residence") >= len(programmes["residential"]) // 2
+
+
+def test_city_roads_widen_towards_the_centre():
+    spec = CitySpec(seed=101)
+    records = initial_records(spec)
+    for stage in STAGES:
+        additions, _ = plan_stage(spec, stage, records)
+        records.extend(additions)
+        next(r for r in records if r["record_type"] == "world_spec")["extensions"]["stage"] = stage
+    spines = [r for r in records if r.get("kind") == "road"
+              and (r["id"].startswith("road_west_") or r["id"].startswith("road_east_"))]
+    assert len(spines) == 30, "ten columns split into three district bands"
+    widths = {}
+    for spine in spines:
+        widths.setdefault(spine["id"].rsplit("_", 1)[1], set()).add(spine["geometry"]["size_m"][0])
+    assert widths == {"0": {3}, "1": {4}, "2": {6}}, widths
+    road_ids = {r["id"] for r in records if r.get("kind") in {"road", "bridge"}}
+    entrances = [r for r in records if r.get("relation_type") == "entrance"]
+    assert entrances, "every building keeps an entrance relation"
+    for relation in records:
+        if relation.get("relation_type") == "connects" and relation["source_id"] in road_ids:
+            assert set(relation["target_ids"]) <= road_ids, relation["id"]

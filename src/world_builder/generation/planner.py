@@ -44,13 +44,14 @@ FURNITURE_SIZES_M = {
 # so the residential edge, the market band and the civic centre do not look
 # alike. Layout regularity, road width and per-era style are still open work.
 DISTRICT_PLAN = {
-    "residential": {"width_m": (10, 12, 14), "depth_m": (14, 16), "storeys": (1, 2),
+    "residential": {"road_width_m": 3, "width_m": (10, 12, 14), "depth_m": (14, 16), "storeys": (1, 2),
                     "programmes": ("residence", "residence", "workshop")},
-    "market": {"width_m": (14, 16), "depth_m": (14, 16, 18), "storeys": (2, 2),
+    "market": {"road_width_m": 4, "width_m": (14, 16), "depth_m": (14, 16, 18), "storeys": (2, 2),
                "programmes": ("shop", "shop", "workshop", "inn")},
-    "civic": {"width_m": (16, 18, 18), "depth_m": (16, 18, 18), "storeys": (2, 3),
+    "civic": {"road_width_m": 6, "width_m": (16, 18, 18), "depth_m": (16, 18, 18), "storeys": (2, 3),
               "programmes": ("library", "inn", "workshop")},
 }
+DISTRICT_USES = ("residential", "market", "civic")
 
 
 def entity(entity_id: str, kind: str, parent: str | None, origin: list,
@@ -133,10 +134,18 @@ def plan_stage(spec: PilotSpec, stage: str, records: list[dict]) -> tuple[list[d
             cross_y = 44 + 4 * y_pitch
             west_spines = [40 + col * x_pitch for col in range(5)]
             east_spines = [324 + col * x_pitch for col in range(5)]
+            # Each spine is split by district so the street itself gets wider
+            # towards the centre instead of one fixed 4 m ribbon.
+            bands = ((0, 3 * y_pitch), (3 * y_pitch, 6 * y_pitch), (6 * y_pitch, size))
             for bank, xs in (("west", west_spines), ("east", east_spines)):
                 for col, x in enumerate(xs):
-                    additions.append(entity(f"road_{bank}_{col}", "road", world, [x, 8, 1.6], [4, size - 16, 0.4], surface_z_m=2))
-                    additions.append(relation(f"relation_{bank}_{col}_cross", "connects", f"road_{bank}_{col}", [f"road_cross_{bank}"]))
+                    for d, (n0, n1) in enumerate(bands):
+                        n0, n1 = max(8, n0), min(size - 8, n1)
+                        additions.append(entity(f"road_{bank}_{col}_{d}", "road", world,
+                                                [x, n0, 1.6], [DISTRICT_PLAN[DISTRICT_USES[d]]["road_width_m"], n1 - n0, 0.4],
+                                                surface_z_m=2))
+                    additions.append(relation(f"relation_{bank}_{col}_cross", "connects",
+                                              f"road_{bank}_{col}_1", [f"road_cross_{bank}"]))
             additions.extend([
                 entity("road_cross_west", "road", world, [west_spines[0], cross_y, 1.6], [center - 4 - west_spines[0], 6, 0.4], surface_z_m=2),
                 entity("road_cross_east", "road", world, [center + 4, cross_y, 1.6], [east_spines[-1] + 4 - center - 4, 6, 0.4], surface_z_m=2),
@@ -223,7 +232,9 @@ def plan_stage(spec: PilotSpec, stage: str, records: list[dict]) -> tuple[list[d
             x0, y0, _ = building["bounds"]["min"]
             if size == 512:
                 start, end = x0 + width, lot_origin[0] + 32
-                road_id = f"road_{'west' if lot['attributes']['bank'] == 0 else 'east'}_{lot['attributes']['column']}"
+                district_index = int(lot["parent_id"].split("_")[1])
+                road_id = (f"road_{'west' if lot['attributes']['bank'] == 0 else 'east'}"
+                           f"_{lot['attributes']['column']}_{district_index}")
             else:
                 start, end = (x0 + 16, 46) if i % 2 == 0 else (82, x0)
                 road_id = "road_west" if i % 2 == 0 else "road_east"
