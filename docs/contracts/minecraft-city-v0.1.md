@@ -1,0 +1,74 @@
+# 512 m 城邦 Minecraft 方块化 0.1
+
+状态：源端导出与一个分块的目标粘贴已实测；完整 16 分块的目标粘贴与通行仍待做。日期：2026-09-25。适配器版本：`0.1.0-city.1`；目标组合：Minecraft Java `1.21.11` + Fabric Loader `0.19.5` + WorldEdit `7.3.19`，Sponge Schematic v3，DataVersion `4671`。
+
+## 来源与适用边界
+
+输入固定为 [006 512 m 城邦包](../../artifacts/benchmark-city-v1/city-first.worldpkg)的源修订 `revision_c1b82ea36c16a34c95f97c42`，294 个实体。导出前调用 WIR 语义验证器；非 `city_spec` 快照、非轴对齐几何或缺失地形/河流/路/桥/建筑层都会拒绝导出。
+
+坐标映射为 `(x, y_north, z_up)_WIR → (x, z, -y)_Minecraft`，1 米 = 1 方块。与 [两层样件](minecraft-sample-v0.1.md)使用同一映射，但两者是**独立的适配器**：样件模块被 `SOURCE_HASH` 冻结在手工样例上，城邦导出不复用它，也不修改它。
+
+## 方块策略与损失
+
+全部方块都是适配器策略，不是源几何的直接事实：
+
+| 源 | 方块 | 损失 |
+|---|---|---|
+| 道路 | `stone_bricks` | 0.4 m 厚路面量化为 1 格，路面顶面即世界可站立面 |
+| 桥 | `oak_planks` | 同上；桥面与引桥同层，高差为 0 |
+| 建筑（全部 80 栋） | `smooth_stone` 壳 / `oak_planks` 楼板与屋顶 | 空心两层壳：墙、楼板、屋顶、东门洞与楼板开口全部来自源声明的包络、层高、墙厚、入口与 `stair_void_local_m`。`interior_state: deferred` 的 75 栋**源里没有楼梯与房间可落**，因此只有一层可进入、二层有洞无梯 |
+| 建筑（5 栋已生成室内） | 同上，另加 `oak_planks` 梯级 | 额外落下源生成的直跑楼梯与平台；20 级梯段低于方块分辨率，量化后合并为整格台阶，**必须重新验证可否通行** |
+
+门洞按整数格开出：源门高 2.4 m 从楼板上表面起算，直接体素化会让门楣吃掉一整个格子、门洞塌成 1 格高而不可通行。适配器把门洞向上取整到格子边界、至少保留 2 格，并让门楣从该边界起算。**不能用空气格事后掏洞**——目标侧的 `//paste -a` 会跳过空气格。
+| 地形 | `grass_block` | 采样高程场被平坦两岸代理替代 |
+| 河道 | `water` | 静水体积，无流体模拟 |
+
+分区、地块、约束、配方与修订等非空间记录保留在 WIR 包内但不落方块，在报告中记为 `omitted`。当前报告为 1 preserved / 175 approximated / 118 omitted / 0 unsupported / 0 failed，逐实体一条，总数等于 294。
+
+## 产物
+
+```powershell
+$env:PYTHONPATH = 'src'
+python tools/export_minecraft_city.py --source artifacts/benchmark-city-v1/city-first.worldpkg --output artifacts/minecraft-city-v1 --interiors --data-version 4671
+```
+
+输出 `manifest.json`、`export_report.json`、`target_profile.json` 和 `schematics/` 下 16 个 128 m 分块，分块网格与 008 v3 的 Unity 分块一致。每个分块是 128 × 36 × 128 的稠密 Sponge v3 剪贴板（`Width`=128、`Height`=36、`Length`=128），x 索引为东向、y 为高度、z 为南向，`Offset` 为 `[0,0,0]`。当前 1,161 个盒合计 626,067 个非空气方块。
+
+清单中每个分块的 `world_min` 是**剪贴板自身的局部原点**（y 恒为 -4，对应源 `region_bounds` 的下界）。实际粘贴时整块随玩家位置平移，推荐基线为 `(cx × 128, -64, cz × 128)`，这样源 `z=0` 落在既有超平坦地面 `y=-60` 之上。
+
+目标粘贴需要 16 次 `//schem load city_c??_??` + `//paste -a`；`-a` 会跳过空气格，因此游戏报告的 `blocks affected` 应等于清单中该分块的 `non_air_blocks`。
+
+## 本机验证
+
+离线：`pytest tests/test_minecraft_city.py` 5 项通过，含独立 GZip/NBT/varint 解析、分块哈希、方块坐标抽查（桥面 `oak_planks`、道路 `stone_bricks`、河道 `water`、河岸 `grass_block`、空心室内壳与实心建筑代理）以及非城邦输入拒绝。完整回归 77 项通过。
+
+第一版目标验证：分块 `city_c01_03`（源 `x 128—256`、北向 `256—384`，含跨河桥的西半）复制到隔离游戏目录的 `config/worldedit/schematics`，在 `WB Verify Flat` 世界中于 `(128,-64,-384)` 粘贴：
+
+```text
+The clipboard has been pasted at (128,-64,-384)
+42232 blocks affected
+```
+
+当时清单中该分块的 `non_air_blocks` 同为 42232，逐块吻合——但这只证明方块**数量**一致，不证明结果可用。
+
+2026-09-25 用户查看目标世界后指出：该分块里只有 4 栋建筑，全是砖块、没有门、没有内部空间。核对确认属实：该分块的 `building_053/054/063/064` 在城市 WIR 中都是 `interior_state: deferred`，而第一版适配器只对 5 栋 `generated` 建筑建壳，其余一律落成实心盒。这就是上面"全部 80 栋建壳 + 门洞按整数格取整"修订的来源；分块数不变，`city_c01_03` 的非空气方块由 42232 变为 38960。
+
+**世界内目前仍是第一版的实心砖块结果**（位于 `x 128—256`、`z -384—-256`、`y=-64` 起），需要用重新导出的分块覆盖重贴。
+
+## 完整分块粘贴与跨桥通行（2026-09-25）
+
+输入通道：隔离游戏目录 `world_builder_1.21.11/options.txt` 把 `key_key.chat` 改绑到 `key.keyboard.f9`、`key_key.command` 改到 `key.keyboard.f10`。原因是计算机操作通道下输入法会在窗口失焦后回到中文态并吞掉字母键，`t`/`/` 都开不了聊天；F9 不受影响。聊天框获得焦点后 `type_text` 直接可用，不必依赖剪贴板。原文件备份在 `%TEMP%\wb-options.txt.backup`。
+
+16 个分块全部粘贴进 `WB Verify Flat`，锚点为 `(cx×128, -64, cz×128)`。逐块游戏回报的 `blocks affected` 与清单 `non_air_blocks` 一致（例如 `c00_01` 40313、`c01_01` 38598、`c02_01` 38040、`c03_01` 40676）。高空俯视可见完整 512 × 512 城邦：全城路网、80 栋建筑、中央河道与跨河桥。
+
+跨桥通行：玩家传送到西引桥 `(245.5, -58.2, -270.5)` 朝东，随后由按键驱动（`W`+`Space` 连按）连续前进 22 秒，终点 `(267.7, -55.5, -270.5)`，**向东位移 22.2 米并跨越 x 252—260 的桥面**；区间内没有使用传送。方块抽查：
+
+```text
+[misaka15135] BRIDGE_DECK_OAK      # (256,-59,-271) = minecraft:oak_planks
+[misaka15135] UNDER_BRIDGE_WATER   # (256,-60,-271) = minecraft:water
+[misaka15135] WEST_ROAD_STONE      # (244,-59,-271) = minecraft:stone_bricks
+```
+
+**已知限制**：位移由"连按"产生（本通道 API 没有按键按住/抬起，只有整键点按），实测速度约 1 m/s，单帧最大位移大于常规行走；因此这次只作为该区间的通行证据，不能当作行走速度或操作手感基准。起点与建筑内部的观察点使用 `/tp`，区间内的通行本身没有传送。
+
+**尚未完成**：楼梯在方块化后的可通行性（75 栋 `deferred` 建筑源里没有楼梯；5 栋已生成室内的梯段量化成整格台阶后仍需实走）、室内二层可达性、建筑门洞的逐栋抽查。
