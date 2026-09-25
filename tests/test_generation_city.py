@@ -166,3 +166,27 @@ def test_city_rooms_are_separated_by_declared_partitions():
     checks = check_geometry(records)
     assert not [c for c in checks if c["rule"].startswith("city.partition") and c["state"] != "pass"]
     assert not [c for c in checks if c["rule"] == "city.room_circulation" and c["state"] != "pass"]
+
+
+def test_style_profile_changes_the_silhouette():
+    def build(style):
+        spec = CitySpec(seed=101, style_profile=style)
+        records = initial_records(spec)
+        for stage in STAGES:
+            additions, _ = plan_stage(spec, stage, records)
+            records.extend(additions)
+            next(r for r in records if r["record_type"] == "world_spec")["extensions"]["stage"] = stage
+        return spec, records
+
+    arcane_spec, arcane = build("arcane_medieval")
+    modern_spec, modern = build("modern_grid")
+    assert arcane_spec.world_id != modern_spec.world_id, "a different style is a different world"
+    arcane_buildings = [r for r in arcane if r.get("kind") == "building"]
+    modern_buildings = [r for r in modern if r.get("kind") == "building"]
+    assert {r["attributes"]["roof_style"] for r in modern_buildings} == {"flat"}
+    assert {"gable", "spire"} & {r["attributes"]["roof_style"] for r in arcane_buildings}
+    mean = lambda rows, key: sum(key(r) for r in rows) / len(rows)
+    assert mean(modern_buildings, lambda r: r["attributes"]["storeys"]) > mean(
+        arcane_buildings, lambda r: r["attributes"]["storeys"])
+    assert {r["attributes"]["programme"] for r in modern_buildings} <= {"apartment", "office", "shop", "inn", "library", "workshop", "residence"}
+    assert not [c for c in check_geometry(modern) if c["severity"] == "hard" and c["state"] != "pass"]

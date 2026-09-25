@@ -41,7 +41,16 @@ PALETTE = {
     "minecraft:red_bed": 14,
     "minecraft:oak_fence": 15,
     "minecraft:chiseled_quartz_block": 16,
+    "minecraft:light_gray_concrete": 17,
+    "minecraft:glass": 18,
 }
+
+
+def _shell_materials(style: str) -> tuple[str, str]:
+    """Wall and slab blocks for a style; the modern profile rereads as a CBD."""
+    if style == "modern_grid":
+        return "minecraft:light_gray_concrete", "minecraft:smooth_stone"
+    return "minecraft:smooth_stone", "minecraft:oak_planks"
 
 # Furniture is still a box proxy, but the block picks up the room's function so
 # a bedroom, a workshop and a chapel do not read the same from inside.
@@ -147,7 +156,8 @@ def _partition_boxes(building: dict, entities: dict, storeys: list[dict]) -> lis
     return parts
 
 
-def _building_shell(building: dict, entities: dict, *, with_interior: bool) -> list[dict]:
+def _building_shell(building: dict, entities: dict, *, with_interior: bool,
+                    style: str = "arcane_medieval") -> list[dict]:
     """Hollow multi-storey shell from declared source parameters.
 
     Envelope, storey count, storey height, wall and floor thickness, stair void
@@ -189,7 +199,7 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool) -> l
     if not (n0 + wall < door_n0 < door_n1 < n1 - wall and lintel_low <= z1 - roof):
         raise CityExportError("target.building_entry", building["id"])
     name = building["id"]
-    shell, plank = "minecraft:smooth_stone", "minecraft:oak_planks"
+    shell, plank = _shell_materials(style)
     parts = [_box(name, x0, x1, n0, n1, z0, z0 + floor, plank)]
     for level in range(1, storey_count):
         top = z0 + level * g["storey_height_m"]
@@ -269,6 +279,7 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
     kinds = {r["kind"] for r in entities}
     if not {"terrain", "river", "road", "bridge", "building"} <= kinds:
         raise CityExportError("target.city_layers", "city is missing required spatial layers")
+    style = (specs[0].get("extensions") or {}).get("city_spec", {}).get("style_profile", "arcane_medieval")
     boxes: list[dict] = []
     for record in entities:
         if record["kind"] not in {"road", "bridge", "building"}:
@@ -277,7 +288,7 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
             raise CityExportError("target.city_geometry", record["id"])
         if record["kind"] == "building":
             with_interior = include_interiors and record["attributes"]["interior_state"] == "generated"
-            boxes.extend(_building_shell(record, by_id, with_interior=with_interior))
+            boxes.extend(_building_shell(record, by_id, with_interior=with_interior, style=style))
             continue
         low, high = record["bounds"]["min"], record["bounds"]["max"]
         block = {"road": "minecraft:stone_bricks", "bridge": "minecraft:oak_planks"}[record["kind"]]

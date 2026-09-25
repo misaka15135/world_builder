@@ -11,7 +11,7 @@ STAGES = ("terrain", "network", "parcels", "buildings", "interiors")
 # Per-building programmes for the 512 m city. Each programme decides how a
 # storey is divided and what furniture the rooms hold; the shapes stay template
 # driven, so everything below is adapter-side policy, not recovered source data.
-PROGRAMMES = ("residence", "shop", "workshop", "library", "inn", "temple", "town_hall")
+PROGRAMMES = ("residence", "shop", "workshop", "library", "inn", "temple", "town_hall", "apartment", "office")
 PROGRAMME_ROOMS = {
     "residence": ("living_room", "bedroom"),
     "shop": ("shopfront", "stockroom"),
@@ -20,6 +20,8 @@ PROGRAMME_ROOMS = {
     "inn": ("common_room", "guest_room"),
     "temple": ("nave", "vestry"),
     "town_hall": ("council_chamber", "records_room"),
+    "apartment": ("living_room", "bedroom"),
+    "office": ("open_plan", "meeting_room"),
 }
 PROGRAMME_FURNITURE = {
     "living_room": ("hearth", "bench"),
@@ -36,6 +38,8 @@ PROGRAMME_FURNITURE = {
     "vestry": ("cabinet",),
     "council_chamber": ("long_table", "chair"),
     "records_room": ("shelf", "shelf"),
+    "open_plan": ("desk", "desk"),
+    "meeting_room": ("long_table", "chair"),
 }
 FURNITURE_SIZES_M = {
     "hearth": [1.6, 0.8, 1.0], "bench": [1.6, 0.6, 0.5], "bed": [1.0, 2.0, 0.6],
@@ -44,6 +48,7 @@ FURNITURE_SIZES_M = {
     "reading_table": [1.4, 0.9, 0.8], "chair": [0.6, 0.6, 0.9], "shelf": [1.6, 0.4, 1.8],
     "long_table": [2.2, 0.9, 0.8], "chest": [0.9, 0.6, 0.7],
     "altar": [1.6, 0.9, 1.2], "pew": [2.0, 0.6, 0.9], "cabinet": [1.0, 0.5, 1.6],
+    "desk": [1.6, 0.8, 0.75],
 }
 
 # Silhouette follows function: the roof style and its height are declared per
@@ -72,6 +77,24 @@ DISTRICT_PLAN = {
               "programmes": ("library", "inn", "temple", "town_hall", "workshop")},
 }
 DISTRICT_USES = ("residential", "market", "civic")
+
+# The style profile decides what the same three districts look like. The arcane
+# profile is the original pitched-roof town; the modern profile trades pitched
+# roofs and jittered lots for flat-roofed slabs on a strict grid, which is what
+# a CBD next to low-rise housing should read as.
+MODERN_DISTRICT_PLAN = {
+    "residential": {"road_width_m": 4, "parcel_jitter_m": 0, "width_m": (14, 16, 18), "depth_m": (16, 18),
+                    "storeys": (2, 3), "programmes": ("apartment", "apartment", "shop")},
+    "market": {"road_width_m": 5, "parcel_jitter_m": 0, "width_m": (16, 18), "depth_m": (16, 18),
+               "storeys": (3, 4), "programmes": ("shop", "office", "inn")},
+    "civic": {"road_width_m": 8, "parcel_jitter_m": 0, "width_m": (18, 18), "depth_m": (18, 18),
+              "storeys": (4, 5), "programmes": ("office", "office", "library")},
+}
+STYLE_DISTRICT_PLAN = {"arcane_medieval": DISTRICT_PLAN, "modern_grid": MODERN_DISTRICT_PLAN}
+MODERN_ROOF = {"apartment": ("flat", 0.4), "shop": ("flat", 0.4), "office": ("flat", 0.4),
+               "inn": ("flat", 0.4), "library": ("flat", 0.4), "workshop": ("flat", 0.4),
+               "residence": ("flat", 0.4), "temple": ("flat", 0.4), "town_hall": ("flat", 0.4)}
+STYLE_ROOF = {"arcane_medieval": PROGRAMME_ROOF, "modern_grid": MODERN_ROOF}
 
 
 def entity(entity_id: str, kind: str, parent: str | None, origin: list,
@@ -132,6 +155,9 @@ def plan_stage(spec: PilotSpec, stage: str, records: list[dict]) -> tuple[list[d
     resources: dict[str, bytes] = {}
     world = spec.world_id
     size = spec.region_size_m
+    style = getattr(spec, "style_profile", "arcane_medieval")
+    district_plan = STYLE_DISTRICT_PLAN[style]
+    style_roof = STYLE_ROOF[style]
     center = size // 2
     if stage == "terrain":
         values = [[height(spec, x, y) for x in range(0, size + 1, 4)] for y in range(0, size + 1, 4)]
@@ -162,7 +188,7 @@ def plan_stage(spec: PilotSpec, stage: str, records: list[dict]) -> tuple[list[d
                     for d, (n0, n1) in enumerate(bands):
                         n0, n1 = max(8, n0), min(size - 8, n1)
                         additions.append(entity(f"road_{bank}_{col}_{d}", "road", world,
-                                                [x, n0, 1.6], [DISTRICT_PLAN[DISTRICT_USES[d]]["road_width_m"], n1 - n0, 0.4],
+                                                [x, n0, 1.6], [district_plan[DISTRICT_USES[d]]["road_width_m"], n1 - n0, 0.4],
                                                 surface_z_m=2))
                     additions.append(relation(f"relation_{bank}_{col}_cross", "connects",
                                               f"road_{bank}_{col}_1", [f"road_cross_{bank}"]))
@@ -204,13 +230,13 @@ def plan_stage(spec: PilotSpec, stage: str, records: list[dict]) -> tuple[list[d
                         # Outlying districts sit on a looser grid than the civic
                         # centre: only the north offset moves, so the spine and
                         # access roads keep their geometry.
-                        jitter = DISTRICT_PLAN[DISTRICT_USES[district]]["parcel_jitter_m"]
+                        jitter = district_plan[DISTRICT_USES[district]]["parcel_jitter_m"]
                         py = y
                         if jitter:
                             rng = random.Random(int(digest([spec.seed, f"parcel_{i:03d}", spec.generator_version])[7:23], 16))
                             py = y + rng.uniform(-jitter, jitter)
                         additions.append(entity(f"parcel_{i:03d}", "parcel", f"district_{district}",
-                                                [x, py - boundaries[district], 4], [32, 32, 16],
+                                                [x, py - boundaries[district], 4], [32, 32, 24],
                                                 parent_origin=[0, boundaries[district], -4], bank=bank, column=col,
                                                 raw_height_range_m=[height(spec, x, py), height(spec, x + 32, py + 32)],
                                                 platform_z_m=2, construction="level_platform_with_foundation"))
@@ -233,12 +259,12 @@ def plan_stage(spec: PilotSpec, stage: str, records: list[dict]) -> tuple[list[d
             rng = random.Random(int(digest([spec.seed, lot["id"], spec.generator_version])[7:23], 16))
             lot_origin = lot["bounds"]["min"]
             if size == 512:
-                plan = DISTRICT_PLAN.get(district_use.get(lot["parent_id"]), DISTRICT_PLAN["residential"])
+                plan = district_plan.get(district_use.get(lot["parent_id"]), district_plan["residential"])
                 width = rng.choice(plan["width_m"])
                 depth = rng.choice(plan["depth_m"])
                 storeys = rng.choice(plan["storeys"])
                 programme = rng.choice(plan["programmes"])
-                roof_style, roof_height = PROGRAMME_ROOF[programme]
+                roof_style, roof_height = style_roof[programme]
                 origin = [(32 - width) / 2, (32 - depth) / 2, 2]
                 box = [width, depth, storeys * 3 + roof_height]
             else:

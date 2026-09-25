@@ -12,7 +12,8 @@ from pathlib import Path
 
 import pytest
 
-from world_builder.adapters.minecraft.city import CityExportError, _partition_boxes, _roof_boxes, export_city
+from world_builder.adapters.minecraft.city import (CityExportError, _partition_boxes, _roof_boxes,
+                                                   _shell_materials, export_city)
 from world_builder.storage.worldpkg import read_worldpkg
 
 SOURCE = Path(__file__).resolve().parents[1] / "artifacts/benchmark-city-v1/city-first.worldpkg"
@@ -237,6 +238,11 @@ def test_partitions_follow_the_source_declaration() -> None:
     broken["partition_x"]["attributes"]["opening"]["side"] = "north"
     with pytest.raises(CityExportError):
         _partition_boxes({"id": "b"}, broken, [storey])
+
+
+def test_style_profiles_pick_different_shell_materials() -> None:
+    assert _shell_materials("arcane_medieval") == ("minecraft:smooth_stone", "minecraft:oak_planks")
+    assert _shell_materials("modern_grid") == ("minecraft:light_gray_concrete", "minecraft:smooth_stone")
 
 
 def test_roof_style_drives_the_silhouette() -> None:
