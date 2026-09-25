@@ -17,6 +17,7 @@ artifacts/benchmark-pilot-v1/*/
 artifacts/benchmark-pilot-v2/*/
 artifacts/benchmark-pilot-v3/*/
 artifacts/benchmark-city-v1/*/
+artifacts/benchmark-city-*/*/
 artifacts/benchmark-city-v2-batch/
 artifacts/benchmark-city-v3-batch/*/
 artifacts/benchmark-city-*.log
