@@ -18,6 +18,7 @@ artifacts/benchmark-pilot-v2/*/
 artifacts/benchmark-pilot-v3/*/
 artifacts/benchmark-city-v1/*/
 artifacts/city-smoke-v1*/
+artifacts/city-smoke-v2/
 artifacts/city-compact-smoke-v1/
 artifacts/minecraft-sample/v1/
 

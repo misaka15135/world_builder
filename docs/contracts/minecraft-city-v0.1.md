@@ -83,6 +83,10 @@ The clipboard has been pasted at (128,-64,-384)
 
 从 `artifacts/benchmark-city-v2/city-first.worldpkg`（源修订 `revision_67c14b9845fcd527d030f8af`，`world_e89db4bf2190762b`）导出：16 分块、**2,579 个盒**、627,953 个非空气方块，其中 164 个隔墙盒、285 个楼板盒；报告 1 preserved / 175 approximated / **1,203 omitted**（房间与家具仍是语义记录，不落方块）。`pytest tests/test_minecraft_city.py` 6 passed。
 
+目标世界已按新修订重贴：旧建筑层用 `//set air`（`0..511 × -58..-25 × -512..-1`）清除、道路与地表保留，随后 16 个分块逐块 `//paste -a`（如 `c00_01` 40,744、`c01_01` 37,641、`c02_01` 37,802 方块）。高空俯视可见**大小不一的建筑**分布在路网中；街面视角可见相邻建筑高矮不同、左侧建筑有东门洞与可见的室内木板地面。
+
+**尚未完成**：`city.2` 的 30 输入预登记批次（`benchmarks/city_cases_v2.json`）尚未运行；三层建筑只在 1—2 层之间有楼梯，更高层封闭；家具仍是语义记录，未落方块；房间连通性没有独立证明。
+
 `building_000` 是 5 栋 `interior_state: generated` 建筑之一，位于世界 `x 16—32`、`z -30—-14`。实测：
 
 ```text
