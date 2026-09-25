@@ -6,6 +6,7 @@ import gzip
 import hashlib
 import io
 import json
+import math
 import struct
 from pathlib import Path
 
@@ -15,6 +16,7 @@ from world_builder.adapters.minecraft.city import CityExportError, export_city
 from world_builder.storage.worldpkg import read_worldpkg
 
 SOURCE = Path(__file__).resolve().parents[1] / "artifacts/benchmark-city-v1/city-first.worldpkg"
+MULTI_STOREY = Path(__file__).resolve().parents[1] / "artifacts/benchmark-city-v2/city-first.worldpkg"
 BRIDGE_DECK = (256, 1, -271)      # bridge_main spans WIR x 252..260, north 268..274, up 1.6..2.0
 WEST_ROAD = (42, 1, -200)         # road_west_0 spine spans WIR x 40..44
 RIVER_BED = (256, 0, -100)        # river_main channel centre
@@ -141,19 +143,23 @@ def test_block_types_land_at_the_source_coordinates(city) -> None:
     assert at(*WEST_ROAD) == "minecraft:stone_bricks"
     assert at(*RIVER_BED) == "minecraft:water"
     assert at(*EAST_BANK) == "minecraft:grass_block"
-    # building_000 is one of the five generated interiors: shell, plank floor and a stair
-    assert at(20, 3, -15) == "minecraft:smooth_stone"
-    assert at(20, 2, -20) == "minecraft:oak_planks"
-    assert at(28, 5, -22) == "minecraft:air"
-    # building_005 has no generated interior, but is still a hollow shell with a usable east door
-    assert at(308, 3, -15) == "minecraft:smooth_stone"
-    assert at(308, 2, -20) == "minecraft:oak_planks"
-    assert at(312, 5, -22) == "minecraft:air"           # inside the declared upper-floor void
-    assert at(315, 2, -18) == "minecraft:oak_planks"   # ground slab runs under the doorway
-    assert at(315, 3, -18) == "minecraft:air"          # east doorway, declared entry north 16..18
-    assert at(315, 4, -18) == "minecraft:air"          # doorway is two blocks tall
-    assert at(315, 5, -18) == "minecraft:oak_planks"   # upper floor slab forms the door head
-    assert at(315, 3, -25) == "minecraft:smooth_stone"  # east wall away from the door
+    # Buildings vary by seed, so every probe point is derived from the source entity.
+    for source_id in ("building_000", "building_005"):
+        entity = next(r for r in city["package"]["records"]
+                      if r.get("id") == source_id and r["record_type"] == "entity")
+        (bx0, bn0, bz0), (bx1, bn1, _) = entity["bounds"]["min"], entity["bounds"]["max"]
+        slab = math.floor(bz0)
+        inner_x, inner_z = int(bx0) + 2, -(int(bn0) + 2)
+        assert at(inner_x, slab, inner_z) == "minecraft:oak_planks"      # ground floor slab
+        assert at(inner_x, slab + 1, inner_z) == "minecraft:air"         # hollow interior
+        assert at(int(bx0), slab + 1, inner_z) == "minecraft:smooth_stone"  # west wall
+        door_z = -(int(bn0) + 3)                                         # declared east entry, north n0+2..n0+4
+        assert at(int(bx1) - 1, slab, door_z) == "minecraft:oak_planks"  # slab runs under the doorway
+        assert at(int(bx1) - 1, slab + 1, door_z) == "minecraft:air"     # doorway
+        assert at(int(bx1) - 1, slab + 2, door_z) == "minecraft:air"     # doorway is two blocks tall
+        if entity["attributes"]["storeys"] >= 2:
+            upper = slab + int(entity["geometry"]["storey_height_m"])
+            assert at(int(bx0) + 6, upper, inner_z) == "minecraft:oak_planks"  # upper slab over the rooms
     # air above the road deck stays air, so the deck is one block thick
     assert at(42, 2, -200) == "minecraft:air"
 
@@ -180,3 +186,22 @@ def test_export_does_not_modify_the_source_package(city, tmp_path: Path) -> None
     before = copy.deepcopy(package)
     export_city(package, tmp_path / "again")
     assert package == before
+
+
+def test_multi_storey_city_places_room_partitions(tmp_path: Path) -> None:
+    package, _ = read_worldpkg(MULTI_STOREY)
+    output = tmp_path / "v2"
+    export_city(package, output, include_interiors=True)
+    manifest = json.loads((output / "manifest.json").read_text(encoding="utf-8"))
+    boxes = manifest["boxes"]
+    buildings = [r for r in package["records"] if r.get("kind") == "building"]
+    assert len(buildings) == 80
+    assert len({r["attributes"]["storeys"] for r in buildings}) >= 2, "storey counts should vary"
+    assert any("partition" in box["source_id"] for box in boxes), "room divisions should reach the blocks"
+    for building in buildings:
+        (bx0, bn0, _), (bx1, bn1, _) = building["bounds"]["min"], building["bounds"]["max"]
+        own = [box for box in boxes if box["source_id"].startswith(building["id"] + "_")]
+        assert own, building["id"]
+        for box in own:
+            assert bx0 - 1e-6 <= box["x0"] and box["x1"] <= bx1 + 1e-6, (building["id"], box["source_id"])
+            assert -bn1 - 1e-6 <= box["z0"] and box["z1"] <= -bn0 + 1e-6, (building["id"], box["source_id"])

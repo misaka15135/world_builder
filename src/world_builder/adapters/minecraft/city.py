@@ -75,20 +75,57 @@ def _box(source_id: str, x0: float, x1: float, n0: float, n1: float, u0: float, 
             "z0": -n1, "z1": -n0, "block": block}
 
 
-def _building_shell(building: dict, entities: dict, *, with_stair: bool) -> list[dict]:
-    """Hollow two-storey shell from declared source parameters.
+def _partition_boxes(building: dict, entities: dict, storeys: list[dict]) -> list[dict]:
+    """Internal walls that show the room division, each with a two-block doorway.
 
-    Every building in the source declares its envelope, storey height, wall and
-    floor thickness, stair void and east entrance, so the shell is derived from
-    source fields. Only the five buildings whose interior_state is `generated`
-    carry a stair and furniture; the rest stay a shell with an open upper floor
-    and no way up, which the report states explicitly.
+    The wall sits on one whole block just inside the southern room so that the
+    quantised result is a single block thick; the opening is snapped to whole
+    blocks above the floor slab for the same reason as the east entrance.
+    """
+    g = building["geometry"]
+    block = "minecraft:smooth_stone"
+    parts: list[dict] = []
+    for storey in storeys:
+        rooms = sorted((r for r in entities.values()
+                        if r["parent_id"] == storey["id"] and r["kind"] == "room"), key=lambda r: r["id"])
+        if len(rooms) < 2:
+            continue
+        x0 = min(r["bounds"]["min"][0] for r in rooms)
+        x1 = max(r["bounds"]["max"][0] for r in rooms)
+        z0 = min(r["bounds"]["min"][2] for r in rooms)
+        z1 = max(r["bounds"]["max"][2] for r in rooms)
+        boundary = max(r["bounds"]["min"][1] for r in rooms)
+        door_w = 2.0
+        opening_low = math.ceil(z0)
+        opening_high = opening_low + 2
+        if not (x0 + door_w < x1 and z1 > opening_low):
+            continue
+        nb0, nb1 = boundary - 1.0, boundary
+        parts.append(_box(f"{building['id']}_{storey['id']}_partition", x0 + door_w, x1, nb0, nb1, z0, z1, block))
+        if z1 > opening_high:
+            parts.append(_box(f"{building['id']}_{storey['id']}_partition_head", x0, x0 + door_w, nb0, nb1, opening_high, z1, block))
+    return parts
+
+
+def _building_shell(building: dict, entities: dict, *, with_interior: bool) -> list[dict]:
+    """Hollow multi-storey shell from declared source parameters.
+
+    Envelope, storey count, storey height, wall and floor thickness, stair void
+    and east entrance all come from source fields, so the shell stays derived
+    from the source rather than invented. Only buildings whose interior_state is
+    `generated` carry partitions, a stair and furniture; the rest stay a shell
+    with an open upper floor and no way up, which the report states explicitly.
+    A stair only reaches the first upper slab, so storeys above the second are
+    enclosed and unreachable — a source limitation, not an adapter choice.
     """
     g = building["geometry"]
     if g["representation"] != "parametric_building" or g["entry"]["side"] != "east":
         raise CityExportError("target.building_geometry", building["id"])
     (x0, n0, z0), (x1, n1, z1) = building["bounds"]["min"], building["bounds"]["max"]
     wall, floor, roof = g["wall_thickness_m"], g["floor_thickness_m"], g["roof_height_m"]
+    storey_count = building["attributes"]["storeys"]
+    if type(storey_count) is not int or storey_count < 1:
+        raise CityExportError("target.building_storeys", building["id"])
     upper_z = z0 + g["storey_height_m"]
     upper_top = upper_z + floor
     void = g["stair_void_local_m"]
@@ -107,30 +144,49 @@ def _building_shell(building: dict, entities: dict, *, with_stair: bool) -> list
     door_clear_low = math.ceil(z0 + floor)
     door_blocks_tall = max(2, int(entry["height_m"]))
     lintel_low = max(door_top, door_clear_low + door_blocks_tall)
-    if not (n0 + wall < door_n0 < door_n1 < n1 - wall and lintel_low < z1 - roof):
+    # A single-storey building has no room above its door: the opening reaches
+    # the ceiling and there is simply no lintel to place.
+    if not (n0 + wall < door_n0 < door_n1 < n1 - wall and lintel_low <= z1 - roof):
         raise CityExportError("target.building_entry", building["id"])
     name = building["id"]
     shell, plank = "minecraft:smooth_stone", "minecraft:oak_planks"
-    parts = [
-        _box(name, x0, x1, n0, n1, z0, z0 + floor, plank),
+    parts = [_box(name, x0, x1, n0, n1, z0, z0 + floor, plank)]
+    for level in range(1, storey_count):
+        top = z0 + level * g["storey_height_m"]
+        if top + floor > z1 - roof:
+            raise CityExportError("target.building_slab", building["id"])
+        if level == 1:
+            parts.extend([
+                _box(f"{name}_floor{level}_west", x0, vx0, n0, n1, top, top + floor, plank),
+                _box(f"{name}_floor{level}_east", vx1, x1, n0, n1, top, top + floor, plank),
+                _box(f"{name}_floor{level}_south", vx0, vx1, n0, vn0, top, top + floor, plank),
+                _box(f"{name}_floor{level}_north", vx0, vx1, vn1, n1, top, top + floor, plank),
+            ])
+        else:
+            parts.append(_box(f"{name}_floor{level}", x0, x1, n0, n1, top, top + floor, plank))
+    parts.extend([
         _box(name + "_west_wall", x0, x0 + wall, n0, n1, z0 + floor, z1 - roof, shell),
         _box(name + "_south_wall", x0 + wall, x1 - wall, n0, n0 + wall, z0 + floor, z1 - roof, shell),
         _box(name + "_north_wall", x0 + wall, x1 - wall, n1 - wall, n1, z0 + floor, z1 - roof, shell),
         _box(name + "_east_wall_south", x1 - wall, x1, n0 + wall, door_n0, z0 + floor, z1 - roof, shell),
         _box(name + "_east_wall_north", x1 - wall, x1, door_n1, n1 - wall, z0 + floor, z1 - roof, shell),
-        _box(name + "_east_door_lintel", x1 - wall, x1, door_n0, door_n1, lintel_low, z1 - roof, shell),
-        _box(name + "_upper_floor_west", x0, vx0, n0, n1, upper_z, upper_top, plank),
-        _box(name + "_upper_floor_east", vx1, x1, n0, n1, upper_z, upper_top, plank),
-        _box(name + "_upper_floor_south", vx0, vx1, n0, vn0, upper_z, upper_top, plank),
-        _box(name + "_upper_floor_north", vx0, vx1, vn1, n1, upper_z, upper_top, plank),
-        _box(name + "_flat_roof_proxy", x0, x1, n0, n1, z1 - roof, z1, plank),
-    ]
-    if not with_stair:
+    ])
+    if lintel_low < z1 - roof:
+        parts.append(_box(name + "_east_door_lintel", x1 - wall, x1, door_n0, door_n1, lintel_low, z1 - roof, shell))
+    parts.append(_box(name + "_flat_roof_proxy", x0, x1, n0, n1, z1 - roof, z1, plank))
+    if not with_interior:
         return parts
     children = [r for r in entities.values() if r["parent_id"] == building["id"]]
     storeys = sorted((r for r in children if r["kind"] == "storey"), key=lambda r: r["bounds"]["min"][2])
+    if len(storeys) != storey_count:
+        raise CityExportError("target.interior_plan", building["id"])
+    parts.extend(_partition_boxes(building, entities, storeys))
     stairs = [r for r in children if r["kind"] == "stair"]
-    if len(storeys) != 2 or len(stairs) != 1:
+    if storey_count < 2:
+        if stairs:
+            raise CityExportError("target.interior_plan", building["id"])
+        return parts
+    if len(stairs) != 1:
         raise CityExportError("target.interior_plan", building["id"])
     stair = stairs[0]
     sg = stair["geometry"]
@@ -172,8 +228,8 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
         if record["geometry"]["representation"] not in {"box", "parametric_building"}:
             raise CityExportError("target.city_geometry", record["id"])
         if record["kind"] == "building":
-            with_stair = include_interiors and record["attributes"]["interior_state"] == "generated"
-            boxes.extend(_building_shell(record, by_id, with_stair=with_stair))
+            with_interior = include_interiors and record["attributes"]["interior_state"] == "generated"
+            boxes.extend(_building_shell(record, by_id, with_interior=with_interior))
             continue
         low, high = record["bounds"]["min"], record["bounds"]["max"]
         block = {"road": "minecraft:stone_bricks", "bridge": "minecraft:oak_planks"}[record["kind"]]
@@ -263,7 +319,7 @@ def export_city(package: dict, output_dir: str | Path, *, include_interiors: boo
             classification, target, message = "approximated", "blocks:" + record["id"], "axis-aligned volume quantised to whole blocks at 1 m = 1 block"
         elif kind == "building":
             if include_interiors and record["attributes"]["interior_state"] == "generated":
-                classification, target, message = "approximated", "blocks:" + record["id"] + "_*", "hollow shell, east opening, floors and stair from declared source parameters; stair treads fall below block resolution and merge into whole-block steps"
+                classification, target, message = "approximated", "blocks:" + record["id"] + "_*", "hollow shell over " + str(record["attributes"]["storeys"]) + " storey(s) with the declared east opening, room partitions, floors and stair; treads below block resolution merge into whole-block steps and storeys above the second have no stair"
             else:
                 classification, target, message = "approximated", "blocks:" + record["id"] + "_*", "hollow shell with the declared east opening and upper-floor void; source interior_state is deferred, so no stair, rooms or furniture exist to place"
         elif kind == "terrain":
