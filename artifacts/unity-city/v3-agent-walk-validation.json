@@ -8,14 +8,14 @@
     "agent_type_id": 0,
     "agent_radius_m": 0.5,
     "agent_height_m": 2.0,
-    "elapsed_seconds": 8.209543228149414,
-    "movement_frames": 461,
-    "bridge_frames": 18710,
-    "bridge_moving_frames": 163,
-    "bridge_support_frames": 18710,
-    "bridge_support_moving_frames": 163,
+    "elapsed_seconds": 8.213129043579102,
+    "movement_frames": 4547,
+    "bridge_frames": 1382,
+    "bridge_moving_frames": 1382,
+    "bridge_support_frames": 1382,
+    "bridge_support_moving_frames": 1382,
     "off_navmesh_frames": 0,
-    "max_frame_step_m": 0.0726165771484375,
+    "max_frame_step_m": 0.132293701171875,
     "crossed_bridge_center": true,
     "path_status": "PathComplete",
     "start_position": {
@@ -24,12 +24,12 @@
         "z": 271.0
     },
     "bridge_position": {
-        "x": 256.000244140625,
+        "x": 256.00274658203127,
         "y": 2.0166666507720949,
         "z": 271.0
     },
     "end_position": {
-        "x": 267.8000793457031,
+        "x": 267.8001708984375,
         "y": 2.0166666507720949,
         "z": 271.0
     }
