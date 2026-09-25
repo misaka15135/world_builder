@@ -1,0 +1,10 @@
+{
+    "status": "pass",
+    "unity_version": "6000.3.24f1",
+    "scene_path": "Assets/WorldBuilderCity/v2/CityInteriorNavigation.unity",
+    "navmesh_asset_path": "Assets/WorldBuilderCity/v2/CityInterior000NavMesh.asset",
+    "east_door_link": true,
+    "start_to_room_path": "PathComplete",
+    "direct_path_length_m": 18.613618850708009,
+    "error": ""
+}

@@ -1,0 +1,87 @@
+{
+    "status": "pass",
+    "unity_version": "6000.3.24f1",
+    "source_world_id": "world_e98d1d4d587fb96f",
+    "source_revision_id": "revision_c1b82ea36c16a34c95f97c42",
+    "source_building_id": "building_000",
+    "scene_path": "Assets/WorldBuilderCity/v2/CityInteriorNavigation.unity",
+    "navmesh_asset_path": "Assets/WorldBuilderCity/v2/CityInterior000NavMesh.asset",
+    "source_policy": "access_000, storey_000_*, stair_000, building_000 walls/lintel",
+    "access_meshes": 1,
+    "floor_meshes": 5,
+    "stair_meshes": 21,
+    "blocked_wall_meshes": 6,
+    "agent_type_id": 0,
+    "agent_radius_m": 0.5,
+    "agent_height_m": 2.0,
+    "voxel_size_m": 0.05000000074505806,
+    "east_door_link": true,
+    "start_to_room_path": "PathComplete",
+    "checkpoint_paths": [
+        "PathComplete",
+        "PathComplete",
+        "PathComplete",
+        "PathComplete"
+    ],
+    "direct_path_corners": [
+        {
+            "x": 34.00068283081055,
+            "y": 2.0249998569488527,
+            "z": 16.414804458618165
+        },
+        {
+            "x": 33.0,
+            "y": 2.0,
+            "z": 16.243955612182618
+        },
+        {
+            "x": 31.0,
+            "y": 2.200000047683716,
+            "z": 15.899999618530274
+        },
+        {
+            "x": 29.05000114440918,
+            "y": 2.9749999046325685,
+            "z": 18.649999618530275
+        },
+        {
+            "x": 28.950000762939454,
+            "y": 2.9749999046325685,
+            "z": 18.850000381469728
+        },
+        {
+            "x": 28.0,
+            "y": 5.224999904632568,
+            "z": 27.0
+        },
+        {
+            "x": 27.700000762939454,
+            "y": 5.224999904632568,
+            "z": 27.399999618530275
+        },
+        {
+            "x": 27.5,
+            "y": 5.224999904632568,
+            "z": 27.5
+        },
+        {
+            "x": 26.950000762939454,
+            "y": 5.224999904632568,
+            "z": 27.5
+        },
+        {
+            "x": 26.55000114440918,
+            "y": 5.224999904632568,
+            "z": 27.200000762939454
+        },
+        {
+            "x": 25.5,
+            "y": 5.224999904632568,
+            "z": 26.0
+        }
+    ],
+    "direct_path_length_m": 18.613618850708009,
+    "crosses_east_door": true,
+    "ascends_stair": true,
+    "error": ""
+}

@@ -1,0 +1,18 @@
+Unity 6000.3.24f1, first interior NavMesh build without an explicit east-door link:
+checkpoint_paths[0] = PathPartial (access road to first-floor interior)
+InvalidOperationException: incomplete interior checkpoint path 0
+PowerShell process wait: UNITY_EXIT_CODE=1
+
+Rebuild with a bidirectional east-door NavMeshLink at x=32 m, z=16.5 m:
+WorldBuilder first city interior navigation: 18.61362 m direct path via east door and stair
+Exiting without the bug reporter. Application will terminate with return code 0
+PowerShell process wait: UNITY_EXIT_CODE=0
+
+Separate Unity process reopening the saved scene:
+WorldBuilder saved first interior navigation validated: 18.61362 m
+Exiting without the bug reporter. Application will terminate with return code 0
+PowerShell process wait: UNITY_EXIT_CODE=0
+
+Structured final results: v2-interior-nav-validation.json and
+v2-interior-nav-reopen-validation.json. Full local successful-run logs:
+editor-v2-interior-nav-build.log and editor-v2-interior-nav-reopen.log.

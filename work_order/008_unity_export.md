@@ -10,6 +10,7 @@
 - 修改范围：2026-09-25 root 继续 v3 运行时接缝验收；修改 `WorldBuilderCityV3Builder.cs` 与既有 `WorldBuilderCityBridgeWalkValidator.cs` 的场景专属证据路径，新增 v3 跨桥 Play Mode 场景及运行证据、说明与 008/000/索引。保留 v1/v2 和 v3 静态导出证据；导航与 007 联调仍独立验收。
 - 修改范围：2026-09-25 root 继续 v3 导航子阶段；新增独立 Unity 导航场景、Editor 重建及目标 NavMesh 路径验证、对应证据与说明，同步 008/000/索引。限定道路与桥梁导航，保留既有 v1/v2/v3 场景和运行证据；007 联调、其它接缝与性能另行验收。仅本地提交。
 - 修改范围：2026-09-25 root 继续 v3 NavMeshAgent 运行验收；新增独立运行场景、运行时记录组件和批处理/Play Mode 启动入口，修改 `WorldBuilderCityV3NavBuilder.cs`、`Assets/WorldBuilderCity/`、独立证据、Unity 城邦说明及 008/000/索引。复用已保存的 v3 NavMesh，不覆盖先前静态/控制器/NavMesh 证据；室内导航和 007 联调不在本阶段。仅本地提交。
+- 修改范围：2026-09-25 root 继续 v2 首栋室内导航子阶段；从已验收的 `CityInteriors.unity` 派生独立 NavMesh 场景及目标路径验证，新增 `WorldBuilderCity/Editor/` 构建器、独立证据、说明和 008/000/索引。先验证 `building_000` 道路—东门—楼梯—二层房间，不改源 WIR、v2 GLB 或既有运行证据；其余四栋及 Agent 室内实走另行验收。仅本地提交。
 
 ## 目标与范围
 
@@ -45,10 +46,11 @@
 
 其中分块与普通材质逐面法线的静态目标导入已由 v3 验证；桥面 x=256 m 的一处接缝已 Play Mode 实走通过。其它接缝、切线材质、完整导航、性能及 007 联调尚未完成。
 
-道路与桥梁的独立 v3 NavMesh 已完成烘焙、保存场景重载路径验证和独立 NavMeshAgent Play Mode 跨桥运动；通用室内导航、其它接缝及性能仍待验。
+道路与桥梁的独立 v3 NavMesh 已完成烘焙、保存场景重载路径验证和独立 NavMeshAgent Play Mode 跨桥运动；v2 首栋室内静态导航已验证道路—东门—楼梯—二层房间路径。其余四栋、室内 Agent 运动、其它接缝及性能仍待验。
 
 - [x] ~~为 v3 主路、接入道路和桥梁生成独立 NavMesh，并在保存场景重载后验证跨桥完整路径。~~
 - [x] ~~在独立 Play Mode 场景中验证 NavMeshAgent 沿已保存的导航面连续跨桥。~~
+- [x] ~~验证 v2 首栋从入口道路经东门、楼梯到二层房间的 NavMesh 完整路径及保存场景重载。~~
 
 ## 验收标准
 
@@ -103,6 +105,11 @@
 | 2026-09-25 | root | 完成 v3 道路与桥梁 NavMesh 目标验证 | `CityChunkNavigation.unity` 的 `NavMeshSurface` 仅烘焙 44 个 `road_*`、90 个 `access_*` 和 2 个 `bridge_main` 分块网格；Unity 6000.3.24f1 批处理保存 NavMesh 数据并以代码 0 退出，`v3-navigation-validation.json` 为 `status=pass`、`PathComplete`、西岸至东岸 24 m。独立批处理重开场景后 `v3-navigation-reopen-validation.json` 再次为 `PathComplete`、24 m，资产引用有效；`editor-v3-navigation-evidence.txt` 摘录两次日志。最初只选 `road_*` 和桥的试跑漏掉接入道路，已修正并复验，未作为最终成果。文档检查为 34 Markdown/40 链接/5 JSON/13 工单零错误 | 只本地提交；008 仍需室内导航/Agent、其它接缝、性能及 007 联调 |
 | 2026-09-25 | root | 认领 v3 NavMeshAgent 运行验收 | 工作树干净，上一阶段本地提交 `444b296`；独立导航场景重载后路径为 `PathComplete`、24 m，但未验证 Agent 在 Play Mode 实际运动。本轮修改范围见文件头 | 建立独立运行夹具，使 Agent 从西岸经桥面到东岸并记录位置、耗时与碰撞/停滞证据 |
 | 2026-09-25 | root | 完成 v3 NavMeshAgent Play Mode 跨桥运行 | `CityChunkAgentWalk.unity` 从保存的导航场景派生，目标 Unity 6000.3.24f1 场景构建和无图形 Play Mode 进程均以代码 0 退出。最终复测 `v3-agent-walk-validation.json` 为 `status=pass`、`PathComplete`、8.21 秒走到东岸；461 个位移帧，其中桥段 163 个位移帧均由 `bridge_main` MeshCollider 支撑，经过 x=256 m 桥中心，0 帧离开 NavMesh，最大单帧位移 0.0726 m。`editor-v3-agent-evidence.txt` 摘录日志；两次运行均通过，无图形模式帧数变化不用于衡量性能 | 同步说明、总规划及索引，验证文档与提交；后续室内导航、其它接缝、性能、切线材质和 007 联调仍待做 |
+| 2026-09-25 | root | 认领 v2 首栋室内导航路径验证 | 上一阶段本地提交 `678d9e3`、工作树干净；五栋室内的 CharacterController 路线已实走，但尚无楼梯 NavMesh。先以 `building_000` 验证从 access road 到二层房间的目标路径，本轮范围见文件头 | 核对源构件边界和导航包参数，建立独立场景并在 Unity 目标编辑器查询门洞与楼梯路径 |
+| 2026-09-25 | root | 首次 v2 室内 NavMesh 烘焙发现东门断点 | 目标编辑器构建了首栋 1 接入道路、5 楼板、21 梯/平台及 6 墙/门楣构件的独立 NavMesh，入口道路到门内的第一段路径为 `PathPartial`，进程退出码 1；首次失败信息摘录于 `editor-v2-interior-nav-evidence.txt`。道路与首层楼板在 x=32 m 只接边，推断 Agent 半径收缩后没有拓扑连接；原 CharacterController 物理跨阶证据不等同 NavMesh 连通 | 在源门洞位置增加显式双向 NavMeshLink，重新查询全路线；若楼梯仍断开，逐段定位 |
+| 2026-09-25 | root | 增加东门连接并通过首栋室内 NavMesh 路径 | 在 x=32 m、z=16.5 m 源门洞添加 1.2 m 宽双向 NavMeshLink；Unity 6000.3.24f1 批处理退出码 0。`v2-interior-nav-validation.json` 为 `status=pass`、入口到二层房间 `PathComplete`、18.61 m，四段检查点全部完整；直接路径穿过东门且在楼梯区域由低至高。源端 v2 GLB 与已验收场景未覆盖 | 独立进程重开导航场景并复核资产/连接，再同步说明与索引 |
+| 2026-09-25 | root | 完成首栋室内导航场景重载验证 | 另一个 Unity 6000.3.24f1 批处理进程重开 `CityInteriorNavigation.unity`，核对 `CityInterior000NavMesh.asset` 引用与东门双向 Link，`v2-interior-nav-reopen-validation.json` 再次为 `status=pass`、`PathComplete`、18.61 m，退出码 0；工单仅勾选首栋静态路径，不将其余四栋或室内 Agent 视为已验 | 文档/索引检查后只本地提交；继续其余四栋、室内 Agent、性能及 007 联调 |
+| 2026-09-25 | root | 核对室内导航交付文件与工单 | 场景 YAML 包含 33 个 `NavMeshModifier` 和 1 个东门 `NavMeshLink`；整理后另一编辑器进程重载仍 `PathComplete`、18.61 m，四段路径 4/4 完整。`python tools/check_project_docs.py` 检查 34 Markdown/40 链接/5 JSON/13 工单零错误；本阶段未修改 Python 导出器 | 只本地提交，008 保持 in_progress |
 
 ## 交接说明
 
