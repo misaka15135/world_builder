@@ -1,0 +1,32 @@
+{
+    "status": "pass",
+    "unity_version": "6000.3.24f1",
+    "navigation_package": "com.unity.ai.navigation@2.0.14",
+    "source_world_id": "world_e98d1d4d587fb96f",
+    "source_revision_id": "revision_c1b82ea36c16a34c95f97c42",
+    "scene_path": "Assets/WorldBuilderCity/v3/CityChunkNavigation.unity",
+    "navmesh_asset_path": "Assets/WorldBuilderCity/v3/CityChunkRoadsAndBridgeNavMesh.asset",
+    "source_policy": "road_*, access_*, and bridge_main render meshes only",
+    "road_pieces": 44,
+    "access_pieces": 90,
+    "bridge_pieces": 2,
+    "marked_meshes": 136,
+    "agent_type_id": 0,
+    "agent_radius_m": 0.5,
+    "agent_height_m": 2.0,
+    "west_to_east_path": "PathComplete",
+    "path_length_m": 24.0,
+    "path_corners": [
+        {
+            "x": 244.0,
+            "y": 2.0166666507720949,
+            "z": 271.0
+        },
+        {
+            "x": 268.0,
+            "y": 2.0166666507720949,
+            "z": 271.0
+        }
+    ],
+    "error": ""
+}

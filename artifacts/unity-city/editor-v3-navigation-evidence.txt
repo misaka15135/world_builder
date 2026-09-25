@@ -1,0 +1,12 @@
+Unity 6000.3.24f1 batch build, WorldBuilderCityV3NavBuilder.Build, 2026-09-25:
+WorldBuilder city v3 imported: 16 chunks, 420 pieces, max triangle edge 181.0193
+WorldBuilder city v3 navigation built: 136 meshes, complete path 24 m, scene Assets/WorldBuilderCity/v3/CityChunkNavigation.unity
+Exiting without the bug reporter. Application will terminate with return code 0
+
+Separate Unity batch process, WorldBuilderCityV3NavBuilder.ValidateSaved:
+WorldBuilder saved city v3 navigation validated: 24 m
+Exiting without the bug reporter. Application will terminate with return code 0
+
+Structured results: v3-nav-target-validation.json, v3-navigation-validation.json,
+v3-navigation-reopen-validation.json. Full local logs: editor-v3-navigation-build.log
+and editor-v3-navigation-reopen.log.

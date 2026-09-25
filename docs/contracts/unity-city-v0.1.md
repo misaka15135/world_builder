@@ -63,3 +63,11 @@ python tools/export_unity_city.py --source artifacts/benchmark-city-v1/city-firs
 2026-09-25 追加独立 `CityChunkBridgeWalk.unity` 运行场景。可通过菜单 `World Builder > Build Chunked City Bridge Walk v3` 或批处理方法 `WorldBuilderCityV3Builder.BuildBridgeWalkValidation` 重建；`v3-seam-target-validation.json` 再次核对 16/16 块、420/420 构件/碰撞。CharacterController 从西岸道路 `(244,2.1,271)` 出发，沿桥面经过 x=256 m 的两个 GLB 分块接缝，抵达东岸道路。此路线使用源修订的桥梁 `bridge_main`，其边界为 x=252—260 m；桥中心检查点位于切分面附近。
 
 在 Unity 图形 Play Mode 的两次独立运行中，控制器均通过西岸道路、桥中心和东岸道路 3/3 检查点，侧向碰撞帧为 0。首次运行文件保存在 `artifacts/unity-city/v3-seam/`（4998 接地帧、1562 桥段接地帧）；首次启动沿用旧默认输出路径，故先保存该次证据并恢复 v1 历史文件。刷新脚本后复测写入独立 `v3-seam-walk-validation.json` 及同名 PNG，结果 `status=pass`，4465 接地帧、1453 桥段接地帧，东岸终点约 `(267.84,2.08,271)`。新夹具按场景名选择默认输出路径，不覆盖 v1 证据。该路线证明一处桥面分块接缝在此控制器设置下可连续通过；其它接缝、NavMesh、性能及 007 联调仍待验证。
+
+## v3 道路与桥梁导航
+
+独立 `CityChunkNavigation.unity` 以 v3 的 16 个 GLB 为输入，通过 Unity AI Navigation `2.0.14` 的 `NavMeshSurface` 烘焙。`WorldBuilderCityV3NavBuilder.Build` 首先重建并核对静态场景，再根据 `WorldBuilderSourceId` 只标记 `road_*`、`access_*` 和 `bridge_main` 的渲染网格；分别为 44、90、2 个分块构件，共 136 个。地表、河道、建筑、楼层及楼梯没有进入此导航面。使用 Unity 默认 agent type 0，半径 0.5 m、高 2.0 m；NavMesh 数据单独保存为 `CityChunkRoadsAndBridgeNavMesh.asset`。这是一份道路及桥梁导航夹具，不代表通用室内导航或全部接缝可达。
+
+在项目目录用 Unity `6000.3.24f1` 执行菜单 `World Builder > Build Chunked City Navigation v3`，或批处理 `-executeMethod WorldBuilderCityV3NavBuilder.Build`；用 `WORLD_BUILDER_UNITY_CITY_V3_NAV_VALIDATION` 指定构建验证 JSON。独立执行 `-executeMethod WorldBuilderCityV3NavBuilder.ValidateSaved` 可重新打开保存的导航场景，使用 `WORLD_BUILDER_UNITY_CITY_V3_NAV_REOPEN_VALIDATION` 指定重载验证 JSON。该方法检查场景对 NavMesh 资产的引用，并在新编辑器进程中重新计算西岸 `(244,2,271)` 到东岸 `(268,2,271)` 的路径。
+
+2026-09-25 目标编辑器批处理生成 `artifacts/unity-city/v3-navigation-validation.json`：136 个指定网格、`PathComplete`、路径 24 m，路径于 z=271 m 穿过桥面 x=256 m；`v3-navigation-reopen-validation.json` 在重新打开场景后仍为 `PathComplete`、24 m。两个批处理日志均以退出码 0 结束，摘录见 `editor-v3-navigation-evidence.txt`。已有 Play Mode 接缝实走证据与本次 NavMesh 路径查询分别验证控制器运动和导航数据；本阶段尚未实测 NavMeshAgent 运行、建筑内部路径、其它接缝或运行性能。

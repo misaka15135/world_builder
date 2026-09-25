@@ -1,0 +1,9 @@
+{
+    "status": "pass",
+    "unity_version": "6000.3.24f1",
+    "scene_path": "Assets/WorldBuilderCity/v3/CityChunkNavigation.unity",
+    "navmesh_asset_path": "Assets/WorldBuilderCity/v3/CityChunkRoadsAndBridgeNavMesh.asset",
+    "path_status": "PathComplete",
+    "path_length_m": 24.0,
+    "error": ""
+}
