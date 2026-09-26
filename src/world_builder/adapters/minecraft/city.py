@@ -239,7 +239,8 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool,
     limitation, not an adapter choice.
     """
     g = building["geometry"]
-    if g["representation"] != "parametric_building" or g["entry"]["side"] != "east":
+    if g["representation"] != "parametric_building" or g["entry"].get("side") not in {
+            "east", "west", "north", "south"}:
         raise CityExportError("target.building_geometry", building["id"])
     (x0, n0, z0), (x1, n1, z1) = building["bounds"]["min"], building["bounds"]["max"]
     wall, floor, roof = g["wall_thickness_m"], g["floor_thickness_m"], g["roof_height_m"]
@@ -253,11 +254,23 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool,
     void = g["stair_void_local_m"]
     vx0, vn0 = x0 + void["min"][0], n0 + void["min"][1]
     vx1, vn1 = x0 + void["max"][0], n0 + void["max"][1]
-    if not (x0 < vx0 < vx1 < x1 and n0 < vn0 < vn1 < n1):
+    # A single-storey building has no stair reservation to check: the scene
+    # pipeline emits an empty one for those, and the void is never used below.
+    if storey_count >= 2 and not (x0 < vx0 < vx1 < x1 and n0 < vn0 < vn1 < n1):
         raise CityExportError("target.building_void", building["id"])
     ground = outlines[0]
     entry = g["entry"]
-    door_n0, door_n1 = n0 + entry["offset_m"], n0 + entry["offset_m"] + entry["width_m"]
+    # The entrance may be on any of the four sides: the scene pipeline puts it
+    # on the side that faces the street, and a shell that only understands an
+    # east door cannot express that.
+    side = entry.get("side")
+    if side not in {"east", "west", "north", "south"}:
+        raise CityExportError("target.building_entry", building["id"])
+    horizontal = side in {"north", "south"}
+    along_base = ground[0] if horizontal else ground[2]
+    along_span = (ground[1] - ground[0]) if horizontal else (ground[3] - ground[2])
+    door_a0 = along_base + entry["offset_m"]
+    door_a1 = door_a0 + entry["width_m"]
     door_top = z0 + floor + entry["height_m"]
     # A door opening has to clear whole blocks: the declared height is snapped
     # up to at least two blocks and the lintel starts on that cell boundary,
@@ -270,7 +283,8 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool,
     # The ground storey carries the entrance, so the door and its lintel have to
     # fit inside that storey rather than somewhere up the facade. A door that
     # already reaches the storey line simply has no lintel to place.
-    if not (ground[2] + wall < door_n0 < door_n1 < ground[3] - wall and lintel_low <= z0 + storey_h):
+    if not (along_base + wall < door_a0 < door_a1 < along_base + along_span - wall
+            and lintel_low <= z0 + storey_h):
         raise CityExportError("target.building_entry", building["id"])
     name = building["id"]
     shell, plank = _shell_materials(style)
@@ -300,16 +314,28 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool,
         # The ground storey keeps the original unsuffixed names so existing
         # probes and evidence still point at the same source ids.
         suffix = "" if level == 0 else f"_s{level}"
-        parts.append(_box(f"{name}{suffix}_west_wall", sx0, sx0 + wall, sn0, sn1, bottom, top, shell))
-        parts.append(_box(f"{name}{suffix}_south_wall", sx0 + wall, sx1 - wall, sn0, sn0 + wall, bottom, top, shell))
-        parts.append(_box(f"{name}{suffix}_north_wall", sx0 + wall, sx1 - wall, sn1 - wall, sn1, bottom, top, shell))
-        if level == 0:
-            parts.append(_box(name + "_east_wall_south", sx1 - wall, sx1, sn0 + wall, door_n0, bottom, top, shell))
-            parts.append(_box(name + "_east_wall_north", sx1 - wall, sx1, door_n1, sn1 - wall, bottom, top, shell))
-            if lintel_low < top:
-                parts.append(_box(name + "_east_door_lintel", sx1 - wall, sx1, door_n0, door_n1, lintel_low, top, shell))
-        else:
-            parts.append(_box(f"{name}{suffix}_east_wall", sx1 - wall, sx1, sn0 + wall, sn1 - wall, bottom, top, shell))
+        # Four faces, and at ground level the entrance face is split around the
+        # opening instead of being drawn whole over the door. Names are kept
+        # stable for the faces that already existed, so old probes still resolve.
+        for face, f0, f1, axis in (("west", sx0, sx0 + wall, "n"), ("east", sx1 - wall, sx1, "n"),
+                                   ("south", sn0, sn0 + wall, "x"), ("north", sn1 - wall, sn1, "x")):
+            if level == 0 and face == side:
+                if axis == "n":
+                    parts.append(_box(f"{name}_{face}_wall_south", f0, f1, sn0 + wall, door_a0, bottom, top, shell))
+                    parts.append(_box(f"{name}_{face}_wall_north", f0, f1, door_a1, sn1 - wall, bottom, top, shell))
+                else:
+                    parts.append(_box(f"{name}_{face}_wall_west", sx0 + wall, door_a0, f0, f1, bottom, top, shell))
+                    parts.append(_box(f"{name}_{face}_wall_east", door_a1, sx1 - wall, f0, f1, bottom, top, shell))
+                if lintel_low < top:
+                    lintel_id = name + ("_east_door_lintel" if face == "east" else f"_{face}_door_lintel")
+                    parts.append(_box(lintel_id, f0, f1, door_a0, door_a1, lintel_low, top, shell) if axis == "n"
+                                 else _box(lintel_id, door_a0, door_a1, f0, f1, lintel_low, top, shell))
+            elif axis == "n":
+                parts.append(_box(f"{name}{suffix}_{face}_wall", f0, f1, sn0 + wall, sn1 - wall,
+                                  bottom, top, shell))
+            else:
+                parts.append(_box(f"{name}{suffix}_{face}_wall", sx0 + wall, sx1 - wall, f0, f1,
+                                  bottom, top, shell))
     tx0, tx1, tn0, tn1 = outlines[-1]
     # The declared roof style lives in geometry; revisions that only carried it
     # as an attribute still get their real silhouette instead of a flat slab.
@@ -392,8 +418,29 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
                  "wall": "minecraft:stone_bricks"}[record["kind"]]
         boxes.append(_box(record["id"], low[0], high[0], low[1], high[1], low[2], high[2], block))
     terrain = next(r for r in entities if r["kind"] == "terrain")
-    river = next(r for r in entities if r["kind"] == "river")
     tlo, thi = terrain["bounds"]["min"], terrain["bounds"]["max"]
+    if (specs[0].get("extensions") or {}).get("scene_spec"):
+        # A scene pipeline plans a river network, a canal or a coastline, so the
+        # flat-bank policy cannot apply: the ground is one flat proxy and the
+        # water is whatever the source channel polylines say it is.
+        boxes.append(_box("terrain_proxy", tlo[0], thi[0], tlo[1], thi[1], -0.2, 0.25,
+                          "minecraft:grass_block"))
+        for record in entities:
+            if record["kind"] not in {"river", "coast"}:
+                continue
+            geometry = record["geometry"]
+            points = geometry.get("centerline_m") or []
+            if len(points) < 2:
+                raise CityExportError("target.city_river", f"{record['id']} has no centreline")
+            width = float(geometry.get("width_m", 8.0))
+            for index in range(len(points) - 1):
+                x0, y0 = points[index][0], points[index][1]
+                x1, y1 = points[index + 1][0], points[index + 1][1]
+                boxes.append(_box(f"{record['id']}_water_{index:03}", min(x0, x1) - width / 2,
+                                  max(x0, x1) + width / 2, min(y0, y1) - width / 2,
+                                  max(y0, y1) + width / 2, -0.05, 0.05, "minecraft:water"))
+        return boxes
+    river = next(r for r in entities if r["kind"] == "river")
     rlo, rhi = river["bounds"]["min"], river["bounds"]["max"]
     if not (tlo[0] < rlo[0] < rhi[0] < thi[0] and tlo[1] == rlo[1] and thi[1] == rhi[1]):
         raise CityExportError("target.city_river", "flat bank policy requires a straight north-south river")

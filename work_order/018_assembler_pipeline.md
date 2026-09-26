@@ -42,6 +42,16 @@
 
 **第 2 项（折线摊盒）与第 1 项的一半已落地**：新增 `adapters/minecraft/scene.py` 的 `project_for_minecraft(package)`——把 `road`/`rail`/`wall`/`pier`/`quay` 的折线逐段拆成盒（每个盒记录 `projected_from` 与段号），并在 `world_spec.extensions` 里补一个 `city_spec` 兼容块（`style_profile`/`region_size_m`/`building_count`…）供既有材质查找使用。投影**不修改源包**（语义模型仍是折线）。`tests/test_scene_projection.py`（3 passed）验证：折线确实摊成更多盒、盒尺寸非退化、源包保持折线、风格与边长被正确带过；最后一条测试**故意断言导出仍会在已记录的缺口处停止**（`target.city_river` 或 `target.building_*`），这样缺口不会因为测试变绿而被忘掉。剩下两项——水面策略分支与四方向门洞——仍未做。
 
+**2026-09-27 唤醒（第 3、4 项已落地）**：适配器现在接受场景包并**成功产出方块**（同一场景 736 个盒）。三处改动：
+
+1. **水面策略分支**：包里有 `scene_spec` 时不再要求"一条笔直南北向河"，而是用平坦地面代理 + 按源水道折线逐段生成水面盒（河网、运河、海岸线都适用）。
+2. **四方向门洞**：`_building_shell` 的门洞/门楣从"只认东侧"推广到东/南/西/北；`building_geometry` 检查同步放宽到四个方向。
+3. **单层楼不再要求楼梯井**：单层建筑没有楼梯预留，原先会因空井被拒。
+
+过程中被适配器逐条拦下的**真实缺陷**（都已修）：装配出的楼梯井贴到外墙外沿（不合法，现已内收 1 m 并按进深收窄梯段）；被压扁到 2.6 m 的层高放不下 2.4 m 门（现最低 2.8 m，压不下就减层）；窄地块上的入口被声明在过短的墙面上（现自动换到能开门的一侧）。
+
+**新发现待修**：场景里建筑的入口由 `tools/assemble_scene.py` 的启发式给出（拿区块中心与场址自身的南北边比较，因而几乎总是选南面），**并没有真正朝向该街区的临街道路**；四方向门洞的南/北分支已被真实场景覆盖（`_south_wall_west/_east`），东/西分支只在单元测试与旧城邦路径里覆盖。下一轮应把选面改为"朝向该街区的临街一侧"。**勘误**：本轮曾据一次省略 `entry_side` 的诊断脚本记录"所有入口都落在东面"，该结论有误，已按实际断言更正。
+
 ### 本轮落地与未完成（2026-09-26）
 
 **已落地**：`planning/assembler.py` + `tools/assemble_scene.py` + `tests/test_assembler.py`（6 通过 / 1 已知缺陷记为 xfail）+ 合同 [docs/contracts/scene-assembly-v0.1.md](../docs/contracts/scene-assembly-v0.1.md)。一条命令把五个阶段的产物写成**一个 WIR 包**并通过 005 的 0.1 合同与装配级不变量（层齐全、建筑数=设计数、高度一致、楼层挂建筑、**子实体落在父实体世界 AABB 内**、桥有 `crosses`）。实测魔法城邦 565 条记录、`failed=0`：`world 1 / terrain 1 / river 4 / domain 3 / district 40 / road 173 / bridge 16 / wall 1 / building 33 / storey 42 / room 84 / partition 42 / furniture 89 / stair 7`；同时输出一张 SVG 平面图（地形、水系、道路、桥、街区、建筑按实现/未实现着色）。

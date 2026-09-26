@@ -55,11 +55,17 @@ def test_projection_carries_the_target_style(scene_package) -> None:
     assert spec["extensions"]["city_spec"]["region_size_m"] == 512
 
 
-def test_export_still_stops_at_the_documented_gaps(scene_package) -> None:
-    """The projection is not the whole job, and the failure says which part is left."""
+def test_projected_scene_exports_boxes(scene_package) -> None:
+    """After projection the adapter accepts the package: water, roads, shells."""
     package, _ = scene_package
     projected = project_for_minecraft(package)
-    with pytest.raises((CityExportError, ValueError)) as failure:
-        city_boxes(projected, include_interiors=False)
-    message = str(failure.value)
-    assert "target.city_river" in message or "target.building" in message, message
+    boxes = city_boxes(projected, include_interiors=False)
+    sources = [box["source_id"] for box in boxes]
+    assert any("water" in source for source in sources), "the channel network becomes water boxes"
+    assert any(source.startswith("terrain_proxy") for source in sources), "one flat ground proxy"
+    # The ground storey is split around its opening, on whichever face the
+    # street was taken to be: the scene's heuristic asks for south or north.
+    assert any(source.endswith(("_east_wall_south", "_west_wall_south",
+                                "_south_wall_west", "_north_wall_west")) for source in sources), \
+        "the ground storey is split around its opening"
+    assert sum(1 for source in sources if "_roof_" in source) > 0

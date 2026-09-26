@@ -244,6 +244,18 @@ def design_building(site: Site, entry, pack: SettingPack, template: DesignTempla
     """Design one building inside the site's envelope."""
     if entry_side not in ENTRY_SIDES:
         raise SceneError("design.entry_side", f"unknown entry side {entry_side!r}")
+    width_span = site.x1 - site.x0
+    depth_span = site.y1 - site.y0
+    # A door needs about six metres of wall. On a narrow plot the entrance moves
+    # to the side that can actually take one, instead of being declared on a
+    # face too short to hold it (the target adapter rejects the latter, and it
+    # was a narrow scene building that failed exactly so).
+    if entry_side in {"north", "south"} and width_span < 6.0 and depth_span >= 6.0:
+        entry_side = "east"
+    elif entry_side in {"east", "west"} and depth_span < 6.0 and width_span >= 6.0:
+        entry_side = "south"
+    along_span = width_span if entry_side in {"north", "south"} else depth_span
+    entry_offset = max(2.0, min(0.3 * along_span, along_span - 4.0))
     fingerprint = f"{site.id}:{entry.type}:{seed}:{DESIGN_VERSION}".encode("utf-8")
     rng = random.Random(int.from_bytes(hashlib.sha256(fingerprint).digest()[:8], "big"))
     width = site.x1 - site.x0
@@ -277,7 +289,10 @@ def design_building(site: Site, entry, pack: SettingPack, template: DesignTempla
         # preferred to dropping a storey, because the catalogue's height range
         # is a contract and a squashed two-storey house is still a house.
         squeezed = (site.max_height_m - template.roof_height_m) / chosen
-        if chosen >= fewest and squeezed >= 2.6:
+        # 2.8 m is the floor, not 2.6: a 2.4 m door plus the floor slab needs
+        # 2.7 m, and a squeezed storey below that has no room for its own
+        # entrance (one town hall was rejected by the adapter exactly so).
+        if chosen >= fewest and squeezed >= 2.8:
             # Round the ceiling *down* to the millimetre: rounding to nearest
             # pushed one tower 2 mm past its envelope, and the envelope is hard.
             storey_height = math.floor(squeezed * 1000) / 1000
@@ -285,7 +300,7 @@ def design_building(site: Site, entry, pack: SettingPack, template: DesignTempla
             while chosen > 1 and chosen * storey_height + template.roof_height_m > site.max_height_m:
                 chosen -= 1
             squeezed = (site.max_height_m - template.roof_height_m) / chosen
-            storey_height = math.floor(max(2.6, min(storey_height, squeezed)) * 1000) / 1000
+            storey_height = math.floor(max(2.8, min(storey_height, squeezed)) * 1000) / 1000
         height = chosen * storey_height + template.roof_height_m
     insets = _insets(width, depth, chosen, template.setback_m)
     stair_void = 3.0
@@ -318,14 +333,21 @@ def design_building(site: Site, entry, pack: SettingPack, template: DesignTempla
                                   rooms=tuple(rooms), partition_x_m=round(block_x0, 3)))
     stair = None
     if chosen >= 2 and template.stair == "straight":
-        run = 8.0 if width >= 14 else 4.0
         ground = storeys_out[0]
+        # The reservation has to sit strictly inside the shell: a void that
+        # reaches the outer face is not a stairwell, and the target adapter
+        # rejects it (a 2-storey scene building was rejected exactly so).
+        depth = ground.y1 - ground.y0
+        run = max(2.0, min(8.0 if width >= 14 else 4.0, depth - 6.0))
+        void_x0 = ground.x1 - stair_void - 1.0
+        void_x1 = ground.x1 - 1.0
+        void_y0 = ground.y0 + 3.0
+        void_y1 = min(void_y0 + run + 2.0, ground.y1 - 1.0)
         stair = {"representation": "straight_stair", "side": "east",
-                 "x0": round(ground.x1 - stair_void, 3), "y0": round(ground.y0 + 3.0, 3),
+                 "x0": round(void_x0, 3), "y0": round(void_y0, 3),
                  "width_m": 2.0, "run_m": run, "rise_m": storey_height, "steps": 20,
-                 "landing_m": 2.0, "void": [round(ground.x1 - stair_void, 3),
-                                            round(ground.x1 - stair_void + 3.0, 3),
-                                            round(ground.y0 + 3.0, 3), round(ground.y0 + 3.0 + run + 2.0, 3)]}
+                 "landing_m": 2.0, "void": [round(void_x0, 3), round(void_x1, 3),
+                                            round(void_y0, 3), round(void_y1, 3)]}
     return BuildingDesign(id=f"design_{site.id}", type=entry.type, role=entry.role,
                            design_state=entry.design_state, site_id=site.id,
                            # Rounded to the same millimetre grid as the storey
@@ -336,7 +358,8 @@ def design_building(site: Site, entry, pack: SettingPack, template: DesignTempla
                            x1=round(site.x1, 3), y1=round(site.y1, 3),
                            storeys=tuple(storeys_out), storey_height_m=round(storey_height, 3),
                            roof=template.roof, roof_height_m=template.roof_height_m,
-                           entry_side=entry_side, entry_offset_m=2.0, entry_width_m=2.0,
+                           entry_side=entry_side, entry_offset_m=round(entry_offset, 3),
+                           entry_width_m=2.0,
                            entry_height_m=2.4, stair=stair, furniture=tuple(furniture),
                            materials=dict(pack.materials), height_m=round(height, 3))
 
