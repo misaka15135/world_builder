@@ -43,6 +43,7 @@ PALETTE = {
     "minecraft:chiseled_quartz_block": 16,
     "minecraft:light_gray_concrete": 17,
     "minecraft:glass": 18,
+    "minecraft:gray_concrete": 19,
 }
 
 
@@ -51,6 +52,34 @@ def _shell_materials(style: str) -> tuple[str, str]:
     if style == "modern_grid":
         return "minecraft:light_gray_concrete", "minecraft:smooth_stone"
     return "minecraft:smooth_stone", "minecraft:oak_planks"
+
+
+def _street_block(style: str) -> str:
+    """Modern streets read as asphalt; the arcane profile keeps stone setts."""
+    return "minecraft:gray_concrete" if style == "modern_grid" else "minecraft:stone_bricks"
+
+
+def _window_bands(building: dict, x0: float, x1: float, n0: float, n1: float,
+                  z0: float, wall: float, roof: float, storeys: int, storey_h: float) -> list[dict]:
+    """A one-metre glass band at the top of each upper storey.
+
+    Drawn as extra boxes over the shell rather than by splitting the wall, so
+    the wall geometry stays as it was. The ground storey's east side is left
+    alone because that is where the entrance is.
+    """
+    parts: list[dict] = []
+    name = building["id"]
+    for level in range(storeys):
+        top = z0 + (level + 1) * storey_h
+        low, high = top - 1.0, top
+        if low <= z0 + 0.2 or high > building["bounds"]["max"][2] - roof:
+            continue
+        parts.append(_box(f"{name}_glass_{level}_west", x0, x0 + wall, n0, n1, low, high, "minecraft:glass"))
+        parts.append(_box(f"{name}_glass_{level}_south", x0 + wall, x1 - wall, n0, n0 + wall, low, high, "minecraft:glass"))
+        parts.append(_box(f"{name}_glass_{level}_north", x0 + wall, x1 - wall, n1 - wall, n1, low, high, "minecraft:glass"))
+        if level > 0:
+            parts.append(_box(f"{name}_glass_{level}_east", x1 - wall, x1, n0 + wall, n1 - wall, low, high, "minecraft:glass"))
+    return parts
 
 # Furniture is still a box proxy, but the block picks up the room's function so
 # a bedroom, a workshop and a chapel do not read the same from inside.
@@ -224,6 +253,8 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool,
     if lintel_low < z1 - roof:
         parts.append(_box(name + "_east_door_lintel", x1 - wall, x1, door_n0, door_n1, lintel_low, z1 - roof, shell))
     parts.extend(_roof_boxes(name, x0, x1, n0, n1, z1, roof, g.get("roof_style", "flat"), plank))
+    if style == "modern_grid":
+        parts.extend(_window_bands(building, x0, x1, n0, n1, z0, wall, roof, storey_count, storey_h))
     if not with_interior:
         return parts
     children = [r for r in entities.values() if r["parent_id"] == building["id"]]
@@ -291,7 +322,7 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
             boxes.extend(_building_shell(record, by_id, with_interior=with_interior, style=style))
             continue
         low, high = record["bounds"]["min"], record["bounds"]["max"]
-        block = {"road": "minecraft:stone_bricks", "bridge": "minecraft:oak_planks",
+        block = {"road": _street_block(style), "bridge": "minecraft:oak_planks",
                  "wall": "minecraft:stone_bricks"}[record["kind"]]
         boxes.append(_box(record["id"], low[0], high[0], low[1], high[1], low[2], high[2], block))
     terrain = next(r for r in entities if r["kind"] == "terrain")

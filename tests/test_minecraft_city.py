@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 from world_builder.adapters.minecraft.city import (CityExportError, _partition_boxes, _roof_boxes,
-                                                   _shell_materials, export_city)
+                                                   _shell_materials, _street_block, _window_bands, export_city)
 from world_builder.storage.worldpkg import read_worldpkg
 
 SOURCE = Path(__file__).resolve().parents[1] / "artifacts/benchmark-city-v1/city-first.worldpkg"
@@ -243,6 +243,17 @@ def test_partitions_follow_the_source_declaration() -> None:
 def test_style_profiles_pick_different_shell_materials() -> None:
     assert _shell_materials("arcane_medieval") == ("minecraft:smooth_stone", "minecraft:oak_planks")
     assert _shell_materials("modern_grid") == ("minecraft:light_gray_concrete", "minecraft:smooth_stone")
+
+
+def test_modern_style_gets_asphalt_streets_and_glazing() -> None:
+    assert _street_block("arcane_medieval") == "minecraft:stone_bricks"
+    assert _street_block("modern_grid") == "minecraft:gray_concrete"
+    building = {"id": "b", "bounds": {"min": [0, 0, 0], "max": [10, 12, 9.4]}}
+    bands = _window_bands(building, 0, 10, 0, 12, 0, 0.2, 0.4, 2, 3.0)
+    assert len(bands) == 7, "three sides on both storeys plus the east side above the entrance"
+    assert {band["block"] for band in bands} == {"minecraft:glass"}
+    assert all(band["y1"] <= 9.0 + 1e-6 for band in bands), "glazing stays under the roof"
+    assert not [band for band in bands if band["source_id"].endswith("_0_east")], "the entrance storey is not glazed"
 
 
 def test_roof_style_drives_the_silhouette() -> None:
