@@ -627,6 +627,13 @@ def _place_sites(brief: SceneBrief, pack: SettingPack, terrain: TerrainPlan, spe
             height, storeys = _site_height(entry, domain, use_rules)
             margin, gap = 6.0, 4.0
             step_x, step_y = width + gap, depth + gap
+            # TODO(018): a plot too small for its building must be skipped, not
+            # forced. The one-cell fallback below put a 52 m tower on a 55 m
+            # block with 6 m margins, so it hung 3 m over the neighbouring block
+            # and the assembler's containment rule caught it. The fix is written
+            # up in work order 018: skipping these plots costs the harbour two
+            # sites (container yard and dry dock) with today's catalogue sizes,
+            # which is a stage D sizing problem, not something to hide here.
             columns = max(1, int((block.x1 - block.x0 - 2 * margin) // step_x))
             rows = max(1, int((block.y1 - block.y0 - 2 * margin) // step_y))
             cells = [(row, column) for row in range(rows) for column in range(columns)]

@@ -15,6 +15,7 @@ from .siting import (DISTRICTS_VERSION, Block, Bridge, DistrictSpec, Domain, Roa
                      load_districts_spec, plan_siting, validate_siting)
 from .designer import (DESIGN_VERSION, BuildingDesign, DesignTemplate, Furniture, Room, Storey,
                        design_building, load_designs, parse_designs, validate_design)
+from .assembler import ASSEMBLY_VERSION, assemble_scene, render_svg, validate_scene
 
 __all__ = [
     "BRIEF_VERSION", "CATALOGUE_VERSION", "SETTING_VERSION", "MODEL_CONTRACT_VERSION", "CatalogueEntry",
@@ -27,4 +28,5 @@ __all__ = [
     "load_districts_spec", "plan_siting", "validate_siting",
     "DESIGN_VERSION", "BuildingDesign", "DesignTemplate", "Furniture", "Room", "Storey", "design_building",
     "load_designs", "parse_designs", "validate_design",
+    "ASSEMBLY_VERSION", "assemble_scene", "render_svg", "validate_scene",
 ]
