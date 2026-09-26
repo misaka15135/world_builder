@@ -23,7 +23,7 @@ INTERIOR_PROFILE_ID = "profile_unity_city_6000324_v2"
 CHUNKED_ADAPTER_VERSION = "0.1.0-city.3"
 CHUNKED_PROFILE_ID = "profile_unity_city_6000324_v3"
 CHUNK_SIZE_M = 128
-EXPORT_KINDS = {"road", "bridge", "building"}
+EXPORT_KINDS = {"road", "bridge", "building", "wall"}
 
 
 class CityExportError(ValueError):
@@ -143,7 +143,7 @@ def export_city(package: dict, output_dir: str | Path, *, include_interiors: boo
             continue
         low, high = record["bounds"]["min"], record["bounds"]["max"]
         pieces.append(_box(record["id"], record["id"], low[0], high[0], low[1], high[1],
-                           low[2], high[2], {"road": 0, "bridge": 3, "building": 1}[record["kind"]]))
+                           low[2], high[2], {"road": 0, "bridge": 3, "building": 1, "wall": 0}[record["kind"]]))
     terrain = next(r for r in entities if r["kind"] == "terrain")
     river = next(r for r in entities if r["kind"] == "river")
     tlo, thi = terrain["bounds"]["min"], terrain["bounds"]["max"]
@@ -172,7 +172,7 @@ def export_city(package: dict, output_dir: str | Path, *, include_interiors: boo
         kind = record["kind"]
         if kind == "world":
             classification, target, message = "preserved", "scene:" + record["id"], "world identity retained in scene and sidecar"
-        elif kind in {"road", "bridge"}:
+        elif kind in {"road", "bridge", "wall"}:
             classification, target, message = "preserved", "glb:" + record["id"], "axis-aligned box mesh and collider; source bounds retained"
         elif kind == "building":
             if include_interiors and record["attributes"]["interior_state"] == "generated":

@@ -282,7 +282,7 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
     style = (specs[0].get("extensions") or {}).get("city_spec", {}).get("style_profile", "arcane_medieval")
     boxes: list[dict] = []
     for record in entities:
-        if record["kind"] not in {"road", "bridge", "building"}:
+        if record["kind"] not in {"road", "bridge", "building", "wall"}:
             continue
         if record["geometry"]["representation"] not in {"box", "parametric_building"}:
             raise CityExportError("target.city_geometry", record["id"])
@@ -291,7 +291,8 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
             boxes.extend(_building_shell(record, by_id, with_interior=with_interior, style=style))
             continue
         low, high = record["bounds"]["min"], record["bounds"]["max"]
-        block = {"road": "minecraft:stone_bricks", "bridge": "minecraft:oak_planks"}[record["kind"]]
+        block = {"road": "minecraft:stone_bricks", "bridge": "minecraft:oak_planks",
+                 "wall": "minecraft:stone_bricks"}[record["kind"]]
         boxes.append(_box(record["id"], low[0], high[0], low[1], high[1], low[2], high[2], block))
     terrain = next(r for r in entities if r["kind"] == "terrain")
     river = next(r for r in entities if r["kind"] == "river")
@@ -378,7 +379,7 @@ def export_city(package: dict, output_dir: str | Path, *, include_interiors: boo
         kind = record["kind"]
         if kind == "world":
             classification, target, message = "preserved", "world_id:" + record["id"], "source identity retained in manifest"
-        elif kind in {"road", "bridge"}:
+        elif kind in {"road", "bridge", "wall"}:
             classification, target, message = "approximated", "blocks:" + record["id"], "axis-aligned volume quantised to whole blocks at 1 m = 1 block"
         elif kind == "building":
             if include_interiors and record["attributes"]["interior_state"] == "generated":

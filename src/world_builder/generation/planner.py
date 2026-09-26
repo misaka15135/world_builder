@@ -200,6 +200,23 @@ def plan_stage(spec: PilotSpec, stage: str, records: list[dict]) -> tuple[list[d
                 relation("relation_bridge_west", "connects", "road_cross_west", ["bridge_main"]),
                 relation("relation_bridge_east", "connects", "bridge_main", ["road_cross_east"]),
             ])
+            if style == "arcane_medieval":
+                # A city wall is part of the arcane profile only. Gates sit on
+                # the cross street's latitude and short approach roads tie them
+                # to the street network, so the wall never isolates the city.
+                g0, g1 = cross_y - 3, cross_y + 3
+                additions.extend([
+                    entity("wall_west_south", "wall", world, [0, 0, 0], [2, g0, 8], shell="stone_wall"),
+                    entity("wall_west_north", "wall", world, [0, g1, 0], [2, size - g1, 8], shell="stone_wall"),
+                    entity("wall_east_south", "wall", world, [size - 2, 0, 0], [2, g0, 8], shell="stone_wall"),
+                    entity("wall_east_north", "wall", world, [size - 2, g1, 0], [2, size - g1, 8], shell="stone_wall"),
+                    entity("wall_south", "wall", world, [0, 0, 0], [size, 2, 8], shell="stone_wall"),
+                    entity("wall_north", "wall", world, [0, size - 2, 0], [size, 2, 8], shell="stone_wall"),
+                    entity("approach_west", "road", world, [2, g0, 1.6], [west_spines[0] - 2, 6, 0.4], surface_z_m=2),
+                    entity("approach_east", "road", world, [east_spines[-1] + 4, g0, 1.6], [size - 2 - east_spines[-1] - 4, 6, 0.4], surface_z_m=2),
+                    relation("relation_wall_gate_west", "connects", "approach_west", ["road_cross_west"]),
+                    relation("relation_wall_gate_east", "connects", "approach_east", ["road_cross_east"]),
+                ])
         else:
             additions = [
             entity("road_west", "road", world, [44, 8, 1.6], [4, 112, 0.4], surface_z_m=2),

@@ -191,3 +191,13 @@ def test_style_profile_changes_the_silhouette():
         arcane_buildings, lambda r: r["attributes"]["storeys"])
     assert {r["attributes"]["programme"] for r in modern_buildings} <= {"apartment", "office", "shop", "inn", "library", "workshop", "residence"}
     assert not [c for c in check_geometry(modern) if c["severity"] == "hard" and c["state"] != "pass"]
+    # The city wall belongs to the arcane profile only, and its gates are tied
+    # back into the street network so the wall never isolates the city.
+    arcane_walls = [r for r in arcane if r.get("kind") == "wall"]
+    assert len(arcane_walls) == 6, "two gated sides split in two plus two solid sides"
+    assert {r["id"] for r in arcane_walls} >= {"wall_west_south", "wall_west_north", "wall_south", "wall_north"}
+    assert not [r for r in modern if r.get("kind") == "wall"], "the modern profile has no city wall"
+    approaches = [r for r in arcane if r.get("id", "").startswith("approach_")]
+    assert len(approaches) == 2
+    road_ids = {r["id"] for r in arcane if r.get("kind") in {"road", "bridge"}}
+    assert road_ids >= {"approach_west", "approach_east"}
