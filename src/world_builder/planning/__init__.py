@@ -11,6 +11,8 @@ from .catalogue import (CATALOGUE_VERSION, DEFAULT_SETTINGS_ROOT, SETTING_VERSIO
                         SettingPack, available_settings, load_setting_pack)
 from .terrain import (TERRAIN_VERSION, TerrainPlan, TerrainSpec, WaterChannel, load_terrain_spec, plan_terrain,
                       render_preview, validate_terrain)
+from .siting import (DISTRICTS_VERSION, Block, Bridge, DistrictSpec, Domain, Road, Site, SitingPlan,
+                     load_districts_spec, plan_siting, validate_siting)
 
 __all__ = [
     "BRIEF_VERSION", "CATALOGUE_VERSION", "SETTING_VERSION", "MODEL_CONTRACT_VERSION", "CatalogueEntry",
@@ -19,4 +21,6 @@ __all__ = [
     "load_setting_pack", "validate_brief", "DEFAULT_SETTINGS_ROOT",
     "TERRAIN_VERSION", "TerrainPlan", "TerrainSpec", "WaterChannel", "load_terrain_spec", "plan_terrain",
     "render_preview", "validate_terrain",
+    "DISTRICTS_VERSION", "Block", "Bridge", "DistrictSpec", "Domain", "Road", "Site", "SitingPlan",
+    "load_districts_spec", "plan_siting", "validate_siting",
 ]

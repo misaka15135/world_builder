@@ -1,0 +1,18 @@
+{
+  "districts_version": "0.1.0",
+  "setting": "harbour",
+  "block_area_m2": [4000, 26000],
+  "target_blocks": [25, 55],
+  "uses": {
+    "harbour": {"share": [0.25, 0.50], "centre_distance": [0.0, 1.0], "road_width_m": 10, "height_factor": 1.0, "footprint_factor": 1.0, "wants_water": true},
+    "market": {"share": [0.08, 0.22], "centre_distance": [0.0, 0.5], "road_width_m": 8, "height_factor": 0.8, "footprint_factor": 0.9},
+    "residential": {"share": [0.20, 0.45], "centre_distance": [0.25, 1.0], "road_width_m": 6, "height_factor": 0.5, "footprint_factor": 0.8},
+    "green": {"share": [0.03, 0.12], "centre_distance": [0.0, 1.0], "road_width_m": 4, "height_factor": 0.2, "footprint_factor": 0.5}
+  },
+  "domains": {
+    "port_authority": {"kind": "port_authority", "height_factor": 1.2, "footprint_factor": 1.1, "prefers": ["harbour", "market"]},
+    "quay_row": {"kind": "estate", "height_factor": 0.9, "footprint_factor": 1.0, "prefers": ["harbour"]},
+    "town_side": {"kind": "municipality", "height_factor": 0.8, "footprint_factor": 0.9, "prefers": ["residential", "market", "green"]}
+  },
+  "roads": {"arterial_width_m": [8, 12], "local_width_m": [4, 7]}
+}

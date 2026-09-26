@@ -1,0 +1,19 @@
+{
+  "districts_version": "0.1.0",
+  "setting": "arcane_medieval",
+  "block_area_m2": [2500, 18000],
+  "target_blocks": [40, 70],
+  "uses": {
+    "civic": {"share": [0.08, 0.20], "centre_distance": [0.0, 0.25], "road_width_m": 8, "height_factor": 1.0, "footprint_factor": 1.0},
+    "market": {"share": [0.10, 0.25], "centre_distance": [0.10, 0.45], "road_width_m": 6, "height_factor": 0.9, "footprint_factor": 0.9},
+    "residential": {"share": [0.30, 0.55], "centre_distance": [0.35, 1.0], "road_width_m": 4, "height_factor": 0.6, "footprint_factor": 0.8},
+    "craft": {"share": [0.05, 0.20], "centre_distance": [0.2, 0.7], "road_width_m": 5, "height_factor": 0.7, "footprint_factor": 0.9},
+    "green": {"share": [0.03, 0.15], "centre_distance": [0.0, 1.0], "road_width_m": 3, "height_factor": 0.3, "footprint_factor": 0.6}
+  },
+  "domains": {
+    "castle": {"kind": "castle", "height_factor": 1.25, "footprint_factor": 1.15, "prefers": ["civic", "green"]},
+    "guild_quarter": {"kind": "estate", "height_factor": 1.0, "footprint_factor": 1.0, "prefers": ["market", "craft"]},
+    "outer_wards": {"kind": "estate", "height_factor": 0.8, "footprint_factor": 0.9, "prefers": ["residential", "green"]}
+  },
+  "roads": {"arterial_width_m": [6, 10], "local_width_m": [3, 5]}
+}

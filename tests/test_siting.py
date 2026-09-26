@@ -1,0 +1,191 @@
+"""Stage D: district ownership, blocks, skeleton and envelopes (work order 016)."""
+from __future__ import annotations
+
+import copy
+import importlib.util
+import json
+import math
+from pathlib import Path
+
+import pytest
+
+from world_builder.planning import (SceneError, compile_brief, load_districts_spec, load_setting_pack,
+                                    plan_siting, plan_terrain, validate_siting)
+from world_builder.planning.catalogue import DEFAULT_SETTINGS_ROOT
+
+PROMPTS = {
+    "arcane_medieval": "河谷里的魔法城邦，要有城堡和冒险者工会",
+    "modern_metropolis": "现代大都市，有摩天楼和地铁枢纽",
+    "industrial_park": "忙碌的工业产业园，成片厂房和铁路",
+    "harbour": "海运港口，码头货轮和仓库",
+}
+REPO = Path(__file__).resolve().parents[1]
+
+
+@pytest.fixture(scope="module")
+def planned():
+    result = {}
+    for setting, prompt in PROMPTS.items():
+        pack = load_setting_pack(setting)
+        brief = compile_brief(prompt, seed=4)
+        terrain = plan_terrain(setting, seed=4, region_m=512, spacing_m=8)
+        plan = plan_siting(brief, pack, terrain)
+        result[setting] = (pack, brief, terrain, plan, validate_siting(plan, brief, pack, terrain))
+    return result
+
+
+def test_district_specs_load_and_are_coherent() -> None:
+    for setting in PROMPTS:
+        spec = load_districts_spec(setting)
+        assert spec.setting == setting
+        assert spec.block_area_m2[0] < spec.block_area_m2[1]
+        assert spec.target_blocks[0] <= spec.target_blocks[1]
+        assert spec.uses and spec.domains
+        for rules in spec.uses.values():
+            assert 0 <= rules["share"][0] <= rules["share"][1] <= 1
+
+
+def test_every_background_sits_within_its_rules(planned) -> None:
+    for setting, (pack, brief, terrain, plan, report) in planned.items():
+        failures = [check for check in report["checks"] if check["state"] != "pass"]
+        assert report["state"] == "pass", (setting, failures)
+
+
+def test_blocks_tile_the_region_and_respect_their_shares(planned) -> None:
+    for setting, (pack, brief, terrain, plan, _) in planned.items():
+        spec = load_districts_spec(setting)
+        assert abs(sum(block.area_m2 for block in plan.blocks) - plan.region_m ** 2) < 1.0
+        for index, first in enumerate(plan.blocks):
+            for second in plan.blocks[index + 1:]:
+                assert not (min(first.x1, second.x1) - max(first.x0, second.x0) > 0
+                            and min(first.y1, second.y1) - max(first.y0, second.y0) > 0), setting
+        for use, rules in spec.uses.items():
+            share = sum(1 for block in plan.blocks if block.use == use) / len(plan.blocks)
+            assert rules["share"][0] - 0.05 <= share <= rules["share"][1] + 0.05, (setting, use, share)
+
+
+def test_ownership_covers_every_block_and_changes_the_heights(planned) -> None:
+    for setting, (pack, brief, terrain, plan, report) in planned.items():
+        owners = {block.domain for block in plan.blocks}
+        assert owners == set(load_districts_spec(setting).domains), setting
+        assert all(domain.block_ids for domain in plan.domains)
+        # Several blocks under one owner is the point of the layer, and the
+        # owner's factors must actually reach the envelopes.
+        assert max(len(domain.block_ids) for domain in plan.domains) >= 3, setting
+        applied = [check for check in report["checks"] if check["rule"] == "siting.domain_factors_applied"]
+        assert applied and all(check["state"] == "pass" for check in applied), setting
+
+
+def test_skeleton_is_connected_and_bridges_cross_water(planned) -> None:
+    for setting, (pack, brief, terrain, plan, report) in planned.items():
+        connected = next(check for check in report["checks"] if check["rule"] == "siting.network_connected")
+        assert connected["state"] == "pass", setting
+        assert plan.bridges, f"{setting} has water but no bridge"
+        for bridge in plan.bridges:
+            channel = next(channel for channel in terrain.channels if channel.id == bridge.channel_id)
+            midpoint = ((bridge.start[0] + bridge.end[0]) / 2, (bridge.start[1] + bridge.end[1]) / 2)
+            from world_builder.planning.terrain import _distance_to_channel
+            assert _distance_to_channel(*midpoint, channel) <= channel.width_m / 2, bridge.id
+        headings = plan.stats["arterial_headings_deg"]
+        off_axis = [h for h in headings if min(abs(h % 90), 90 - abs(h % 90)) > 8]
+        assert len(off_axis) >= 2, (setting, headings)
+
+
+def test_every_demanded_building_has_an_envelope(planned) -> None:
+    for setting, (pack, brief, terrain, plan, _) in planned.items():
+        for requirement in brief.requirements(pack):
+            entry = pack.entry(requirement.type)
+            if entry.footprint_kind == "linear" or entry.role == "vessel":
+                assert len([work for work in plan.works if work.type == requirement.type]) >= requirement.count, \
+                    (setting, requirement.type)
+                continue
+            sites = plan.sites_of(requirement.type)
+            assert len(sites) >= requirement.count, (setting, requirement.type, len(sites))
+            for site in sites:
+                assert entry.footprint_m2_range[0] - 1 <= site.area_m2 <= entry.footprint_m2_range[1] + 1
+                if entry.height_m_range:
+                    assert entry.height_m_range[0] - 0.5 <= site.max_height_m <= entry.height_m_range[1] + 0.5
+                assert site.max_storeys >= 1
+
+
+def test_linear_works_and_vessels_are_corridors_not_plots(planned) -> None:
+    pack, brief, terrain, plan, _ = planned["harbour"]
+    assert {work.type for work in plan.works} >= {"pier", "quay_wall", "cargo_ship"}
+    for work in plan.works:
+        assert len(work.points) >= 2 and work.length_m > 0
+        if work.type == "cargo_ship":
+            midpoint = ((work.points[0][0] + work.points[-1][0]) / 2,
+                        (work.points[0][1] + work.points[-1][1]) / 2)
+            assert terrain.water_at(*midpoint), "a ship belongs in the water"
+    assert not plan.sites_of("cargo_ship"), "a ship is not a plot"
+    arcane = planned["arcane_medieval"][3]
+    assert any(work.type == "city_wall" for work in arcane.works), "the arcane pack demands a wall"
+
+
+def test_plans_are_deterministic() -> None:
+    pack = load_setting_pack("harbour")
+    brief = compile_brief(PROMPTS["harbour"], seed=7)
+    terrain = plan_terrain("harbour", seed=7, region_m=512, spacing_m=8)
+    first = plan_siting(brief, pack, terrain)
+    second = plan_siting(brief, pack, terrain)
+    assert first.to_dict() == second.to_dict()
+
+
+def test_broken_district_specs_are_rejected(tmp_path: Path) -> None:
+    source = DEFAULT_SETTINGS_ROOT / "arcane_medieval" / "districts.json"
+    good = json.loads(source.read_text(encoding="utf-8"))
+    setting = json.loads((DEFAULT_SETTINGS_ROOT / "arcane_medieval" / "setting.json").read_text(encoding="utf-8"))
+    catalogues = {
+        name: (DEFAULT_SETTINGS_ROOT / name / "catalogue.json").read_text(encoding="utf-8")
+        for name in ("arcane_medieval",)}
+    broken = tmp_path / "arcane_medieval"
+    broken.mkdir()
+    (broken / "setting.json").write_text(json.dumps(setting, ensure_ascii=False), encoding="utf-8")
+    (broken / "catalogue.json").write_text(catalogues["arcane_medieval"], encoding="utf-8")
+    (broken / "terrain.json").write_text(
+        (DEFAULT_SETTINGS_ROOT / "arcane_medieval" / "terrain.json").read_text(encoding="utf-8"), encoding="utf-8")
+
+    def write(payload):
+        (broken / "districts.json").write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+
+    bad_prefers = copy.deepcopy(good)
+    bad_prefers["domains"]["castle"]["prefers"] = ["spaceport"]
+    write(bad_prefers)
+    with pytest.raises(SceneError) as failure:
+        load_districts_spec("arcane_medieval", tmp_path)
+    assert "unknown use" in str(failure.value)
+
+    bad_share = copy.deepcopy(good)
+    bad_share["uses"]["residential"]["share"] = [0.9, 0.95]
+    write(bad_share)
+    with pytest.raises(SceneError) as failure:
+        load_districts_spec("arcane_medieval", tmp_path)
+    assert "sum to" in str(failure.value)
+
+    unknown_field = copy.deepcopy(good)
+    unknown_field["uses"]["market"]["density"] = 2
+    write(unknown_field)
+    with pytest.raises(SceneError):
+        load_districts_spec("arcane_medieval", tmp_path)
+
+    wrong_setting = copy.deepcopy(good)
+    wrong_setting["setting"] = "harbour"
+    write(wrong_setting)
+    with pytest.raises(SceneError) as failure:
+        load_districts_spec("arcane_medieval", tmp_path)
+    assert "harbour" in str(failure.value)
+
+
+def test_district_tool_prints_a_map_and_passes(planned, tmp_path: Path, capsys) -> None:
+    spec = importlib.util.spec_from_file_location("plan_districts_tool", REPO / "tools" / "plan_districts.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    output = tmp_path / "districts.json"
+    assert module.main(["--prompt", PROMPTS["harbour"], "--seed", "4", "--output", str(output)]) == 0
+    printed = capsys.readouterr().out
+    assert "validation: pass" in printed and "setting=harbour" in printed
+    assert "#" in printed or "*" in printed, "the block map should be drawn"
+    payload = json.loads(output.read_text(encoding="utf-8"))
+    assert payload["setting"] == "harbour" and payload["blocks"] and payload["sites"]
+    assert payload["stats"]["blocks"] == len(payload["blocks"])
+    assert math.isclose(sum(block["area_m2"] for block in payload["blocks"]), 512 * 512, rel_tol=0.01)

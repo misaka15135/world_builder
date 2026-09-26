@@ -96,7 +96,7 @@
       "role": "infrastructure",
       "required": true,
       "count_range": [1, 4],
-      "linear_m": [1500, 4000],
+      "linear_m": [400, 1600],
       "width_m_range": [6, 10],
       "design_state": "planned",
       "silhouette": "tunnel_or_viaduct",

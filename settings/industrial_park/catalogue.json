@@ -55,7 +55,7 @@
       "role": "infrastructure",
       "required": true,
       "count_range": [1, 3],
-      "linear_m": [1000, 3000],
+      "linear_m": [300, 1200],
       "width_m_range": [4, 8],
       "design_state": "planned",
       "silhouette": "track_on_ballast",
