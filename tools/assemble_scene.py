@@ -9,6 +9,8 @@ from pathlib import Path
 from world_builder.planning import (SceneError, assemble_scene, compile_brief, load_designs,
                                     load_setting_pack, plan_siting, plan_terrain, render_png, render_svg,
                                     validate_scene)
+from world_builder.adapters.minecraft.city import CityExportError, export_city
+from world_builder.adapters.minecraft.scene import project_for_minecraft
 from world_builder.planning.designer import design_building
 
 
@@ -23,6 +25,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output", type=Path, help="write the WIR package JSON here")
     parser.add_argument("--svg", type=Path, help="write a top-down SVG plan here")
     parser.add_argument("--png", type=Path, help="write a raster plan here, for the artifacts record")
+    parser.add_argument("--export-minecraft", type=Path, dest="minecraft",
+                        help="write 128 m Sponge schematics here (projected into the adapter's vocabulary)")
+    parser.add_argument("--interiors", action="store_true",
+                        help="materialise interiors; the adapter needs stair geometry for that")
     args = parser.parse_args(argv)
     try:
         brief = compile_brief(args.prompt or f"{args.setting} scene", args.seed)
@@ -56,6 +62,16 @@ def main(argv: list[str] | None = None) -> int:
         render_svg(package, terrain, siting, designs, args.svg)
     if args.png:
         render_png(terrain, siting, designs, args.png)
+    if args.minecraft:
+        try:
+            export = export_city(project_for_minecraft(package), args.minecraft,
+                                 include_interiors=args.interiors)
+        except (CityExportError, ValueError) as exc:
+            print(json.dumps({"code": getattr(exc, "code", "target.error"), "message": str(exc)},
+                             ensure_ascii=False))
+            return 1
+        print(f"  minecraft: {export['chunk_count']} chunk(s), {export['box_count']} box(es), "
+              f"{export['non_air_blocks']} block(s) -> {args.minecraft}")
     print(f"setting={pack.id} seed={args.seed} world={package['manifest']['world_id']}")
     print(f"  records: {report['record_count']} {report['kinds']}")
     print(f"  designs: {len(designs)}; no template yet for: {sorted(skipped)}")
