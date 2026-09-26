@@ -164,6 +164,10 @@ def assemble_scene(brief: SceneBrief, pack: SettingPack, terrain: TerrainPlan, s
                           [design.x0, design.y0, 0],
                           [design.x1 - design.x0, design.y1 - design.y0, round(design.height_m, 3)],
                           storeys=len(design.storeys), programme=design.type, design_state=design.design_state,
+                          # The target adapters read `interior_state`; a design
+                          # is a full plan, so it is "generated" rather than the
+                          # old `deferred` shell-only marker.
+                          interior_state="generated",
                           envelope_m2=round((design.x1 - design.x0) * (design.y1 - design.y0), 1))
         building["semantic_completeness"] = "component"
         building["geometry"] = {

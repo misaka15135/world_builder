@@ -29,6 +29,17 @@
 
 上述两个已完成项的说明：资源存档=简报摘要哈希 + 高程资源内容寻址 + 修订记录 `change_set_hash`；一条命令= `tools/assemble_scene.py`（输出 WIR 包 + SVG 平面图，**到 Minecraft/Unity 的导出尚未接通**）。
 
+### 目标适配器接线的差距清单（下一增量的入口）
+
+已核对 `adapters/minecraft/city.py` 对包的要求，场景包与它之间还差四件事，逐条记明，避免下次重新摸索：
+
+1. **世界规格**：适配器从 `world_spec.extensions.city_spec.style_profile` 取材质风格；场景包用的是 `scene_spec`。接线时要么在投影里补一个 `city_spec` 兼容块，要么让适配器也认 `scene_spec`（本项目倾向前者：投影层负责翻译，源数据保持不变）。
+2. **折线要摊成盒**：`road`/`rail`/`wall` 在场景包里是 `geometry.representation="polyline"`，而适配器只接受 `box` 与 `parametric_building`。需要投影层把每条折线拆成逐段盒（这也是"非正交路"能进游戏的前提）。
+3. **水面策略**：适配器现在要求"一条笔直南北向河"（`target.city_river`），而场景包是河网/运河/海岸线。适配器需要一条按源水道多段盒生成水面的分支，并由投影层设置一个标记来选中它——本轮已写过这条分支，因为没有生产者能验证它，**已撤回**，避免留下未经验证的代码。
+4. **建筑外壳**：`_building_shell` 目前只支持 `entry.side == "east"`，而设计器按临街方向给出南北侧入口；需要把门洞与门楣逻辑推广到四个方向，并让装配产出的楼梯实体带上 `geometry`（`steps`/`run_m`/`rise_m`/`landing_length_m`/`floor_levels_m`），否则 `target.interior_void` 会拒收。
+
+这四项都属适配器与投影层，改完必须同时跑：适配器专项测试、场景装配测试、**完整回归**，并重跑一次既有 512 m 城邦导出确认没有回归。
+
 ### 本轮落地与未完成（2026-09-26）
 
 **已落地**：`planning/assembler.py` + `tools/assemble_scene.py` + `tests/test_assembler.py`（6 通过 / 1 已知缺陷记为 xfail）+ 合同 [docs/contracts/scene-assembly-v0.1.md](../docs/contracts/scene-assembly-v0.1.md)。一条命令把五个阶段的产物写成**一个 WIR 包**并通过 005 的 0.1 合同与装配级不变量（层齐全、建筑数=设计数、高度一致、楼层挂建筑、**子实体落在父实体世界 AABB 内**、桥有 `crosses`）。实测魔法城邦 565 条记录、`failed=0`：`world 1 / terrain 1 / river 4 / domain 3 / district 40 / road 173 / bridge 16 / wall 1 / building 33 / storey 42 / room 84 / partition 42 / furniture 89 / stair 7`；同时输出一张 SVG 平面图（地形、水系、道路、桥、街区、建筑按实现/未实现着色）。
