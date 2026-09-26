@@ -1,0 +1,12 @@
+{
+  "designs_version": "0.1.0",
+  "setting": "harbour",
+  "templates": {
+    "warehouse": {"storeys": [1, 2], "storey_height_m": 4.4, "roof": "gable", "roof_height_m": 1.4, "setback_m": 0.0, "stair": "none", "aspect": 1.9, "room_uses": [["storage", "loading"], ["storage", "office"]]},
+    "customs_house": {"storeys": [2, 3], "storey_height_m": 3.4, "roof": "gable", "roof_height_m": 1.6, "setback_m": 1.0, "stair": "straight", "aspect": 1.3, "room_uses": [["customs_hall", "office"], ["office", "records_room"], ["office", "store"]]},
+    "lighthouse": {"storeys": [4, 8], "storey_height_m": 3.0, "roof": "spire", "roof_height_m": 3.0, "setback_m": 1.0, "stair": "straight", "aspect": 1.0, "room_uses": [["store", "watch_room"], ["watch_room", "store"], ["watch_room", "lamp_room"], ["lamp_room", "lamp_room"]]},
+    "inn": {"storeys": [2, 3], "storey_height_m": 3.0, "roof": "flat", "roof_height_m": 0.4, "setback_m": 1.0, "stair": "straight", "aspect": 1.2, "room_uses": [["taproom", "kitchen"], ["guest_room", "guest_room"], ["guest_room", "store"]]},
+    "residence": {"storeys": [2, 4], "storey_height_m": 3.0, "roof": "flat", "roof_height_m": 0.4, "setback_m": 1.0, "stair": "straight", "aspect": 1.1, "room_uses": [["hearth", "kitchen"], ["bed", "bed"], ["bed", "store"], ["bed", "store"]]},
+    "office_block": {"storeys": [2, 4], "storey_height_m": 3.3, "roof": "flat", "roof_height_m": 0.4, "setback_m": 1.0, "stair": "straight", "aspect": 1.3, "room_uses": [["lobby", "office"], ["open_plan", "office"], ["office", "store"], ["office", "store"]]}
+  }
+}

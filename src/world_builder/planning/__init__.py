@@ -13,6 +13,8 @@ from .terrain import (TERRAIN_VERSION, TerrainPlan, TerrainSpec, WaterChannel, l
                       render_preview, validate_terrain)
 from .siting import (DISTRICTS_VERSION, Block, Bridge, DistrictSpec, Domain, Road, Site, SitingPlan,
                      load_districts_spec, plan_siting, validate_siting)
+from .designer import (DESIGN_VERSION, BuildingDesign, DesignTemplate, Furniture, Room, Storey,
+                       design_building, load_designs, parse_designs, validate_design)
 
 __all__ = [
     "BRIEF_VERSION", "CATALOGUE_VERSION", "SETTING_VERSION", "MODEL_CONTRACT_VERSION", "CatalogueEntry",
@@ -23,4 +25,6 @@ __all__ = [
     "render_preview", "validate_terrain",
     "DISTRICTS_VERSION", "Block", "Bridge", "DistrictSpec", "Domain", "Road", "Site", "SitingPlan",
     "load_districts_spec", "plan_siting", "validate_siting",
+    "DESIGN_VERSION", "BuildingDesign", "DesignTemplate", "Furniture", "Room", "Storey", "design_building",
+    "load_designs", "parse_designs", "validate_design",
 ]

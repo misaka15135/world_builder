@@ -23,7 +23,7 @@
 | 014 | [地形方案（流水线 B）](014_terrain_plan.md) | in_progress | root | 013 |
 | 015 | [风物目录与背景包（流水线 C）](015_landmark_catalogue.md) | in_progress | root | 013 |
 | 016 | [区块归属与选址（流水线 D）](016_district_siting.md) | in_progress | root | 014、015 |
-| 017 | [单栋建筑设计器（流水线 E）](017_building_designer.md) | planned | 待认领 | 015、016 |
+| 017 | [单栋建筑设计器（流水线 E）](017_building_designer.md) | in_progress | root | 015、016 |
 | 018 | [装配器与场景流水线（流水线 F）](018_assembler_pipeline.md) | planned | 待认领 | 013—017 |
 
 下一个可分配编号：019。编号由协调者串行分配，避免并行碰撞。

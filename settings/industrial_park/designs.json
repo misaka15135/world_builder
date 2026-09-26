@@ -1,0 +1,12 @@
+{
+  "designs_version": "0.1.0",
+  "setting": "industrial_park",
+  "templates": {
+    "factory_hall": {"storeys": [1, 2], "storey_height_m": 5.0, "roof": "flat", "roof_height_m": 0.6, "setback_m": 0.0, "stair": "none", "aspect": 1.8, "room_uses": [["machine_hall", "storage"], ["machine_hall", "office"]]},
+    "warehouse": {"storeys": [1, 2], "storey_height_m": 4.4, "roof": "gable", "roof_height_m": 1.4, "setback_m": 0.0, "stair": "none", "aspect": 1.8, "room_uses": [["storage", "loading"], ["storage", "office"]]},
+    "office_block": {"storeys": [2, 4], "storey_height_m": 3.2, "roof": "flat", "roof_height_m": 0.4, "setback_m": 1.0, "stair": "straight", "aspect": 1.3, "room_uses": [["lobby", "office"], ["open_plan", "office"], ["office", "store"], ["office", "store"]]},
+    "residence": {"storeys": [2, 4], "storey_height_m": 3.0, "roof": "flat", "roof_height_m": 0.4, "setback_m": 1.0, "stair": "straight", "aspect": 1.1, "room_uses": [["hearth", "kitchen"], ["bed", "bed"], ["bed", "store"], ["bed", "store"]]},
+    "shop": {"storeys": [1, 2], "storey_height_m": 3.4, "roof": "flat", "roof_height_m": 0.4, "setback_m": 0.0, "stair": "none", "aspect": 1.4, "room_uses": [["stall", "counter"], ["storage", "office"]]},
+    "workshop": {"storeys": [1, 2], "storey_height_m": 3.8, "roof": "flat", "roof_height_m": 0.4, "setback_m": 0.0, "stair": "straight", "aspect": 1.2, "room_uses": [["workbench", "storage"], ["storage", "office"]]}
+  }
+}
