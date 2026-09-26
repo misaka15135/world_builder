@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 from world_builder.adapters.minecraft.city import (CityExportError, _partition_boxes, _roof_boxes,
-                                                   _shell_materials, _street_block, _window_bands, export_city)
+                                                   _shell_materials, _storey_bands, _street_block, export_city)
 from world_builder.storage.worldpkg import read_worldpkg
 
 SOURCE = Path(__file__).resolve().parents[1] / "artifacts/benchmark-city-v1/city-first.worldpkg"
@@ -218,6 +218,9 @@ def test_multi_storey_city_places_slabs_and_no_invented_partitions(tmp_path: Pat
         own = [box for box in boxes if box["source_id"].startswith(building["id"] + "_")]
         assert own, building["id"]
         for box in own:
+            # Roofs deliberately oversail the walls, so they are exempt.
+            if "_roof_" in box["source_id"] or box["source_id"].endswith("_roof_proxy"):
+                continue
             assert bx0 - 1e-6 <= box["x0"] and box["x1"] <= bx1 + 1e-6, (building["id"], box["source_id"])
             assert -bn1 - 1e-6 <= box["z0"] and box["z1"] <= -bn0 + 1e-6, (building["id"], box["source_id"])
 
@@ -249,11 +252,21 @@ def test_modern_style_gets_asphalt_streets_and_glazing() -> None:
     assert _street_block("arcane_medieval") == "minecraft:stone_bricks"
     assert _street_block("modern_grid") == "minecraft:gray_concrete"
     building = {"id": "b", "bounds": {"min": [0, 0, 0], "max": [10, 12, 9.4]}}
-    bands = _window_bands(building, 0, 10, 0, 12, 0, 0.2, 0.4, 2, 3.0)
+    bands = _storey_bands(building, 0, 10, 0, 12, 0, 0.2, 0.4, 2, 3.0, "minecraft:glass")
     assert len(bands) == 7, "three sides on both storeys plus the east side above the entrance"
     assert {band["block"] for band in bands} == {"minecraft:glass"}
     assert all(band["y1"] <= 9.0 + 1e-6 for band in bands), "glazing stays under the roof"
     assert not [band for band in bands if band["source_id"].endswith("_0_east")], "the entrance storey is not glazed"
+    timber = _storey_bands(building, 0, 10, 0, 12, 0, 0.2, 0.4, 2, 3.0, "minecraft:dark_oak_planks")
+    assert {band["block"] for band in timber} == {"minecraft:dark_oak_planks"}
+
+
+def test_roofs_oversail_the_walls() -> None:
+    flat = _roof_boxes("b", 0, 10, 0, 12, 20, 0.4, "flat", "minecraft:oak_planks")[0]
+    assert flat["x0"] < 0 and flat["x1"] > 10 and flat["z0"] < -12 and flat["z1"] > 0, "an eave oversails every side"
+    gable = _roof_boxes("b", 0, 10, 0, 12, 20, 1.2, "gable", "minecraft:oak_planks")
+    assert gable[0]["x0"] < 0 and gable[0]["z0"] < -12
+    assert gable[-1]["z0"] > gable[0]["z0"], "the gable still tapers above the eave"
 
 
 def test_roof_style_drives_the_silhouette() -> None:
@@ -267,4 +280,4 @@ def test_roof_style_drives_the_silhouette() -> None:
     assert len(spire) == 3
     assert spire[-1]["x0"] > spire[0]["x0"] and spire[-1]["z0"] > spire[0]["z0"], "a spire narrows on both axes"
     assert spire[-1]["y1"] == 20 and spire[0]["y0"] == 17, "steps stack from the eaves to the ridge"
-    assert spire[0]["x0"] == 0 and spire[0]["z1"] == 0, "the lowest step still covers the footprint"
+    assert spire[0]["x0"] < 0 and spire[0]["z1"] > 0, "the lowest step oversails the footprint"

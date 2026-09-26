@@ -17,10 +17,13 @@ from pathlib import Path
 
 from world_builder.wir.validator import validate_package
 
-ADAPTER_VERSION = "0.1.0-city.2"
+ADAPTER_VERSION = "0.1.0-city.3"
 PROFILE_ID = "profile_minecraft_city_12111"
 TARGET_VERSION = "1.21.11+worldedit-7.3.19+schem-v3"
 CHUNK_SIZE_M = 128
+# A roof that stops flush with the wall reads as a lid; building guides get
+# their depth from an eave, so the roof oversails the walls by half a metre.
+ROOF_EAVE_M = 0.6
 DEFAULT_DATA_VERSION = 4671
 
 PALETTE = {
@@ -44,6 +47,7 @@ PALETTE = {
     "minecraft:light_gray_concrete": 17,
     "minecraft:glass": 18,
     "minecraft:gray_concrete": 19,
+    "minecraft:dark_oak_planks": 20,
 }
 
 
@@ -59,9 +63,10 @@ def _street_block(style: str) -> str:
     return "minecraft:gray_concrete" if style == "modern_grid" else "minecraft:stone_bricks"
 
 
-def _window_bands(building: dict, x0: float, x1: float, n0: float, n1: float,
-                  z0: float, wall: float, roof: float, storeys: int, storey_h: float) -> list[dict]:
-    """A one-metre glass band at the top of each upper storey.
+def _storey_bands(building: dict, x0: float, x1: float, n0: float, n1: float, z0: float,
+                  wall: float, roof: float, storeys: int, storey_h: float, block: str) -> list[dict]:
+    """A one-metre band at each storey line: glazing for the modern profile, a
+    timber course for the arcane one.
 
     Drawn as extra boxes over the shell rather than by splitting the wall, so
     the wall geometry stays as it was. The ground storey's east side is left
@@ -74,11 +79,11 @@ def _window_bands(building: dict, x0: float, x1: float, n0: float, n1: float,
         low, high = top - 1.0, top
         if low <= z0 + 0.2 or high > building["bounds"]["max"][2] - roof:
             continue
-        parts.append(_box(f"{name}_glass_{level}_west", x0, x0 + wall, n0, n1, low, high, "minecraft:glass"))
-        parts.append(_box(f"{name}_glass_{level}_south", x0 + wall, x1 - wall, n0, n0 + wall, low, high, "minecraft:glass"))
-        parts.append(_box(f"{name}_glass_{level}_north", x0 + wall, x1 - wall, n1 - wall, n1, low, high, "minecraft:glass"))
+        parts.append(_box(f"{name}_band_{level}_west", x0, x0 + wall, n0, n1, low, high, block))
+        parts.append(_box(f"{name}_band_{level}_south", x0 + wall, x1 - wall, n0, n0 + wall, low, high, block))
+        parts.append(_box(f"{name}_band_{level}_north", x0 + wall, x1 - wall, n1 - wall, n1, low, high, block))
         if level > 0:
-            parts.append(_box(f"{name}_glass_{level}_east", x1 - wall, x1, n0 + wall, n1 - wall, low, high, "minecraft:glass"))
+            parts.append(_box(f"{name}_band_{level}_east", x1 - wall, x1, n0 + wall, n1 - wall, low, high, block))
     return parts
 
 # Furniture is still a box proxy, but the block picks up the room's function so
@@ -145,16 +150,19 @@ def _roof_boxes(name: str, x0: float, x1: float, n0: float, n1: float, z1: float
     purpose: thinner slices would quantise into the same cell and disappear.
     """
     if style not in {"gable", "spire"} or roof_h < 1.0:
-        return [_box(name + "_flat_roof_proxy", x0, x1, n0, n1, z1 - roof_h, z1, block)]
+        return [_box(name + "_flat_roof_proxy", x0 - ROOF_EAVE_M, x1 + ROOF_EAVE_M,
+                     n0 - ROOF_EAVE_M, n1 + ROOF_EAVE_M, z1 - roof_h, z1, block)]
     steps = max(2, min(4, int(round(roof_h))))
     parts: list[dict] = []
+    ex0, ex1 = x0 - ROOF_EAVE_M, x1 + ROOF_EAVE_M
+    en0, en1 = n0 - ROOF_EAVE_M, n1 + ROOF_EAVE_M
     for index in range(steps):
         low = z1 - roof_h + roof_h * index / steps
         high = z1 - roof_h + roof_h * (index + 1) / steps
-        inset_n = (n1 - n0) * index / (2 * steps)
-        inset_x = (x1 - x0) * index / (2 * steps) if style == "spire" else 0.0
-        parts.append(_box(f"{name}_roof_{index:02}", x0 + inset_x, x1 - inset_x,
-                          n0 + inset_n, n1 - inset_n, low, high, block))
+        inset_n = (en1 - en0) * index / (2 * steps)
+        inset_x = (ex1 - ex0) * index / (2 * steps) if style == "spire" else 0.0
+        parts.append(_box(f"{name}_roof_{index:02}", ex0 + inset_x, ex1 - inset_x,
+                          en0 + inset_n, en1 - inset_n, low, high, block))
     return parts
 
 
@@ -255,8 +263,8 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool,
     if lintel_low < z1 - roof:
         parts.append(_box(name + "_east_door_lintel", x1 - wall, x1, door_n0, door_n1, lintel_low, z1 - roof, shell))
     parts.extend(_roof_boxes(name, x0, x1, n0, n1, z1, roof, g.get("roof_style", "flat"), plank))
-    if style == "modern_grid":
-        parts.extend(_window_bands(building, x0, x1, n0, n1, z0, wall, roof, storey_count, storey_h))
+    band_block = "minecraft:glass" if style == "modern_grid" else "minecraft:dark_oak_planks"
+    parts.extend(_storey_bands(building, x0, x1, n0, n1, z0, wall, roof, storey_count, storey_h, band_block))
     if not with_interior:
         return parts
     children = [r for r in entities.values() if r["parent_id"] == building["id"]]
