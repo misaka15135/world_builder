@@ -213,12 +213,25 @@ def assemble_scene(brief: SceneBrief, pack: SettingPack, terrain: TerrainPlan, s
                                   parent_origin=origin, use=item.use))
         if design.stair:
             stair = design.stair
-            records.append(entity(f"{design.site_id}_stair", "stair", building["id"],
+            flight = design.storey_height_m
+            stair_record = entity(f"{design.site_id}_stair", "stair", building["id"],
                                   [stair["x0"] - design.x0, stair["y0"] - design.y0, 0.3],
                                   [stair["width_m"], stair["run_m"] + stair["landing_m"],
-                                   design.storey_height_m],
+                                   flight + 2.4],
                                   parent_origin=building_origin,
-                                  stair_kind="straight", design_state=design.design_state))
+                                  stair_kind="straight", design_state=design.design_state)
+            # The target adapters build the treads themselves, and they read the
+            # flight from geometry rather than from the box: without these the
+            # assembled stair is a plain volume and an interiors export refuses.
+            stair_record["geometry"] = {
+                "representation": "straight_stair",
+                "size_m": [stair["width_m"], stair["run_m"] + stair["landing_m"], flight + 2.4],
+                "rise_m": flight, "run_m": stair["run_m"], "clear_width_m": stair["width_m"],
+                "headroom_m": 2.4, "steps": stair["steps"], "landing_length_m": stair["landing_m"],
+                "floor_levels_m": [round(building_origin[2] + 0.3, 3),
+                                   round(building_origin[2] + 0.3 + flight, 3)],
+            }
+            records.append(stair_record)
             records.append(relation(f"relation_{design.site_id}_stair", "connects", f"{design.site_id}_stair",
                                     [room.id for storey in design.storeys for room in storey.rooms]))
 
