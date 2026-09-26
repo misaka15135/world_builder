@@ -40,6 +40,8 @@
 
 这四项都属适配器与投影层，改完必须同时跑：适配器专项测试、场景装配测试、**完整回归**，并重跑一次既有 512 m 城邦导出确认没有回归。
 
+**第 2 项（折线摊盒）与第 1 项的一半已落地**：新增 `adapters/minecraft/scene.py` 的 `project_for_minecraft(package)`——把 `road`/`rail`/`wall`/`pier`/`quay` 的折线逐段拆成盒（每个盒记录 `projected_from` 与段号），并在 `world_spec.extensions` 里补一个 `city_spec` 兼容块（`style_profile`/`region_size_m`/`building_count`…）供既有材质查找使用。投影**不修改源包**（语义模型仍是折线）。`tests/test_scene_projection.py`（3 passed）验证：折线确实摊成更多盒、盒尺寸非退化、源包保持折线、风格与边长被正确带过；最后一条测试**故意断言导出仍会在已记录的缺口处停止**（`target.city_river` 或 `target.building_*`），这样缺口不会因为测试变绿而被忘掉。剩下两项——水面策略分支与四方向门洞——仍未做。
+
 ### 本轮落地与未完成（2026-09-26）
 
 **已落地**：`planning/assembler.py` + `tools/assemble_scene.py` + `tests/test_assembler.py`（6 通过 / 1 已知缺陷记为 xfail）+ 合同 [docs/contracts/scene-assembly-v0.1.md](../docs/contracts/scene-assembly-v0.1.md)。一条命令把五个阶段的产物写成**一个 WIR 包**并通过 005 的 0.1 合同与装配级不变量（层齐全、建筑数=设计数、高度一致、楼层挂建筑、**子实体落在父实体世界 AABB 内**、桥有 `crosses`）。实测魔法城邦 565 条记录、`failed=0`：`world 1 / terrain 1 / river 4 / domain 3 / district 40 / road 173 / bridge 16 / wall 1 / building 33 / storey 42 / room 84 / partition 42 / furniture 89 / stair 7`；同时输出一张 SVG 平面图（地形、水系、道路、桥、街区、建筑按实现/未实现着色）。
