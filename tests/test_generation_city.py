@@ -57,6 +57,11 @@ def test_city_batch_registrations_are_fixed_before_results():
     current = json.loads((root / "city_cases_v5.json").read_text(encoding="utf-8"))
     assert current["generator_version"] == CitySpec().generator_version
     assert len(current["cases"]) == 30
+    modern = json.loads((root / "city_cases_v5_modern.json").read_text(encoding="utf-8"))
+    assert modern["generator_version"] == CitySpec().generator_version
+    assert len(modern["cases"]) == 30
+    assert {case["spec"]["style_profile"] for case in modern["cases"]} == {"modern_grid"}
+    assert {case["spec"]["seed"] for case in modern["cases"]} == {case["spec"]["seed"] for case in current["cases"]}
     for scenario, seed_start in (("riverside", 101), ("hillside", 201), ("dense", 301)):
         cases = [case for case in current["cases"] if case["spec"]["scenario"] == scenario]
         assert [case["spec"]["seed"] for case in cases] == list(range(seed_start, seed_start + 10))
