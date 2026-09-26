@@ -35,7 +35,10 @@ def main() -> int:
 
     orders = sorted((root / "work_order").glob("[0-9][0-9][0-9]_*.md"))
     numbers = [int(path.name[:3]) for path in orders]
-    if numbers != list(range(13)):
+    # Contiguous from 000, whatever the current count: a hardcoded total here
+    # would fail every time a new work order is allocated, which is a normal
+    # event rather than a documentation error.
+    if numbers != list(range(len(numbers))):
         errors.append(f"unexpected work order sequence: {numbers}")
     index = (root / "work_order" / "README.md").read_text(encoding="utf-8")
     for path in orders:
