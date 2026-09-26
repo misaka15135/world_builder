@@ -1,0 +1,8 @@
+{
+  "terrain_version": "0.1.0",
+  "setting": "industrial_park",
+  "relief": {"min_m": 0, "max_m": 5, "roughness": "flat", "tilt": true},
+  "water": {"kind": "canal", "channel_count": [1, 2], "width_m": [10, 20], "fraction": [0.01, 0.08]},
+  "slope": {"max_deg": 4, "mean_deg": [0.1, 2.0]},
+  "reserved": {"steep_deg": 8, "water_buffer_m": 6}
+}

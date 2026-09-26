@@ -1,0 +1,8 @@
+{
+  "terrain_version": "0.1.0",
+  "setting": "arcane_medieval",
+  "relief": {"min_m": 0, "max_m": 26, "roughness": "rolling", "tilt": true},
+  "water": {"kind": "river", "channel_count": [2, 4], "width_m": [8, 20], "fraction": [0.03, 0.16]},
+  "slope": {"max_deg": 30, "mean_deg": [1.0, 12.0]},
+  "reserved": {"steep_deg": 34, "water_buffer_m": 6}
+}

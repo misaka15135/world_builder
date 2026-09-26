@@ -20,7 +20,7 @@
 | 011 | [IFC 建筑概念模型验证](011_ifc_concept_export.md) | planned | 待认领 | 005、006；游戏首版之后 |
 | 012 | [大区域与资源扩展验证](012_large_world_benchmarks.md) | planned | 待认领 | 006、007、008、009 |
 | 013 | [场景简报（流水线 A）](013_scene_brief.md) | in_progress | root | 005 |
-| 014 | [地形方案（流水线 B）](014_terrain_plan.md) | planned | 待认领 | 013 |
+| 014 | [地形方案（流水线 B）](014_terrain_plan.md) | in_progress | root | 013 |
 | 015 | [风物目录与背景包（流水线 C）](015_landmark_catalogue.md) | in_progress | root | 013 |
 | 016 | [区块归属与选址（流水线 D）](016_district_siting.md) | planned | 待认领 | 014、015 |
 | 017 | [单栋建筑设计器（流水线 E）](017_building_designer.md) | planned | 待认领 | 015、016 |
@@ -30,7 +30,9 @@
 
 **2026-09-26 方向调整**：用户指出产物不满意源于构建思路不同，并给出 A—F 流水线设想（场景总控 → 地形分析 / 风物分析 → 区块划分与选址 → 每栋单独设计 → 汇总成 WIR → 导出）。核对结论是"差异全在控制面，不在数据面"，方案与理由见 [docs/04_scene_pipeline.md](../docs/04_scene_pipeline.md)。据此：**006 冻结为规则版参考实现**，控制面拆成 013（简报 A）、014（地形 B）、015（风物目录 C）、016（区块归属与选址 D）、017（单栋设计 E）、018（装配与流水线 F）六个可独立验收的工单；数据面（005/007/008/009/010/011）不变。另把此前并入 006 的"若干区块归属同一城堡"与"非正交路网"正式落到 016。
 
-**2026-09-26 推进（013 + 015 首轮）**：阶段 A 与 C 的离线路径已落地——`src/world_builder/planning/{brief,catalogue}.py`、四个背景包 `settings/*/`、`tools/compile_brief.py`、`examples/brief_model_response.json`、`tests/test_scene_brief.py`（16 passed）与合同 [docs/contracts/scene-brief-v0.1.md](../docs/contracts/scene-brief-v0.1.md)。四个背景的目录共 44 条风物：已实现 19 条（对应现行 9 个 programme 的改名归类）、未实现 25 条，缺口由 `design_state` 与 `note` 逐条写明，并由测试强制。阶段 A 的模型路径只有契约与本地 fixture，真实服务待用户定供应商与额度。下一步是 014 地形、016 选址（需要先消费 `needs`/`adjacency`）。
+**2026-09-26 推进（013 + 015 首轮）**：阶段 A 与 C 的离线路径已落地——`src/world_builder/planning/{brief,catalogue}.py`、四个背景包 `settings/*/`、`tools/compile_brief.py`、`examples/brief_model_response.json`、`tests/test_scene_brief.py`（16 passed）与合同 [docs/contracts/scene-brief-v0.1.md](../docs/contracts/scene-brief-v0.1.md)。四个背景的目录共 44 条风物：已实现 19 条（对应现行 9 个 programme 的改名归类）、未实现 25 条，缺口由 `design_state` 与 `note` 逐条写明，并由测试强制。阶段 A 的模型路径只有契约与本地 fixture，真实服务待用户定供应商与额度。
+
+**2026-09-26 推进（014 地形）**：阶段 B 落地——`planning/terrain.py`、四个 `settings/*/terrain.json`、`tools/plan_terrain.py`、`tests/test_terrain_plan.py`（8 passed）与合同 [docs/contracts/terrain-plan-v0.1.md](../docs/contracts/terrain-plan-v0.1.md)。512 m、8 m 网格下四个背景全部通过独立校验（`terrain.relief/slope/water_fraction/channel_count/width/coast/flow_downhill/water_in_valley/water_connected`）：arcane 水域 7.8%、4 条水道；modern 8.1%；industrial 5.2%；harbour 42.5% 且带海岸线。地形模型是"区域斜坡 + 平行排水的皱褶 + 河谷底衰减"，其下降是构造保证的；真正的排水求解器列为后续升级。下一步是 016 选址（消费 `needs`/`adjacency`/`buildable_at`）。
 
 当前状态：001—005 done。006 in_progress：128 m 固定试验已有存档恢复、有限修复、模型规格合同、响应回放和 ZIP64 世界包；独立 512 m、80 栋/5 室内离线源端城邦的预登记输入 30/30 成功、首次 15/30、三类各 10/10。008 in_progress：Unity 6000.3.24f1 两层样件的 26/26 对象/碰撞、方向和连续控制器上楼通过；512 m 城邦 v1 的 176/176 源 ID/碰撞、连续跨桥 3/3 检查点通过；独立 v2 的五栋生成室内导入 346/346 构件/碰撞，五栋各一条 Play Mode 穿门上楼路线均为 5/5 检查点通过；v3 的 16 块/420 构件静态导入、碰撞、法线绕序与最大三角形边长 181.0193 m 通过，桥面 x=256 m 分块接缝 Play Mode 实走 3/3 检查点通过；独立道路/桥梁 NavMesh 的 136 个源网格在保存场景重载后跨桥路径为 `PathComplete`、24 m，Agent Play Mode 8.21 秒连续到达东岸，最终复测桥段 163 个位移帧均有源桥碰撞体支撑；v2 首栋室内导航在显式东门 Link 后道路到二层房间为 `PathComplete`、18.61 m，保存场景重载通过，Agent 两次 Play Mode 均从道路经梯级到二层房间。其它接缝、其余四栋室内导航及 Agent、性能、切线材质和 007 同修订联调待做。009 in_progress：Minecraft 1.21.11/Fabric/WorldEdit 版 1363 方块样件由玩家连续走通南门—二层；同一城邦修订已生成 16 个 128 m 分块共 687,427 方块，其中 `city_c01_03` 已粘贴进目标世界并与离线清单 42232 非空气方块逐块吻合，其余 15 块与游戏内通行待做。真实模型服务和复杂地形未验证；007、010—012 未开始。010 为必要性待明确的可选后续路线。
 

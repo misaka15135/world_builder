@@ -1,0 +1,8 @@
+{
+  "terrain_version": "0.1.0",
+  "setting": "harbour",
+  "relief": {"min_m": 0, "max_m": 12, "roughness": "flat", "tilt": true},
+  "water": {"kind": "coast", "channel_count": [1, 3], "width_m": [40, 200], "fraction": [0.25, 0.5]},
+  "slope": {"max_deg": 8, "mean_deg": [0.2, 3.5]},
+  "reserved": {"steep_deg": 12, "water_buffer_m": 10}
+}
