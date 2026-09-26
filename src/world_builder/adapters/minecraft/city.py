@@ -17,13 +17,16 @@ from pathlib import Path
 
 from world_builder.wir.validator import validate_package
 
-ADAPTER_VERSION = "0.1.0-city.3"
+ADAPTER_VERSION = "0.1.0-city.4"
 PROFILE_ID = "profile_minecraft_city_12111"
 TARGET_VERSION = "1.21.11+worldedit-7.3.19+schem-v3"
 CHUNK_SIZE_M = 128
 # A roof that stops flush with the wall reads as a lid; building guides get
 # their depth from an eave, so the roof oversails the walls by half a metre.
 ROOF_EAVE_M = 0.6
+# Source bounds are rounded to six decimals: derived sums can differ from a
+# declared value by a rounding step, and that is not a plan violation.
+COORD_EPS_M = 1e-6
 DEFAULT_DATA_VERSION = 4671
 
 PALETTE = {
@@ -63,21 +66,21 @@ def _street_block(style: str) -> str:
     return "minecraft:gray_concrete" if style == "modern_grid" else "minecraft:stone_bricks"
 
 
-def _storey_bands(building: dict, x0: float, x1: float, n0: float, n1: float, z0: float,
-                  wall: float, roof: float, storeys: int, storey_h: float, block: str) -> list[dict]:
+def _storey_bands(name: str, outlines: list[tuple[float, float, float, float]], z0: float, wall: float,
+                  wall_top: float, storey_h: float, block: str) -> list[dict]:
     """A one-metre band at each storey line: glazing for the modern profile, a
     timber course for the arcane one.
 
     Drawn as extra boxes over the shell rather than by splitting the wall, so
-    the wall geometry stays as it was. The ground storey's east side is left
-    alone because that is where the entrance is.
+    the wall geometry stays as it was, and each band follows its own storey's
+    outline so a setback floor keeps its band on the stepped edge. The ground
+    storey's east side is left alone because that is where the entrance is.
     """
     parts: list[dict] = []
-    name = building["id"]
-    for level in range(storeys):
-        top = z0 + (level + 1) * storey_h
-        low, high = top - 1.0, top
-        if low <= z0 + 0.2 or high > building["bounds"]["max"][2] - roof:
+    for level, (x0, x1, n0, n1) in enumerate(outlines):
+        high = z0 + (level + 1) * storey_h
+        low = high - 1.0
+        if low <= z0 + wall or high > wall_top:
             continue
         parts.append(_box(f"{name}_band_{level}_west", x0, x0 + wall, n0, n1, low, high, block))
         parts.append(_box(f"{name}_band_{level}_south", x0 + wall, x1 - wall, n0, n0 + wall, low, high, block))
@@ -85,6 +88,31 @@ def _storey_bands(building: dict, x0: float, x1: float, n0: float, n1: float, z0
         if level > 0:
             parts.append(_box(f"{name}_band_{level}_east", x1 - wall, x1, n0 + wall, n1 - wall, low, high, block))
     return parts
+
+
+def _storey_outlines(building: dict) -> list[tuple[float, float, float, float]]:
+    """West, east, south and north outline of every storey.
+
+    The source declares one setback per storey; revisions that predate that
+    field keep a single flush outline, which is what they were exported as.
+    """
+    (x0, n0, _), (x1, n1, _) = building["bounds"]["min"], building["bounds"]["max"]
+    storeys = building["attributes"]["storeys"]
+    insets = building["geometry"].get("storey_insets_local_m")
+    if insets is None:
+        insets = [[0.0, 0.0, 0.0, 0.0] for _ in range(storeys)]
+    if len(insets) != storeys or any(len(o) != 4 or min(o) < 0 for o in insets):
+        raise CityExportError("target.building_setbacks", building["id"])
+    outlines = [(x0 + o[0], x1 - o[1], n0 + o[2], n1 - o[3]) for o in insets]
+    previous = None
+    for west, east, south, north in outlines:
+        if not (west + 2.0 * 0.3 <= east and south + 2.0 * 0.3 <= north):
+            raise CityExportError("target.building_setbacks", building["id"])
+        if previous is not None and (west < previous[0] or east > previous[1]
+                                     or south < previous[2] or north > previous[3]):
+            raise CityExportError("target.building_setbacks", building["id"])
+        previous = (west, east, south, north)
+    return outlines
 
 # Furniture is still a box proxy, but the block picks up the room's function so
 # a bedroom, a workshop and a chapel do not read the same from inside.
@@ -198,13 +226,17 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool,
                     style: str = "arcane_medieval") -> list[dict]:
     """Hollow multi-storey shell from declared source parameters.
 
-    Envelope, storey count, storey height, wall and floor thickness, stair void
-    and east entrance all come from source fields, so the shell stays derived
-    from the source rather than invented. Only buildings whose interior_state is
-    `generated` carry partitions, a stair and furniture; the rest stay a shell
-    with an open upper floor and no way up, which the report states explicitly.
-    A stair only reaches the first upper slab, so storeys above the second are
-    enclosed and unreachable — a source limitation, not an adapter choice.
+    Envelope, storey count, storey height, wall and floor thickness, per-storey
+    setbacks, stair void and east entrance all come from source fields, so the
+    shell stays derived from the source rather than invented. Each storey's
+    wall ring and band follow that storey's outline, so a declared setback
+    becomes a stepped massing with a walkable terrace on the slab below it —
+    the part of the slab the smaller storey no longer covers. Only buildings
+    whose interior_state is `generated` carry partitions, a stair and
+    furniture; the rest stay a shell with an open upper floor and no way up,
+    which the report states explicitly. A stair only reaches the first upper
+    slab, so storeys above the second are enclosed and unreachable — a source
+    limitation, not an adapter choice.
     """
     g = building["geometry"]
     if g["representation"] != "parametric_building" or g["entry"]["side"] != "east":
@@ -214,6 +246,7 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool,
     storey_count = building["attributes"]["storeys"]
     if type(storey_count) is not int or storey_count < 1:
         raise CityExportError("target.building_storeys", building["id"])
+    outlines = _storey_outlines(building)
     storey_h = g["storey_height_m"]
     upper_z = z0 + storey_h
     upper_top = upper_z + floor
@@ -222,6 +255,7 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool,
     vx1, vn1 = x0 + void["max"][0], n0 + void["max"][1]
     if not (x0 < vx0 < vx1 < x1 and n0 < vn0 < vn1 < n1):
         raise CityExportError("target.building_void", building["id"])
+    ground = outlines[0]
     entry = g["entry"]
     door_n0, door_n1 = n0 + entry["offset_m"], n0 + entry["offset_m"] + entry["width_m"]
     door_top = z0 + floor + entry["height_m"]
@@ -233,38 +267,56 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool,
     door_clear_low = math.ceil(z0 + floor)
     door_blocks_tall = max(2, int(entry["height_m"]))
     lintel_low = max(door_top, door_clear_low + door_blocks_tall)
-    # A single-storey building has no room above its door: the opening reaches
-    # the ceiling and there is simply no lintel to place.
-    if not (n0 + wall < door_n0 < door_n1 < n1 - wall and lintel_low <= z1 - roof):
+    # The ground storey carries the entrance, so the door and its lintel have to
+    # fit inside that storey rather than somewhere up the facade. A door that
+    # already reaches the storey line simply has no lintel to place.
+    if not (ground[2] + wall < door_n0 < door_n1 < ground[3] - wall and lintel_low <= z0 + storey_h):
         raise CityExportError("target.building_entry", building["id"])
     name = building["id"]
     shell, plank = _shell_materials(style)
-    parts = [_box(name, x0, x1, n0, n1, z0, z0 + floor, plank)]
+    parts = [_box(name, ground[0], ground[1], ground[2], ground[3], z0, z0 + floor, plank)]
     for level in range(1, storey_count):
         top = z0 + level * g["storey_height_m"]
         if top + floor > z1 - roof:
             raise CityExportError("target.building_slab", building["id"])
+        # The slab covers the storey below, so the part a smaller upper storey
+        # leaves exposed is already the terrace that makes the setback read.
+        bx0, bx1, bn0, bn1 = outlines[level - 1]
         if level == 1:
             parts.extend([
-                _box(f"{name}_floor{level}_west", x0, vx0, n0, n1, top, top + floor, plank),
-                _box(f"{name}_floor{level}_east", vx1, x1, n0, n1, top, top + floor, plank),
-                _box(f"{name}_floor{level}_south", vx0, vx1, n0, vn0, top, top + floor, plank),
-                _box(f"{name}_floor{level}_north", vx0, vx1, vn1, n1, top, top + floor, plank),
+                _box(f"{name}_floor{level}_west", bx0, vx0, bn0, bn1, top, top + floor, plank),
+                _box(f"{name}_floor{level}_east", vx1, bx1, bn0, bn1, top, top + floor, plank),
+                _box(f"{name}_floor{level}_south", vx0, vx1, bn0, vn0, top, top + floor, plank),
+                _box(f"{name}_floor{level}_north", vx0, vx1, vn1, bn1, top, top + floor, plank),
             ])
         else:
-            parts.append(_box(f"{name}_floor{level}", x0, x1, n0, n1, top, top + floor, plank))
-    parts.extend([
-        _box(name + "_west_wall", x0, x0 + wall, n0, n1, z0 + floor, z1 - roof, shell),
-        _box(name + "_south_wall", x0 + wall, x1 - wall, n0, n0 + wall, z0 + floor, z1 - roof, shell),
-        _box(name + "_north_wall", x0 + wall, x1 - wall, n1 - wall, n1, z0 + floor, z1 - roof, shell),
-        _box(name + "_east_wall_south", x1 - wall, x1, n0 + wall, door_n0, z0 + floor, z1 - roof, shell),
-        _box(name + "_east_wall_north", x1 - wall, x1, door_n1, n1 - wall, z0 + floor, z1 - roof, shell),
-    ])
-    if lintel_low < z1 - roof:
-        parts.append(_box(name + "_east_door_lintel", x1 - wall, x1, door_n0, door_n1, lintel_low, z1 - roof, shell))
-    parts.extend(_roof_boxes(name, x0, x1, n0, n1, z1, roof, g.get("roof_style", "flat"), plank))
+            parts.append(_box(f"{name}_floor{level}", bx0, bx1, bn0, bn1, top, top + floor, plank))
+    wall_top = z1 - roof
+    for level, (sx0, sx1, sn0, sn1) in enumerate(outlines):
+        bottom = z0 + level * storey_h + floor
+        # The top storey reaches the roof base; the ones below stop under the
+        # slab that separates them from the storey above.
+        top = wall_top if level == storey_count - 1 else z0 + (level + 1) * storey_h
+        # The ground storey keeps the original unsuffixed names so existing
+        # probes and evidence still point at the same source ids.
+        suffix = "" if level == 0 else f"_s{level}"
+        parts.append(_box(f"{name}{suffix}_west_wall", sx0, sx0 + wall, sn0, sn1, bottom, top, shell))
+        parts.append(_box(f"{name}{suffix}_south_wall", sx0 + wall, sx1 - wall, sn0, sn0 + wall, bottom, top, shell))
+        parts.append(_box(f"{name}{suffix}_north_wall", sx0 + wall, sx1 - wall, sn1 - wall, sn1, bottom, top, shell))
+        if level == 0:
+            parts.append(_box(name + "_east_wall_south", sx1 - wall, sx1, sn0 + wall, door_n0, bottom, top, shell))
+            parts.append(_box(name + "_east_wall_north", sx1 - wall, sx1, door_n1, sn1 - wall, bottom, top, shell))
+            if lintel_low < top:
+                parts.append(_box(name + "_east_door_lintel", sx1 - wall, sx1, door_n0, door_n1, lintel_low, top, shell))
+        else:
+            parts.append(_box(f"{name}{suffix}_east_wall", sx1 - wall, sx1, sn0 + wall, sn1 - wall, bottom, top, shell))
+    tx0, tx1, tn0, tn1 = outlines[-1]
+    # The declared roof style lives in geometry; revisions that only carried it
+    # as an attribute still get their real silhouette instead of a flat slab.
+    roof_style = g.get("roof_style") or building["attributes"].get("roof_style", "flat")
+    parts.extend(_roof_boxes(name, tx0, tx1, tn0, tn1, z1, roof, roof_style, plank))
     band_block = "minecraft:glass" if style == "modern_grid" else "minecraft:dark_oak_planks"
-    parts.extend(_storey_bands(building, x0, x1, n0, n1, z0, wall, roof, storey_count, storey_h, band_block))
+    parts.extend(_storey_bands(name, outlines, z0, wall, wall_top, storey_h, band_block))
     if not with_interior:
         return parts
     children = [r for r in entities.values() if r["parent_id"] == building["id"]]
@@ -292,7 +344,11 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool,
     if sg["representation"] != "straight_stair" or sg["steps"] < 1:
         raise CityExportError("target.interior_geometry", building["id"])
     (sx0, sn0, _), (sx1, sn1, _) = stair["bounds"]["min"], stair["bounds"]["max"]
-    if not (vx0 <= sx0 < sx1 <= vx1 and vn0 <= sn0 < sn1 <= vn1
+    # Source bounds are rounded to six decimals while the void is derived from
+    # the lot origin, so a stair that fills its reservation exactly can land a
+    # femtometre outside it. Compare the plan fit with that epsilon allowed.
+    if not (vx0 - COORD_EPS_M <= sx0 < sx1 <= vx1 + COORD_EPS_M
+            and vn0 - COORD_EPS_M <= sn0 < sn1 <= vn1 + COORD_EPS_M
             and abs(sg["floor_levels_m"][0] - (z0 + floor)) < 0.01
             and abs(sg["floor_levels_m"][1] - upper_top) < 0.01):
         raise CityExportError("target.interior_void", building["id"])
@@ -423,10 +479,16 @@ def export_city(package: dict, output_dir: str | Path, *, include_interiors: boo
         elif kind in {"road", "bridge", "wall"}:
             classification, target, message = "approximated", "blocks:" + record["id"], "axis-aligned volume quantised to whole blocks at 1 m = 1 block"
         elif kind == "building":
+            # A declared setback means the shell is no longer one extruded
+            # footprint, so the report has to say which storeys step back.
+            insets = (record.get("geometry") or {}).get("storey_insets_local_m") or []
+            stepped = [i for i, o in enumerate(insets) if any(abs(v) > 1e-6 for v in o)]
+            setback = ("; storeys " + ", ".join(str(i) for i in stepped) + " step back from the outline below"
+                       if stepped else "")
             if include_interiors and record["attributes"]["interior_state"] == "generated":
-                classification, target, message = "approximated", "blocks:" + record["id"] + "_*", "hollow shell over " + str(record["attributes"]["storeys"]) + " storey(s) with the declared east opening, room partitions, floors and stair; treads below block resolution merge into whole-block steps and storeys above the second have no stair"
+                classification, target, message = "approximated", "blocks:" + record["id"] + "_*", "hollow shell over " + str(record["attributes"]["storeys"]) + " storey(s) with the declared east opening, room partitions, floors and stair; treads below block resolution merge into whole-block steps and storeys above the second have no stair" + setback
             else:
-                classification, target, message = "approximated", "blocks:" + record["id"] + "_*", "hollow shell with the declared east opening and upper-floor void; source interior_state is deferred, so no stair, rooms or furniture exist to place"
+                classification, target, message = "approximated", "blocks:" + record["id"] + "_*", "hollow shell with the declared east opening and upper-floor void; source interior_state is deferred, so no stair, rooms or furniture exist to place" + setback
         elif kind == "terrain":
             classification, target, message = "approximated", "blocks:terrain_*_proxy", "flat grass banks replace the sampled heightfield"
         elif kind == "river":

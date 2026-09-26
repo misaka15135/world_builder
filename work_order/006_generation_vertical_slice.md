@@ -187,6 +187,46 @@ city.6 双样式重贴（2026-09-26，用户在场）：生成器 `0.1.0-city.6`
 
 **下一步（本轮之后）**：city.6 现代批次（`benchmarks/city_cases_v6_modern.json`，已登记未运行）；建筑形体继续原型化（退台天际线、城门楼与垛口、护城河需要真实地形开挖）；街道家具与广场；已裁定的宏观街区归属与非正交路网。
 
+## city.7：退台天际线与三个缺陷修正（2026-09-26）
+
+执行者 root，状态 in_progress。修改范围：`generation/planner.py`、`generation/spec.py`、`generation/validation.py`、`generation/__init__.py`、`adapters/minecraft/city.py`、`tests/test_generation_city.py`、`tests/test_minecraft_city.py`、新预登记、`.gitignore` 与 000/006/索引/合同文档。目标是让建筑不再是"一个轮廓从地面长到屋顶"，并修掉本轮验证暴露的三个缺陷。生成器升到 `0.1.0-city.7`，内容剖面字段同步升到 `district_v4`（否则同一 `world_id` 会覆盖两份不同城市；实测新身份 `world_adf1bf7e8e51ea37`）。
+
+### 退台（setback）：楼层各有外轮廓
+
+`storey_insets_local_m` 现在是**源几何**：每层一个 [西, 东, 南, 北] 退距。规则是硬的——首层恒为 0（街沿与入口在首层轮廓上）、逐层只增不减（减少就是悬挑，本模板不支持）、**东侧恒为 0**（东侧窄条是楼梯预留区），退距取整米并封顶 2 m：半米级的退距在 1 m = 1 方块的量化里会消失。退距上限由平面定：西侧受房间宽度约束、南北受楼梯井长度与房间进深约束，容不下 1 m 的建筑干脆保持盒子（`10 m 宽 × 14 m 深` 的三层楼刚好退 1 m；`8 m 宽` 退 0）。风格决定退法：`arcane_medieval` 的三层建筑退出一间 1 m 的顶层阁楼，`modern_grid` 的四层退 2 m、五层把两层的退距做成两步收分，这才是 CBD 退台天际线。
+
+三条新规则：`city.storey_setback`（逐层声明、首层为零、不递减）、`city.storey_setback_void`（不得吃掉楼梯预留区或把轮廓退到不足）、`city.storey_outline`（楼层实体的 AABB 必须等于它声明的那份退距）。楼层实体、房间、隔墙随各自轮廓生成，所以退台楼层自动带更小的房间，不会出现"房间挂在楼层外面"。
+
+Minecraft 适配器（策略 `0.1.0-city.4`）改为**按层落墙环与腰线**：第 L 层的墙走第 L 层的轮廓，层间的楼板仍覆盖下一层的整块轮廓——被上层退让出来的那一圈因此成为**露台**而不是洞。首层保留原名（`building_x_*_wall`），上层用 `_s1_`/`_s2_` 后缀，原有探针坐标不变。实测 `building_060`（三层、18 m × 18 m）：首层墙 `x 15.0—33.0`，顶层墙 `x 16.0—33.0`、`z -368.0—-352.0`，正好各退 1 m，而 `floor2` 仍覆盖 `x 15.0—33.0`。
+
+### 缺陷修正一：屋顶原型从未落到方块上（必须记录）
+
+适配器读的是 `geometry["roof_style"]`，而生成器把 `roof_style` 只写进了 `attributes`——**从 city.4 引入屋顶原型起，每一座导出城市的屋顶都是平屋顶**。直接证据是已提交的清单：`artifacts/minecraft-city-v5/manifest.json`、`minecraft-city-v6/manifest.json`、`minecraft-city-v6-modern/manifest.json` 各含 **80 个 `_flat_roof_proxy`、0 个阶梯屋顶盒**。
+
+**据此更正本条工单先前的记载**：city.5 目标重贴一节写的"`building_000` 从东侧可见阶梯双坡屋顶与门洞（屋顶原型第一次在目标平台可见）"**与产物不符**，应读作"可见门洞与平屋顶"。当时的截图未被改写，但它不能作为坡屋顶的证据；屋顶原型在目标平台**当时并未生效**，直到本轮才真正落到方块。同一处核查也说明：`roof_style`/`roof_height` 是几何而非标签，已改由几何声明（`geometry["roof_style"]`），适配器同时兼容只在属性里带该字段的旧修订。
+
+修正后的 seed 101 古代城邦导出：声明 `gable` 41 栋、`flat` 32 栋、`spire` 7 栋，清单里 **32 个平屋顶代理 / 48 栋阶梯屋顶 / 99 个阶梯屋顶盒**，`building_079` 的尖塔从 `y 8.0` 逐级收到 `y 11.0`。
+
+### 缺陷修正二：楼层内空的浮点比较
+
+`target.interior_void` 用**取整到 6 位小数**的楼梯 bounds 与**由地块原点推算**的预留区比较。本轮地块抖动随生成器版本变化后，`building_005` 的 `vn1` 算出 `25.579549999999998`，比楼梯的 `25.57955` 小 2×10⁻¹⁵，导出直接失败。现按 `COORD_EPS_M = 1e-6` 比较（源码里注明理由）。这是本轮才暴露的既有缺陷，不是新引入的行为。
+
+### 缺陷修正三：预登记批次的作废口径
+
+`benchmarks/city_cases_v6_modern.json` 登记的是 `0.1.0-city.6`，而本轮在它运行前把实现推进到 city.7。按"预登记绑定实现"的口径，**该批次不再补跑**：用 city.7 跑 city.6 的登记只会产出一份版本与实现不匹配的记录。作为替代，已冻结 `benchmarks/city_cases_v7.json` 与 `benchmarks/city_cases_v7_modern.json`（各 30 输入、`plan_profile=district_v4`、与 v5/v6 同种子同场景同预算同阈值），两者**尚未运行**。
+
+### 本轮的验证
+
+- `python -m pytest -q tests/test_minecraft_city.py tests/test_generation_city.py`：**26 passed**；完整回归 **93 passed in 273.51s**（`artifacts/pytest-city7-full`）；`tools/check_project_docs.py` 零错误。
+- 单例生成：`--city --seed 101 --timeout-ms 120000` 为 `feasible`、5 阶段全部提交、总耗时 **89.9 秒**（其中室内阶段 52.7 秒）。**该次测量与 Minecraft 进程同机重复**，不是空闲基线，不能与 city.6 的 38.6—39.4 秒室内耗时直接比较；批次必须在空闲机器上跑，预算余量按 city.5 现代的教训（最慢 104.7 秒 / 120 秒）看待。
+- Minecraft 导出（含室内，适配器 `0.1.0-city.4`）：源修订 `revision_1f7f0bb521a727ddb2c90cc1`、**3,870 盒、16 分块、675,587 非空气方块**、报告 0 failed（`artifacts/minecraft-city-v7/`）。
+
+### 本轮未做与已知缺口
+
+- **目标世界仍是 city.6**：city.7 的产物已就绪，但重贴要操作 Minecraft 图形界面，按约定只在用户在场时进行。
+- **Unity 适配器仍是单盒包络**：它每栋建筑只落一个 AABB，退台与坡屋顶在 Unity 侧都看不到；`_interior_pieces` 还要求"正好两层 + 一座楼梯"，无法表示 city.7 的 1—5 层室内。这是 008 的下一项。
+- 护城河（需真实地形开挖）、城门楼与垛口、广场与行道树、宏观街区归属、非正交路网仍未动工。
+
 ### 建筑形态与室内 programme 子阶段（2026-09-25）
 
 分区驱动补充（同日）：`0.1.0-city.3` 让三个分区各自决定建筑宽度、进深、层数与功能倾向——外缘 10—14 m/1—2 层以住宅为主，中部 14—16 m/2 层以商铺为主，中心带 16—18 m/2—3 层以图书馆、旅店、工坊为主；家具偏移按房间实际尺寸收缩，修掉窄房间的包含关系硬失败。分区策略记入规格字段 `plan_profile: district_v1`，因此世界身份随之更新（`world_157e6995219b02bc`，与 city.2 不同），避免同一 ID 对应不同内容。单例 50 秒、1269 实体、7516 检查、首候选 feasible；`benchmarks/city_cases_v3.json` 已冻结。city.2 的批次因在修改前启动已中止、不产生结论。

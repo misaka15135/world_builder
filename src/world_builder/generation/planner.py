@@ -97,6 +97,37 @@ MODERN_ROOF = {"apartment": ("flat", 0.4), "shop": ("flat", 0.4), "office": ("fl
 STYLE_ROOF = {"arcane_medieval": PROGRAMME_ROOF, "modern_grid": MODERN_ROOF}
 
 
+def storey_setbacks(width: float, depth: float, storeys: int, void: dict, style: str) -> list[list[float]]:
+    """Per-storey setbacks in metres, ordered west/east/south/north.
+
+    A building that keeps one footprint from the ground slab to the roof reads
+    as a box no matter how good its roof is, so the upper storeys step back.
+    The ground storey never moves — the entrance and the street edge sit on its
+    outline — and the east side never moves either, because that strip holds the
+    declared stair reservation. The remaining three sides step back as far as
+    the plan allows, capped at two metres so the outline stays legible at 1 m =
+    1 block. Setbacks are whole metres: a half-metre step would vanish when the
+    export quantises to blocks.
+    """
+    setbacks = [[0.0, 0.0, 0.0, 0.0] for _ in range(storeys)]
+    if storeys < 3:
+        return setbacks
+    cap = min(2.0, width - 9.0, depth / 2 - 3.0, depth - void["max"][1])
+    step = float(int(max(0.0, math.floor(cap))))
+    if step < 1.0:
+        return setbacks
+    # The arcane profile steps back once, an attic storey over a full-width
+    # ground floor; the modern profile tapers over two storeys like a CBD
+    # crown, which is the silhouette the style is supposed to read as.
+    if style == "modern_grid" and storeys >= 4:
+        setbacks[-1] = [step, 0.0, step, step]
+        if storeys >= 5:
+            setbacks[-2] = [min(1.0, step), 0.0, min(1.0, step), min(1.0, step)]
+    else:
+        setbacks[-1] = [min(1.0, step), 0.0, min(1.0, step), min(1.0, step)]
+    return setbacks
+
+
 def entity(entity_id: str, kind: str, parent: str | None, origin: list,
            size: list, parent_origin=(0, 0, 0), **attributes) -> dict:
     minimum = [round(origin[i] + parent_origin[i], 6) for i in range(3)]
@@ -294,11 +325,20 @@ def plan_stage(spec: PilotSpec, stage: str, records: list[dict]) -> tuple[list[d
                               programme=programme, roof_style=roof_style,
                               style_profile="arcane_city_template_v1" if size == 512 else "arcane_pilot_v1")
             building["semantic_completeness"] = "shell_only"
+            void = {"min": [width - 5, 3, 3],
+                    "max": [width - 2, 9 if spec.layout_profile == "compact" else 13, 3.2]}
             building["geometry"].update({"representation": "parametric_building", "storey_height_m": 3,
                 "wall_thickness_m": 0.2, "floor_thickness_m": 0.2, "roof_height_m": roof_height,
-                "stair_void_local_m": {"min": [width - 5, 3, 3],
-                                       "max": [width - 2, 9 if spec.layout_profile == "compact" else 13, 3.2]},
+                "stair_void_local_m": void,
                 "entry": {"side": "east" if size == 512 or i % 2 == 0 else "west", "offset_m": 2, "width_m": 2, "height_m": 2.4}})
+            if size == 512:
+                # The frozen 128 m pilot keeps its single full-width outline.
+                building["geometry"]["storey_insets_local_m"] = storey_setbacks(width, depth, storeys, void, style)
+                # The roof style and height are shape, not just a label, and the
+                # target adapters read geometry. Declaring the style here as
+                # well as in the attributes is what lets a gable or spire
+                # actually leave a stepped roof instead of a flat slab.
+                building["geometry"]["roof_style"] = roof_style
             if spec.lock_stair_void:
                 building["locks"].append({"json_pointer": "/geometry/stair_void_local_m", "mode": "subtree", "reason": "user locked the initial stair reservation"})
             additions.append(building)
@@ -341,23 +381,30 @@ def plan_stage(spec: PilotSpec, stage: str, records: list[dict]) -> tuple[list[d
             storeys = building["attributes"]["storeys"]
             programme = building["attributes"].get("programme", "residence")
             void = building["geometry"]["stair_void_local_m"]
+            insets = building["geometry"].get("storey_insets_local_m") or [[0.0, 0.0, 0.0, 0.0]] * storeys
             building["attributes"]["interior_state"] = "generated"
             building["semantic_completeness"] = "component"
             for floor in range(storeys):
                 floor_id = f"storey_{i:03d}_{floor}"
-                storey = entity(floor_id, "storey", building["id"], [0, 0, floor * 3], [width, depth, 3], parent_origin=origin)
+                west, east, south, north = insets[floor]
+                # The storey outline is the building outline minus that
+                # storey's setback, so an inset upper floor automatically
+                # carries smaller rooms instead of a room hanging outside it.
+                span_x, span_n = round(width - west - east, 6), round(depth - south - north, 6)
+                storey = entity(floor_id, "storey", building["id"], [west, south, floor * 3],
+                                [span_x, span_n, 3], parent_origin=origin)
                 additions.append(storey)
                 # The stair keeps the east strip; the rest of the storey splits
                 # into two rooms along the north axis.
-                block_x0, block_x1 = 1.0, void["min"][0] - 1.0
-                mid = depth / 2
+                block_x0, block_x1 = west + 1.0, void["min"][0] - 1.0
+                mid = (south + depth - north) / 2
                 uses = PROGRAMME_ROOMS.get(programme, PROGRAMME_ROOMS["residence"])
                 # The two rooms leave a one-metre slot between them for the
                 # declared partition, so the wall occupies neither room.
-                for k, (n0, n1) in enumerate(((1.0, mid - 1.0), (mid, depth - 1.0))):
+                for k, (n0, n1) in enumerate(((south + 1.0, mid - 1.0), (mid, depth - north - 1.0))):
                     use = uses[(floor + k) % len(uses)]
                     room_id = f"room_{i:03d}_{floor}_{k}"
-                    room = entity(room_id, "room", floor_id, [block_x0, n0, 0.2],
+                    room = entity(room_id, "room", floor_id, [round(block_x0 - west, 6), round(n0 - south, 6), 0.2],
                                   [round(block_x1 - block_x0, 6), round(n1 - n0, 6), 2.6],
                                   parent_origin=storey["bounds"]["min"], use=use)
                     additions.append(room)
@@ -376,7 +423,8 @@ def plan_stage(spec: PilotSpec, stage: str, records: list[dict]) -> tuple[list[d
                 # invention, so every target derives the same circulation. Its
                 # opening carries the doorway the adapter has to leave clear.
                 partition = entity(f"partition_{i:03d}_{floor}", "partition", floor_id,
-                                   [block_x0, mid - 1.0, 0.2], [block_x1 - block_x0, 1.0, 2.6],
+                                   [round(block_x0 - west, 6), round(mid - 1.0 - south, 6), 0.2],
+                                   [round(block_x1 - block_x0, 6), 1.0, 2.6],
                                    parent_origin=storey["bounds"]["min"],
                                    opening={"side": "west", "width_m": 2.0, "height_m": 2.0})
                 additions.append(partition)

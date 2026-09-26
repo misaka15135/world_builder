@@ -12,8 +12,9 @@ from pathlib import Path
 
 import pytest
 
-from world_builder.adapters.minecraft.city import (CityExportError, _partition_boxes, _roof_boxes,
-                                                   _shell_materials, _storey_bands, _street_block, export_city)
+from world_builder.adapters.minecraft.city import (CityExportError, _building_shell, _partition_boxes,
+                                                   _roof_boxes, _shell_materials, _storey_bands,
+                                                   _storey_outlines, _street_block, export_city)
 from world_builder.storage.worldpkg import read_worldpkg
 
 SOURCE = Path(__file__).resolve().parents[1] / "artifacts/benchmark-city-v1/city-first.worldpkg"
@@ -251,14 +252,54 @@ def test_style_profiles_pick_different_shell_materials() -> None:
 def test_modern_style_gets_asphalt_streets_and_glazing() -> None:
     assert _street_block("arcane_medieval") == "minecraft:stone_bricks"
     assert _street_block("modern_grid") == "minecraft:gray_concrete"
-    building = {"id": "b", "bounds": {"min": [0, 0, 0], "max": [10, 12, 9.4]}}
-    bands = _storey_bands(building, 0, 10, 0, 12, 0, 0.2, 0.4, 2, 3.0, "minecraft:glass")
+    outlines = [(0.0, 10.0, 0.0, 12.0), (0.0, 10.0, 0.0, 12.0)]
+    bands = _storey_bands("b", outlines, 0.0, 0.2, 9.0, 3.0, "minecraft:glass")
     assert len(bands) == 7, "three sides on both storeys plus the east side above the entrance"
     assert {band["block"] for band in bands} == {"minecraft:glass"}
     assert all(band["y1"] <= 9.0 + 1e-6 for band in bands), "glazing stays under the roof"
     assert not [band for band in bands if band["source_id"].endswith("_0_east")], "the entrance storey is not glazed"
-    timber = _storey_bands(building, 0, 10, 0, 12, 0, 0.2, 0.4, 2, 3.0, "minecraft:dark_oak_planks")
+    timber = _storey_bands("b", outlines, 0.0, 0.2, 9.0, 3.0, "minecraft:dark_oak_planks")
     assert {band["block"] for band in timber} == {"minecraft:dark_oak_planks"}
+
+
+def test_a_setback_storey_carries_its_own_outline() -> None:
+    building = {"id": "b", "attributes": {"storeys": 2},
+                "bounds": {"min": [0, 0, 0], "max": [16, 18, 11.2]},
+                "geometry": {"storey_insets_local_m": [[0.0, 0.0, 0.0, 0.0], [2.0, 0.0, 1.0, 1.0]]}}
+    outlines = _storey_outlines(building)
+    assert outlines[0] == (0.0, 16.0, 0.0, 18.0)
+    assert outlines[1] == (2.0, 16.0, 1.0, 17.0), "only the declared sides step back"
+    building["geometry"]["storey_insets_local_m"] = [[0.0, 0.0, 0.0, 0.0], [-1.0, 0.0, 0.0, 0.0]]
+    with pytest.raises(CityExportError):
+        # A negative setback would be an overhang, which this template refuses.
+        _storey_outlines(building)
+
+
+def test_setbacks_reach_the_blocks_as_a_step() -> None:
+    building = {
+        "id": "building_x", "kind": "building", "parent_id": "parcel_x",
+        "attributes": {"storeys": 2, "interior_state": "deferred"},
+        "bounds": {"min": [0.0, 0.0, 2.0], "max": [16.0, 18.0, 11.2]},
+        "geometry": {"representation": "parametric_building", "storey_height_m": 3.0,
+                     "wall_thickness_m": 0.2, "floor_thickness_m": 0.2, "roof_height_m": 1.2,
+                     "stair_void_local_m": {"min": [11, 3, 3], "max": [14, 13, 3.2]},
+                     "entry": {"side": "east", "offset_m": 2, "width_m": 2, "height_m": 2.4},
+                     "roof_style": "gable",
+                     "storey_insets_local_m": [[0.0, 0.0, 0.0, 0.0], [2.0, 0.0, 1.0, 1.0]]},
+    }
+    parts = {part["source_id"]: part for part in _building_shell(building, {}, with_interior=False)}
+    assert parts["building_x_west_wall"]["x0"] == 0.0, "the ground storey keeps the street edge"
+    assert parts["building_x_s1_west_wall"]["x0"] == 2.0, "the upper storey steps back"
+    assert parts["building_x_s1_south_wall"]["z0"] == -1.0 - 0.2
+    assert parts["building_x_s1_north_wall"]["z1"] == -17.0 + 0.2
+    # The slab under the setback still covers the whole storey below, so the
+    # ring the smaller storey leaves exposed is a terrace rather than a hole.
+    assert parts["building_x_floor1_west"]["x0"] == 0.0
+    assert parts["building_x_floor1_east"]["x1"] == 16.0
+    assert parts["building_x_floor1_north"]["z0"] == -18.0
+    # The roof follows the top storey's outline, eave included.
+    assert parts["building_x_roof_00"]["x0"] == 1.4
+    assert parts["building_x_roof_00"]["z0"] == -17.6
 
 
 def test_roofs_oversail_the_walls() -> None:
@@ -270,6 +311,19 @@ def test_roofs_oversail_the_walls() -> None:
 
 
 def test_roof_style_drives_the_silhouette() -> None:
+    # The declared roof has to reach the blocks from wherever the source keeps
+    # it: older revisions only carried the style as an attribute, and reading
+    # the wrong field is why every exported roof used to be a flat slab.
+    building = {"id": "b", "attributes": {"storeys": 1, "roof_style": "gable"},
+                "bounds": {"min": [0.0, 0.0, 2.0], "max": [10.0, 12.0, 6.4]},
+                "geometry": {"representation": "parametric_building", "storey_height_m": 3.0,
+                             "wall_thickness_m": 0.2, "floor_thickness_m": 0.2, "roof_height_m": 1.2,
+                             "stair_void_local_m": {"min": [5, 3, 3], "max": [8, 9, 3.2]},
+                             "entry": {"side": "east", "offset_m": 2, "width_m": 2, "height_m": 2.4}}}
+    parts = {part["source_id"]: part for part in _building_shell(building, {}, with_interior=False)}
+    assert "b_flat_roof_proxy" not in parts, "a gable is not a slab"
+    assert "b_roof_00" in parts and "b_roof_01" in parts
+    assert parts["b_roof_01"]["z0"] > parts["b_roof_00"]["z0"], "the gable tapers as it rises"
     flat = _roof_boxes("b", 0, 10, 0, 12, 20, 0.4, "flat", "minecraft:oak_planks")
     assert len(flat) == 1
     gable = _roof_boxes("b", 0, 10, 0, 12, 20, 1.2, "gable", "minecraft:oak_planks")

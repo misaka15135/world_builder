@@ -26,6 +26,13 @@ artifacts/benchmark-city-*.err.log
 artifacts/city-smoke-v1*/
 artifacts/city-smoke-v2/
 artifacts/city-smoke-v3*/
+# Intermediate city.7 runs: v7 hit the default 30 s budget, v7b was generated
+# before the roof-style fix, and the two minecraft-city-v7-* directories are
+# superseded exports (a shell-only dry run and the pre-fix flat-roof export).
+artifacts/city-smoke-v7/
+artifacts/city-smoke-v7b/
+artifacts/minecraft-city-v7-shellonly/
+artifacts/minecraft-city-v7-flatroof/
 artifacts/city-compact-smoke-v1/
 artifacts/minecraft-sample/v1/
 

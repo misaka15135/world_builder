@@ -150,6 +150,41 @@ def check_geometry(records: list[dict]) -> list[dict]:
         for a, b in combinations(siblings, 2):
             check("city.room_overlap", [a["id"], b["id"]],
                   not overlaps(a["bounds"], b["bounds"], (0, 1)), "rooms on one storey do not overlap")
+    for building in buildings:
+        offsets = (building.get("geometry") or {}).get("storey_insets_local_m")
+        if offsets is None:
+            continue
+        storeys = building["attributes"]["storeys"]
+        (bx0, bn0, _), (bx1, bn1, _) = building["bounds"]["min"], building["bounds"]["max"]
+        void = building["geometry"]["stair_void_local_m"]
+        sizes = [building["geometry"]["size_m"][0], building["geometry"]["size_m"][1]]
+        shaped = (len(offsets) == storeys and all(len(o) == 4 and min(o) >= 0 for o in offsets)
+                  and offsets[0] == [0.0, 0.0, 0.0, 0.0]
+                  and all(all(offsets[i + 1][k] >= offsets[i][k] - 1e-6 for k in range(4))
+                          for i in range(len(offsets) - 1)))
+        # The upper storeys step back — never out. A setback that grew downward
+        # would be an overhang, which this template does not model, and the
+        # ground storey has to keep the street edge and the entrance.
+        check("city.storey_setback", [building["id"]], shaped,
+              "storey setbacks are declared per storey, start at zero and never decrease")
+        if not shaped:
+            continue
+        # The stair strip is on the east side, so an east setback would eat the
+        # declared reservation; and every storey has to stay deep enough that
+        # the void still ends inside it.
+        deepest = max(offsets, key=lambda o: sum(o))
+        check("city.storey_setback_void", [building["id"]],
+              all(o[1] == 0.0 for o in offsets) and deepest[0] <= sizes[0] - void["min"][0] - 1.0
+              and deepest[2] <= void["min"][1] - 1.0 and deepest[3] <= sizes[1] - void["max"][1],
+              "a setback never covers the stair reservation or leaves the outline short")
+        for storey, offset in zip(sorted((r for r in kind("storey") if r["parent_id"] == building["id"]),
+                                         key=lambda r: r["bounds"]["min"][2]), offsets):
+            check("city.storey_outline", [storey["id"], building["id"]],
+                  abs(storey["bounds"]["min"][0] - (bx0 + offset[0])) < 1e-6
+                  and abs(storey["bounds"]["max"][0] - (bx1 - offset[1])) < 1e-6
+                  and abs(storey["bounds"]["min"][1] - (bn0 + offset[2])) < 1e-6
+                  and abs(storey["bounds"]["max"][1] - (bn1 - offset[3])) < 1e-6,
+                  "the storey entity carries the outline its setback declares")
     for wall in kind("partition"):
         storey = entities[wall["parent_id"]]
         siblings = sorted((r for r in rooms if r["parent_id"] == storey["id"]), key=lambda r: r["id"])

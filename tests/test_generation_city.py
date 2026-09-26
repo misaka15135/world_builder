@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from world_builder.generation.planner import STAGES, initial_records, plan_stage
+from world_builder.generation.planner import STAGES, initial_records, plan_stage, storey_setbacks
 from world_builder.generation.spec import CitySpec, PilotSpec
 from world_builder.generation.validation import check_geometry
 
@@ -16,7 +16,7 @@ def test_city_contract_is_distinct_from_historical_pilot():
     city = CitySpec(seed=101)
     assert pilot.generator_version == "0.1.0-pilot.3"
     assert pilot.to_dict().get("region_size_m") is None
-    assert city.generator_version == "0.1.0-city.6"
+    assert city.generator_version == "0.1.0-city.7"
     assert city.interior_count == 80
     assert city.world_id != pilot.world_id
     with pytest.raises(ValueError, match="008/009"):
@@ -63,11 +63,17 @@ def test_city_batch_registrations_are_fixed_before_results():
     assert {case["spec"]["style_profile"] for case in modern["cases"]} == {"modern_grid"}
     assert {case["spec"]["seed"] for case in modern["cases"]} == {case["spec"]["seed"] for case in current["cases"]}
     assert json.loads((root / "city_cases_v5.json").read_text(encoding="utf-8"))["generator_version"] == "0.1.0-city.5"
-    for name, style in (("city_cases_v6.json", "arcane_medieval"), ("city_cases_v6_modern.json", "modern_grid")):
+    for name, style, version, profile in (("city_cases_v6.json", "arcane_medieval", "0.1.0-city.6", "district_v3"),
+                                          ("city_cases_v6_modern.json", "modern_grid", "0.1.0-city.6", "district_v3"),
+                                          ("city_cases_v7.json", "arcane_medieval", CitySpec().generator_version, "district_v4"),
+                                          ("city_cases_v7_modern.json", "modern_grid", CitySpec().generator_version, "district_v4")):
         run = json.loads((root / name).read_text(encoding="utf-8"))
-        assert run["generator_version"] == CitySpec().generator_version
+        # A registration binds the implementation it was frozen against: a
+        # batch registered before a generator change never describes later code.
+        assert run["generator_version"] == version
         assert len(run["cases"]) == 30
         assert {case["spec"]["style_profile"] for case in run["cases"]} == {style}
+        assert {case["spec"]["plan_profile"] for case in run["cases"]} == {profile}
     for scenario, seed_start in (("riverside", 101), ("hillside", 201), ("dense", 301)):
         cases = [case for case in current["cases"] if case["spec"]["scenario"] == scenario]
         assert [case["spec"]["seed"] for case in cases] == list(range(seed_start, seed_start + 10))
@@ -178,6 +184,37 @@ def test_city_rooms_are_separated_by_declared_partitions():
     checks = check_geometry(records)
     assert not [c for c in checks if c["rule"].startswith("city.partition") and c["state"] != "pass"]
     assert not [c for c in checks if c["rule"] == "city.room_circulation" and c["state"] != "pass"]
+    # The same run carries the declared setbacks, so the storey entities and the
+    # rules that constrain them are checked against the same data.
+    buildings = [r for r in records if r.get("kind") == "building"]
+    stepped = [b for b in buildings if any(any(v for v in o) for o in b["geometry"]["storey_insets_local_m"])]
+    assert stepped, "at least some buildings should step back"
+    assert not [c for c in checks if c["rule"].startswith("city.storey_") and c["state"] != "pass"]
+    for building in stepped:
+        offsets = building["geometry"]["storey_insets_local_m"]
+        assert len(offsets) == building["attributes"]["storeys"]
+        assert offsets[0] == [0.0, 0.0, 0.0, 0.0], "the ground storey keeps the street edge"
+        storeys = sorted((r for r in records if r.get("kind") == "storey" and r["parent_id"] == building["id"]),
+                         key=lambda r: r["bounds"]["min"][2])
+        for storey, offset in zip(storeys, offsets):
+            assert storey["bounds"]["min"][0] == building["bounds"]["min"][0] + offset[0]
+            assert storey["bounds"]["max"][1] == building["bounds"]["max"][1] - offset[3]
+
+
+def test_storey_setbacks_step_back_and_stay_whole_metres():
+    void = {"min": [11, 3], "max": [14, 13]}
+    assert storey_setbacks(16, 18, 2, void, "arcane_medieval") == [[0.0] * 4, [0.0] * 4], "low buildings keep one outline"
+    arcane = storey_setbacks(16, 18, 3, void, "arcane_medieval")
+    assert arcane[0] == [0.0] * 4 and arcane[-1] == [1.0, 0.0, 1.0, 1.0], "the attic steps back once"
+    modern = storey_setbacks(18, 18, 5, void, "modern_grid")
+    assert modern[-1] == [2.0, 0.0, 2.0, 2.0], "a five-storey CBD block tapers two metres"
+    assert modern[-2] == [1.0, 0.0, 1.0, 1.0], "and the storey under it makes the taper read"
+    assert all(v == int(v) for o in modern for v in o), "a half-metre step would vanish in the export"
+    assert all(o[1] == 0.0 for o in modern), "the east strip holds the stair reservation and never moves"
+    # The narrowest residential lot still fits a one-metre attic setback; a lot
+    # with no room at all keeps its box instead of growing a sliver.
+    assert storey_setbacks(10, 14, 3, {"min": [5, 3], "max": [8, 13]}, "arcane_medieval")[-1] == [1.0, 0.0, 1.0, 1.0]
+    assert storey_setbacks(8, 14, 3, {"min": [3, 3], "max": [6, 13]}, "arcane_medieval") == [[0.0] * 4] * 3
 
 
 def test_style_profile_changes_the_silhouette():
