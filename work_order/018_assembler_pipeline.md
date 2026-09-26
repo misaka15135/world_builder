@@ -81,6 +81,7 @@
 | 2026-09-26 | root | 根据用户对流水线的重构要求创建本工单 | 本文件与 [docs/04_scene_pipeline.md](../docs/04_scene_pipeline.md)；尚无实现或测试结果 | 先定义装配契约与作用域回馈，再串起 013—017 |
 | 2026-09-26 | root | 实现阶段 F 首轮：装配成 WIR 包 + SVG 平面图 + 装配级校验 | `planning/assembler.py`、`tools/assemble_scene.py`、`tests/test_assembler.py`、[合同](../docs/contracts/scene-assembly-v0.1.md)。四个背景里 3 个 `pass`、现代都市因"地块装不下仍强放"这一已知缺陷落成 xfail；三类坐标/高度缺陷已修 | 修地块尺寸与目录占地的匹配、接通 `city_spec`/适配器、端到端预登记批次 |
 | 2026-09-27 | root | 新链路第一次产出 Minecraft 分块 | 适配器接线完成后（水面分支、四方向门洞、单层楼免楼梯井），`tools/assemble_scene.py --export-minecraft` 实测魔法城邦 seed 4：**36 分块 / 736 盒 / 626,309 方块**，`x -1…4`、`z -5…0`（环形城墙与连接路本就在 512 m 建成区外）、`region_y [-1,32]`、适配器 `0.1.0-city.4`、每块非空气 432—42,778。产物 `artifacts/minecraft-scene-arcane/`。完整回归 **145 passed**、文档检查零错误 | 把这 36 块自行贴进 Minecraft 世界并截图存档；`--interiors` 需先补楼梯实体几何；入口朝向改为临街一侧 |
+| 2026-09-27 | root | 粘贴前准备完成，实际粘贴被"游戏未运行"挡住 | 36 个场景分块已拷进隔离游戏目录（36 文件，`city_c00_00.schem` SHA-256 与仓库产物一致）；游戏目录里现在是**场景包这一套**（与 city.7 两套同名，旧两套仍在 `artifacts/minecraft-city-v6*/schematics`）。**粘贴方案**：世界内古代城邦占 `x 0—512, z -512—0`、现代城邦占 `x 800—1312`，而场景分块是 `x -1…4, z -5…0`，直接按 `(cx*128,-61,cz*128)` 会压掉古代城邦，故改用偏移基线 **`(cx*128, -61, cz*128+1024)`** → 落在 `x -128…640, z 384…1024`，与两座旧城不相交；逐块文件↔坐标以 `manifest.json` 的 `chunks[].path/chunk_x/chunk_z` 为准。**阻塞**：`Get-Process javaw` 为空，Minecraft 未运行，启动游戏+36 块粘贴+探针+截图超出本次预算，**未开始**（避免清到一半停下） | 下一轮先启动游戏再执行上面的粘贴方案，截图存 `artifacts/minecraft-scene-arcane/` |
 
 ## 交接说明
 
