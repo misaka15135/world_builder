@@ -42,12 +42,6 @@ def _scene(setting: str, seed: int = 4):
 def test_every_background_assembles_into_a_valid_package(setting: str) -> None:
     pack, terrain, siting, designs, package, report = _scene(setting)
     failures = [check for check in report["checks"] if check["state"] != "pass"]
-    if setting == "modern_metropolis":
-        # Known defect, recorded in work order 018: a plot too small for its
-        # building is still forced to one cell, so one tower hangs ~3 m over the
-        # neighbouring block and the containment rule fails. The check is kept
-        # as an xfail rather than deleted, so the defect cannot be forgotten.
-        pytest.xfail("018: oversized plot overflows its block; see the work order")
     assert report["state"] == "pass", (setting, failures)
     assert report["kinds"]["building"] == len(designs)
     for kind in ("world", "terrain", "district", "road", "building", "storey", "room"):

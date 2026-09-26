@@ -627,15 +627,18 @@ def _place_sites(brief: SceneBrief, pack: SettingPack, terrain: TerrainPlan, spe
             height, storeys = _site_height(entry, domain, use_rules)
             margin, gap = 6.0, 4.0
             step_x, step_y = width + gap, depth + gap
-            # TODO(018): a plot too small for its building must be skipped, not
-            # forced. The one-cell fallback below put a 52 m tower on a 55 m
-            # block with 6 m margins, so it hung 3 m over the neighbouring block
-            # and the assembler's containment rule caught it. The fix is written
-            # up in work order 018: skipping these plots costs the harbour two
-            # sites (container yard and dry dock) with today's catalogue sizes,
-            # which is a stage D sizing problem, not something to hide here.
-            columns = max(1, int((block.x1 - block.x0 - 2 * margin) // step_x))
-            rows = max(1, int((block.y1 - block.y0 - 2 * margin) // step_y))
+            usable_x = block.x1 - block.x0 - 2 * margin
+            usable_y = block.y1 - block.y0 - 2 * margin
+            if usable_x < width or usable_y < depth:
+                # The plot cannot hold this building at all. Forcing one cell
+                # anyway put a 52 m tower on a 55 m block with 6 m margins and
+                # let it hang 3 m over the neighbouring block. Skipping is the
+                # honest answer, and the shortfall shows up in
+                # `siting.sites_present` (which is what makes the packing in
+                # `districts.json` answer for the catalogue's sizes).
+                continue
+            columns = max(1, int(usable_x // step_x))
+            rows = max(1, int(usable_y // step_y))
             cells = [(row, column) for row in range(rows) for column in range(columns)]
             if entry.role == "vessel" or "water" in entry.needs or "coast" in entry.needs:
                 # Fill the plot nearest the water first: a wharf shed that ends
@@ -893,6 +896,20 @@ def validate_siting(plan: SitingPlan, brief: SceneBrief, pack: SettingPack, terr
     inside = all(smallest * 0.5 <= block.area_m2 <= largest * 1.6 for block in plan.blocks)
     check("siting.block_area", inside,
           f"block areas within {smallest}—{largest} m² (half-size allowed at the edges)")
+    # The packing in districts.json has to be able to hold the catalogue it
+    # serves: a type whose footprint is bigger than any block could ever be is
+    # a data contradiction, and it is cheaper to catch it here than to find a
+    # building hanging over its neighbour in the assembled scene.
+    too_big = []
+    for type_name, entry in pack.entries.items():
+        if entry.footprint_kind != "area" or entry.role == "vessel":
+            continue
+        footprint = sum(entry.footprint_m2_range) / 2
+        if footprint > largest * 0.75:
+            too_big.append((type_name, round(footprint), largest))
+    check("siting.catalogue_fits_blocks", not too_big,
+          f"every building fits the largest block ({largest} m²)"
+          if not too_big else f"too big for any block: {too_big}")
     for use, rules in spec.uses.items():
         share = sum(1 for block in plan.blocks if block.use == use) / len(plan.blocks)
         low, high = rules["share"]

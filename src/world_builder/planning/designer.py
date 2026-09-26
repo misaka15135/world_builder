@@ -278,12 +278,14 @@ def design_building(site: Site, entry, pack: SettingPack, template: DesignTempla
         # is a contract and a squashed two-storey house is still a house.
         squeezed = (site.max_height_m - template.roof_height_m) / chosen
         if chosen >= fewest and squeezed >= 2.6:
-            storey_height = round(squeezed, 3)
+            # Round the ceiling *down* to the millimetre: rounding to nearest
+            # pushed one tower 2 mm past its envelope, and the envelope is hard.
+            storey_height = math.floor(squeezed * 1000) / 1000
         else:
             while chosen > 1 and chosen * storey_height + template.roof_height_m > site.max_height_m:
                 chosen -= 1
             squeezed = (site.max_height_m - template.roof_height_m) / chosen
-            storey_height = round(max(2.6, min(storey_height, squeezed)), 3)
+            storey_height = math.floor(max(2.6, min(storey_height, squeezed)) * 1000) / 1000
         height = chosen * storey_height + template.roof_height_m
     insets = _insets(width, depth, chosen, template.setback_m)
     stair_void = 3.0
