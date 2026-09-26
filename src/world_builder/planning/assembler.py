@@ -200,9 +200,14 @@ def assemble_scene(brief: SceneBrief, pack: SettingPack, terrain: TerrainPlan, s
                                       parent_origin=storey_origin, use=room.use))
             if len(storey.rooms) == 2 and storey.partition_x_m is not None:
                 left, right = storey.rooms
+                # The two rooms are stacked along the north axis, so the wall
+                # between them runs east-west: its long axis is x and it is one
+                # metre thick in n. Emitting it the other way round made it a
+                # 0.4 m sliver that could not hold a 2 m doorway at all.
                 records.append(entity(f"{design.site_id}_partition_{storey.index}", "partition", storey_id,
-                                      [storey.partition_x_m - storey.x0, left.y1 - storey.y0, 0.3],
-                                      [0.4, right.y0 - left.y1, design.storey_height_m - 0.9],
+                                      [left.x0 - storey.x0, left.y1 - storey.y0, 0.3],
+                                      [left.x1 - left.x0, right.y0 - left.y1,
+                                       design.storey_height_m - 0.6],
                                       parent_origin=storey_origin,
                                       opening={"side": "west", "width_m": 2.0, "height_m": 2.0}))
         for item in design.furniture:

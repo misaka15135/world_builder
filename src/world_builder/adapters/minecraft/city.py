@@ -124,6 +124,15 @@ FURNITURE_BLOCKS = {
     "long_table": "minecraft:oak_planks", "chest": "minecraft:chest",
     "altar": "minecraft:chiseled_quartz_block", "pew": "minecraft:oak_slab", "cabinet": "minecraft:barrel",
     "desk": "minecraft:crafting_table",
+    # The scene pipeline's furniture vocabulary: added here so a scene export
+    # places these instead of failing closed, which is what it did for the
+    # seven uses this map did not know yet.
+    "table": "minecraft:oak_planks", "crate": "minecraft:barrel",
+    "pallet": "minecraft:oak_slab", "machine": "minecraft:crafting_table",
+    # `glowstone` is not in the palette, so a lamp is glass: a mapping to a
+    # block the palette does not carry would fail at voxel time.
+    "board": "minecraft:oak_fence", "lamp": "minecraft:glass",
+    "reception": "minecraft:barrel", "desk_chair": "minecraft:oak_slab",
 }
 
 
