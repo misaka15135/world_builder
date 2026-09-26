@@ -1,0 +1,26 @@
+{
+  "setting_version": "0.1.0",
+  "id": "harbour",
+  "display_name": "港口",
+  "eras": ["maritime_modern"],
+  "summary": "海湾与突堤组成的港区：沿码头排布泊位、仓库与集装箱堆场，船坞、灯塔与海关分布在防波堤与入口两侧。",
+  "style_profile": "modern_grid",
+  "materials": {
+    "shell": "minecraft:light_gray_concrete",
+    "floor": "minecraft:smooth_stone",
+    "roof": "minecraft:gray_concrete",
+    "street": "minecraft:gray_concrete",
+    "accent": "minecraft:oak_planks"
+  },
+  "terrain_preferences": {
+    "relief": "一侧为陆域平地，一侧为开阔水面，岸线可有凸出突堤与内港",
+    "water": "海湾或河道入海口，水深足够的岸段用于泊位，水面占比较高",
+    "buildable": "岸线后方可建仓库与堆场，保留防波堤与航道",
+    "note": "本字段是给 014 的描述性偏好；可执行的地形 Schema 由 014 定义"
+  },
+  "default_scale": {
+    "region_m": 512,
+    "buildings": [30, 80]
+  },
+  "default_targets": ["minecraft", "unity", "viewer"]
+}

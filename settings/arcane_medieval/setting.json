@@ -1,0 +1,26 @@
+{
+  "setting_version": "0.1.0",
+  "id": "arcane_medieval",
+  "display_name": "魔法中世纪城邦",
+  "eras": ["high_medieval"],
+  "summary": "河谷两岸的石造城邦：环城石墙、中央城堡与广场、行会与教堂围绕市场带，住宅沿外缘密集分布。",
+  "style_profile": "arcane_medieval",
+  "materials": {
+    "shell": "minecraft:smooth_stone",
+    "floor": "minecraft:oak_planks",
+    "roof": "minecraft:oak_planks",
+    "street": "minecraft:stone_bricks",
+    "accent": "minecraft:dark_oak_planks"
+  },
+  "terrain_preferences": {
+    "relief": "低缓丘陵与河谷，主城位于河流交汇处的台地上",
+    "water": "一条主河穿过城区并分出支流，河宽 8—20 m，可架桥",
+    "buildable": "沿河两岸的缓坡优先，陡坡与河滩保留为景观",
+    "note": "本字段是给 014 的描述性偏好；可执行的地形 Schema 由 014 定义"
+  },
+  "default_scale": {
+    "region_m": 512,
+    "buildings": [60, 120]
+  },
+  "default_targets": ["minecraft", "unity", "viewer"]
+}

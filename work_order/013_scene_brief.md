@@ -1,6 +1,6 @@
 # 013 场景简报（流水线 A）
 
-- 状态：planned
+- 状态：in_progress
 - 创建日期：2026-09-26
 - 执行者：待认领
 - 依赖：005（WIR 0.1 与规格字段约定）；不依赖 006 的实现
@@ -32,11 +32,13 @@
 
 ## 工作项
 
-- [ ] 定义 `SceneBrief` 的 Schema、必填/可空规则、数值上限与单位（米/平方米/层）。
-- [ ] 定义背景包目录结构与加载/校验入口；缺字段时报明确错误，不静默补默认值。
-- [ ] 用确定性规则实现"自由文本 → 简报"的离线版本（关键词与模板），并保留模型版本的同契约接口。
-- [ ] 为 4 个目标背景各写一份 `setting.json` 初稿：魔法城邦、现代大都市、工业产业园、港口。
-- [ ] 简报本身的校验规则：必现风物非空（当用户明确要求时）、数量与尺度在上限内、背景标识已注册。
+- [x] ~~定义 `SceneBrief` 的 Schema、必填/可空规则、数值上限与单位（米/平方米/层）。~~
+- [x] ~~定义背景包目录结构与加载/校验入口；缺字段时报明确错误，不静默补默认值。~~
+- [x] ~~用确定性规则实现"自由文本 → 简报"的离线版本（关键词与模板），并保留模型版本的同契约接口。~~
+- [x] ~~为 4 个目标背景各写一份 `setting.json` 初稿：魔法城邦、现代大都市、工业产业园、港口。~~
+- [x] ~~简报本身的校验规则：必现风物非空（当用户明确要求时）、数量与尺度在上限内、背景标识已注册。~~
+
+模型路径的**接口与本地 fixture 已实现**（`brief_from_response`、`FixtureBriefProvider`、`examples/brief_model_response.json`），真实云服务仍未接入——这属于用户决策（供应商与额度），与本工单的离线验收无关。
 
 ## 验收标准
 
@@ -55,6 +57,7 @@
 | 日期 | 执行者 | 动作 | 结果与证据 | 下一步 |
 |---|---|---|---|---|
 | 2026-09-26 | root | 根据用户对流水线的重构要求创建本工单 | 本文件与 [docs/04_scene_pipeline.md](../docs/04_scene_pipeline.md)；尚无实现或测试结果 | 认领后先冻结 `SceneBrief` Schema 再写四个背景包 |
+| 2026-09-26 | root | 实现阶段 A：简报 Schema、背景包加载、离线规则编译器、模型合同 | 新增 `src/world_builder/planning/{brief,catalogue}.py`、`settings/*/{setting,catalogue}.json`、`tools/compile_brief.py`、`examples/brief_model_response.json`、`tests/test_scene_brief.py`（16 passed）与 [合同文档](../docs/contracts/scene-brief-v0.1.md)。实测：`--prompt "河谷里的魔法城邦，要有城堡、冒险者工会和教堂"` → `arcane_medieval`、`brief_digest sha256:3715a9d7…`、有效需求 7 项、`not_designed_yet` 明确列出城堡/城墙/行会/广场；同一输入两次结果完全一致；fixture 模型响应走同一套校验并写入 `accepted_response_hash` | 由 015 补齐风物目录（已同轮完成），随后 014 地形 |
 
 ## 交接说明
 

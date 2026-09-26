@@ -1,0 +1,26 @@
+{
+  "setting_version": "0.1.0",
+  "id": "modern_metropolis",
+  "display_name": "现代大都市",
+  "eras": ["contemporary"],
+  "summary": "沿人工水道与轨道枢纽展开的高密度都市：中心是摩天楼群与退台天际线，外围是规整街区的住宅、学校、医院与公园。",
+  "style_profile": "modern_grid",
+  "materials": {
+    "shell": "minecraft:light_gray_concrete",
+    "floor": "minecraft:smooth_stone",
+    "roof": "minecraft:smooth_stone",
+    "street": "minecraft:gray_concrete",
+    "accent": "minecraft:glass"
+  },
+  "terrain_preferences": {
+    "relief": "大平原为主，允许缓坡与人工台地；不出现陡峭山地",
+    "water": "一条人工水道或运河贯穿，河宽 12—30 m，带规则护岸",
+    "buildable": "可建设度整体偏高，保留地为公园与绿地",
+    "note": "本字段是给 014 的描述性偏好；可执行的地形 Schema 由 014 定义"
+  },
+  "default_scale": {
+    "region_m": 512,
+    "buildings": [80, 160]
+  },
+  "default_targets": ["minecraft", "unity", "viewer"]
+}

@@ -1,0 +1,143 @@
+{
+  "catalogue_version": "0.1.0",
+  "setting": "harbour",
+  "entries": [
+    {
+      "type": "pier",
+      "role": "infrastructure",
+      "required": true,
+      "count_range": [2, 10],
+      "linear_m": [60, 300],
+      "width_m_range": [8, 20],
+      "height_m_range": [1, 3],
+      "needs": ["water"],
+      "design_state": "planned",
+      "silhouette": "deck_on_piles",
+      "note": "突堤需要桩基、系船柱与岸线衔接，当前没有线性水上构筑物的生成规则"
+    },
+    {
+      "type": "quay_wall",
+      "role": "infrastructure",
+      "required": true,
+      "count_range": [1, 2],
+      "linear_m": [200, 1000],
+      "width_m_range": [6, 12],
+      "height_m_range": [2, 6],
+      "needs": ["coast"],
+      "design_state": "planned",
+      "silhouette": "straight_quay",
+      "note": "岸壁需要沿水深变化的截面与护岸，当前没有岸线几何"
+    },
+    {
+      "type": "warehouse",
+      "role": "infrastructure",
+      "required": true,
+      "count_range": [3, 12],
+      "footprint_m2_range": [800, 3000],
+      "height_m_range": [8, 18],
+      "needs": ["coast", "road"],
+      "design_state": "planned",
+      "silhouette": "gable_hall",
+      "note": "港区仓库需要大跨度空间与月台，当前只有逐层房间模板"
+    },
+    {
+      "type": "container_yard",
+      "role": "infrastructure",
+      "required": true,
+      "count_range": [1, 4],
+      "footprint_m2_range": [3000, 12000],
+      "height_m_range": [3, 10],
+      "needs": ["coast", "rail"],
+      "design_state": "planned",
+      "silhouette": "stacked_blocks",
+      "note": "堆场需要集装箱阵列、龙门吊与轨道，当前没有开敞场地布置规则"
+    },
+    {
+      "type": "dry_dock",
+      "role": "infrastructure",
+      "required": true,
+      "count_range": [1, 2],
+      "footprint_m2_range": [2000, 8000],
+      "height_m_range": [6, 18],
+      "needs": ["water"],
+      "design_state": "planned",
+      "silhouette": "basin_with_gantry",
+      "note": "船坞需要下沉的干船坞、闸门与龙门吊，涉及地形开挖，与 014 协同"
+    },
+    {
+      "type": "lighthouse",
+      "role": "landmark",
+      "required": true,
+      "count_range": [1, 2],
+      "footprint_m2_range": [50, 200],
+      "height_m_range": [20, 50],
+      "needs": ["coast"],
+      "design_state": "planned",
+      "silhouette": "tapered_tower",
+      "note": "灯塔需要锥形塔身与顶部灯室，当前最高原型是 3 m 尖顶"
+    },
+    {
+      "type": "customs_house",
+      "role": "civic",
+      "required": true,
+      "count_range": [1, 2],
+      "footprint_m2_range": [400, 1200],
+      "height_m_range": [8, 20],
+      "needs": ["coast", "road"],
+      "design_state": "planned",
+      "silhouette": "portico_block",
+      "note": "海关需要门廊、查验大厅与办公层，当前没有公共建筑的平面模板（除小市政厅外）"
+    },
+    {
+      "type": "cargo_ship",
+      "role": "vessel",
+      "required": true,
+      "count_range": [2, 8],
+      "footprint_m2_range": [300, 1500],
+      "height_m_range": [10, 30],
+      "needs": ["water"],
+      "design_state": "planned",
+      "silhouette": "hull_with_superstructure",
+      "note": "船体需要自由曲面与吃水关系，当前几何只支持轴对齐盒与参数化建筑"
+    },
+    {
+      "type": "inn",
+      "role": "commerce",
+      "required": false,
+      "count_range": [1, 6],
+      "footprint_m2_range": [200, 600],
+      "height_m_range": [6, 16],
+      "needs": ["road"],
+      "design_state": "implemented",
+      "maps_to_programme": "inn",
+      "silhouette": "flat",
+      "note": ""
+    },
+    {
+      "type": "residence",
+      "role": "housing",
+      "required": true,
+      "count_range": [6, 30],
+      "footprint_m2_range": [150, 350],
+      "height_m_range": [6, 15],
+      "needs": ["road"],
+      "design_state": "implemented",
+      "maps_to_programme": "residence",
+      "silhouette": "flat",
+      "note": ""
+    },
+    {
+      "type": "office_block",
+      "role": "commerce",
+      "required": false,
+      "count_range": [0, 6],
+      "footprint_m2_range": [400, 1200],
+      "height_m_range": [12, 30],
+      "needs": ["road"],
+      "design_state": "implemented",
+      "maps_to_programme": "office",
+      "silhouette": "flat",
+      "note": ""
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # 015 风物目录与背景包（流水线 C）
 
-- 状态：planned
+- 状态：in_progress
 - 创建日期：2026-09-26
 - 执行者：待认领
 - 依赖：013（简报与背景包结构）
@@ -28,11 +28,13 @@
 
 ## 工作项
 
-- [ ] 定义目录 Schema，包含上表字段与校验（区间合法、邻近关系无自相矛盾）。
-- [ ] 把现有 `PROGRAMMES`/`PROGRAMME_ROOMS`/`PROGRAMME_FURNITURE`/`PROGRAMME_ROOF` 抽成 `arcane_medieval` 背景包的目录与设计条目，**不改变现有输出**（先做等价搬迁，用现有批次结果对照）。
-- [ ] 新增 `modern_metropolis`（交通枢纽、摩天楼、整齐街区、居民楼、绿地公园、医院、学校、机关）、`industrial_park`（各类厂房、货场、整齐道路、烟囱/储罐）、`harbour`（码头、泊位、货轮、仓库、灯塔、船坞）三份目录初稿。
-- [ ] 规则：同一背景内 `required=true` 的风物必须能被 016 全部安排；数量区间与占地/高度区间要和简报的 `scale_m` 相容（例如 512 m 内不放 6 座城堡）。
-- [ ] 独立校验规则：必现风物齐全、尺寸与背景一致、邻近关系可满足。
+- [x] ~~定义目录 Schema，包含上表字段与校验（区间合法、邻近关系无自相矛盾）。~~
+- [x] ~~把现有 `PROGRAMMES`/`PROGRAMME_ROOMS`/`PROGRAMME_FURNITURE`/`PROGRAMME_ROOF` 抽成 `arcane_medieval` 背景包的目录与设计条目，**不改变现有输出**（先做等价搬迁，用现有批次结果对照）。~~
+- [x] ~~新增 `modern_metropolis`（交通枢纽、摩天楼、整齐街区、居民楼、绿地公园、医院、学校、机关）、`industrial_park`（各类厂房、货场、整齐道路、烟囱/储罐）、`harbour`（码头、泊位、货轮、仓库、灯塔、船坞）三份目录初稿。~~
+- [ ] 规则：同一背景内 `required=true` 的风物必须能被 016 全部安排（**取决于 016 实现**）；数量区间与占地/高度区间要和简报的 `scale_m` 相容。
+- [x] ~~独立校验规则：必现风物齐全、尺寸与背景一致、邻近关系可满足。~~
+
+等价搬迁的说明：本轮**没有改动生成器**（`generation/` 一行未动），因此既有 city 批次结果继续有效；等价性由两条独立证据支持——四个背景的 `maps_to_programme` 合集恰好等于 `PROGRAMMES`，且同一背景内一个 programme 不会被两个条目重复占用（`tests/test_scene_brief.py::test_catalogues_migrate_the_existing_programmes`）。等 017 真正改为"从背景包读设计"时，必须再用预登记批次复核等价性。
 
 ## 验收标准
 
@@ -50,6 +52,7 @@
 | 日期 | 执行者 | 动作 | 结果与证据 | 下一步 |
 |---|---|---|---|---|
 | 2026-09-26 | root | 根据用户对流水线的重构要求创建本工单 | 本文件与 [docs/04_scene_pipeline.md](../docs/04_scene_pipeline.md)；尚无实现或测试结果 | 先做 `arcane_medieval` 的等价搬迁，再写另外三个背景包 |
+| 2026-09-26 | root | 实现阶段 C：目录 Schema 与四个背景包 | `settings/{arcane_medieval,modern_metropolis,industrial_park,harbour}/catalogue.json`：条目 11/12/10/11，必现 7/9/6/9，已实现 7/5/4/3，未实现 4/7/6/8。`design_state` 强制"已实现必指向真实 programme、未实现必写清缺口"，由 `tests/test_scene_brief.py` 强制（16 passed）。真实缺口集中在城堡、城墙、行会、广场、摩天楼、枢纽、地铁、厂房、仓库、储罐、突堤、岸壁、堆场、船坞、灯塔、海关、货轮 | 这些缺口是 017 的工作清单；016 需要先能消费 `needs`/`adjacency` |
 
 ## 交接说明
 

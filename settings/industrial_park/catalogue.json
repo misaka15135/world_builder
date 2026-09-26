@@ -1,0 +1,129 @@
+{
+  "catalogue_version": "0.1.0",
+  "setting": "industrial_park",
+  "entries": [
+    {
+      "type": "factory_hall",
+      "role": "infrastructure",
+      "required": true,
+      "count_range": [4, 16],
+      "footprint_m2_range": [1500, 6000],
+      "height_m_range": [10, 24],
+      "needs": ["rail", "road"],
+      "design_state": "planned",
+      "silhouette": "sawtooth_hall",
+      "note": "厂房需要大跨屋架、天窗、吊车梁与装卸门，当前建筑模板最大 18 m 见方且只有居住型平面"
+    },
+    {
+      "type": "warehouse",
+      "role": "infrastructure",
+      "required": true,
+      "count_range": [2, 8],
+      "footprint_m2_range": [800, 3000],
+      "height_m_range": [8, 18],
+      "needs": ["road"],
+      "design_state": "planned",
+      "silhouette": "gable_hall",
+      "note": "仓库需要大跨度无柱空间与月台，当前只有逐层房间模板"
+    },
+    {
+      "type": "silo_tank",
+      "role": "infrastructure",
+      "required": true,
+      "count_range": [2, 10],
+      "footprint_m2_range": [100, 400],
+      "height_m_range": [8, 30],
+      "needs": ["rail"],
+      "design_state": "planned",
+      "silhouette": "cylinder_cluster",
+      "note": "储罐/筒仓是圆柱体，当前几何只支持轴对齐盒，需要新的源几何类型（014/017 协同）"
+    },
+    {
+      "type": "power_plant",
+      "role": "infrastructure",
+      "required": false,
+      "count_range": [1, 2],
+      "footprint_m2_range": [2000, 6000],
+      "height_m_range": [15, 40],
+      "needs": ["rail", "water"],
+      "design_state": "planned",
+      "silhouette": "stack_and_hall",
+      "note": "电厂需要烟囱、冷却塔与主厂房组合，属于地标级设计"
+    },
+    {
+      "type": "rail_line",
+      "role": "infrastructure",
+      "required": true,
+      "count_range": [1, 3],
+      "linear_m": [1000, 3000],
+      "width_m_range": [4, 8],
+      "design_state": "planned",
+      "silhouette": "track_on_ballast",
+      "note": "铁路支线需要道砟、轨枕与道岔，属于 016 的骨架，尚未实现"
+    },
+    {
+      "type": "freight_yard",
+      "role": "infrastructure",
+      "required": true,
+      "count_range": [1, 3],
+      "footprint_m2_range": [2000, 8000],
+      "height_m_range": [4, 12],
+      "needs": ["rail"],
+      "design_state": "planned",
+      "silhouette": "open_yard",
+      "note": "货场需要轨道股道、集装箱堆位与门吊，当前没有开敞场地布置规则"
+    },
+    {
+      "type": "office_block",
+      "role": "commerce",
+      "required": false,
+      "count_range": [2, 8],
+      "footprint_m2_range": [400, 1200],
+      "height_m_range": [12, 30],
+      "needs": ["road"],
+      "design_state": "implemented",
+      "maps_to_programme": "office",
+      "silhouette": "flat",
+      "note": ""
+    },
+    {
+      "type": "residence",
+      "role": "housing",
+      "required": true,
+      "count_range": [4, 20],
+      "footprint_m2_range": [150, 350],
+      "height_m_range": [6, 15],
+      "needs": ["road"],
+      "design_state": "implemented",
+      "maps_to_programme": "residence",
+      "silhouette": "flat",
+      "note": ""
+    },
+    {
+      "type": "shop",
+      "role": "commerce",
+      "required": false,
+      "count_range": [1, 6],
+      "footprint_m2_range": [200, 600],
+      "height_m_range": [4, 10],
+      "needs": ["road"],
+      "design_state": "implemented",
+      "maps_to_programme": "shop",
+      "silhouette": "flat",
+      "note": ""
+    },
+    {
+      "type": "workshop",
+      "role": "craft",
+      "required": false,
+      "count_range": [2, 10],
+      "footprint_m2_range": [300, 1200],
+      "height_m_range": [6, 16],
+      "needs": ["road"],
+      "design_state": "implemented",
+      "maps_to_programme": "workshop",
+      "silhouette": "flat",
+      "note": ""
+    }
+  ]
+}
