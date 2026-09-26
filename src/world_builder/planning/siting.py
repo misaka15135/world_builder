@@ -655,7 +655,7 @@ def _place_sites(brief: SceneBrief, pack: SettingPack, terrain: TerrainPlan, spe
                 if any(_overlap(rect, other, tolerance=0.0) for other in occupied):
                     continue
                 centre = ((rect[0] + rect[2]) / 2, (rect[1] + rect[3]) / 2)
-                if terrain.water_at(*centre) or terrain.buildable_at(*centre) <= 0:
+                if terrain.buildable_at(*centre) <= 0 or not _footprint_is_dry(terrain, rect):
                     continue
                 # Hard placement filters: a plot that fails its own site needs
                 # is not placed at all, rather than placed and reported later.
@@ -683,6 +683,16 @@ def _place_sites(brief: SceneBrief, pack: SettingPack, terrain: TerrainPlan, spe
 def _overlap(a, b, tolerance: float = 0.0) -> bool:
     return (min(a[2], b[2]) - max(a[0], b[0]) > tolerance
             and min(a[3], b[3]) - max(a[1], b[1]) > tolerance)
+
+
+def _footprint_is_dry(terrain: TerrainPlan, rect: tuple[float, float, float, float]) -> bool:
+    """Check the whole envelope, including its edges, against planned water."""
+    x0, y0, x1, y1 = rect
+    nx = max(1, math.ceil((x1 - x0) / 2.0))
+    ny = max(1, math.ceil((y1 - y0) / 2.0))
+    return all(not terrain.water_at(x0 + (x1 - x0) * ix / nx,
+                                    y0 + (y1 - y0) * iy / ny)
+               for ix in range(nx + 1) for iy in range(ny + 1))
 
 
 def _service_roads(blocks, sites, arterial: Road, rail: Road | None = None) -> list[Road]:
@@ -1048,6 +1058,11 @@ def validate_siting(plan: SitingPlan, brief: SceneBrief, pack: SettingPack, terr
     check("siting.site_on_buildable", not off_ground,
           f"{len(plan.sites) - len(off_ground)} sites on buildable ground" if not off_ground else
           f"unbuildable sites: {off_ground[:5]}")
+    wet_footprints = [site.id for site in plan.sites
+                      if not _footprint_is_dry(terrain, (site.x0, site.y0, site.x1, site.y1))]
+    check("siting.site_footprints_dry", not wet_footprints,
+          f"{len(plan.sites) - len(wet_footprints)} site envelopes avoid water" if not wet_footprints else
+          f"site envelopes intersect water: {wet_footprints[:5]}")
     for site in plan.sites:
         for need in site.needs:
             if need == "road":

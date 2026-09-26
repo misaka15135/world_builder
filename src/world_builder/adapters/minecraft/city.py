@@ -432,8 +432,8 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
         # A scene pipeline plans a river network, a canal or a coastline, so the
         # flat-bank policy cannot apply: the ground is one flat proxy and the
         # water is whatever the source channel polylines say it is.
-        boxes.append(_box("terrain_proxy", tlo[0], thi[0], tlo[1], thi[1], -0.2, 0.25,
-                          "minecraft:grass_block"))
+        surface_boxes = [_box("terrain_proxy", tlo[0], thi[0], tlo[1], thi[1], -0.2, 0.25,
+                              "minecraft:grass_block")]
         for record in entities:
             if record["kind"] not in {"river", "coast"}:
                 continue
@@ -445,10 +445,12 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
             for index in range(len(points) - 1):
                 x0, y0 = points[index][0], points[index][1]
                 x1, y1 = points[index + 1][0], points[index + 1][1]
-                boxes.append(_box(f"{record['id']}_water_{index:03}", min(x0, x1) - width / 2,
-                                  max(x0, x1) + width / 2, min(y0, y1) - width / 2,
-                                  max(y0, y1) + width / 2, -0.05, 0.05, "minecraft:water"))
-        return boxes
+                surface_boxes.append(_box(f"{record['id']}_water_{index:03}", min(x0, x1) - width / 2,
+                                          max(x0, x1) + width / 2, min(y0, y1) - width / 2,
+                                          max(y0, y1) + width / 2, -0.05, 0.05, "minecraft:water"))
+        # The source forbids wet building footprints. Keep the target robust as
+        # well: flat water proxies must not replace a quantised floor or road.
+        return surface_boxes + boxes
     river = next(r for r in entities if r["kind"] == "river")
     rlo, rhi = river["bounds"]["min"], river["bounds"]["max"]
     if not (tlo[0] < rlo[0] < rhi[0] < thi[0] and tlo[1] == rlo[1] and thi[1] == rhi[1]):

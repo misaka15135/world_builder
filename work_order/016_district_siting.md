@@ -5,6 +5,7 @@
 - 执行者：待认领
 - 依赖：014（地形方案）、015（风物目录）
 - 修改范围：未来的 `world_builder/planning/blocks.py`、`settings/<name>/districts.json`、`tests/test_siting.py`、`docs/contracts/siting-v0.1.md`
+- 修改范围：2026-09-27 root 根据 018 首次游戏实贴暴露的室内积水，修正 `planning/siting.py` 对整个场址包络而非仅中心点的避水判定，增加 `tests/test_siting.py` 回归，并同步本工单与 018；不改历史 WIR/导出证据。
 
 ## 目标与范围
 
@@ -62,5 +63,7 @@
 | 2026-09-26 | root | 修"地块装不下仍强放"并加数据一致性规则 | 装配阶段发现一栋 52.65 m 宽的高塔被塞进 55.7 m 宽、左右各留 6 m 的地块并向邻块伸出约 3 m。改为**跳过装不下的地块**（缺口由 `siting.sites_present` 如实报告），新增 `siting.catalogue_fits_blocks`（中值占地 ≤ 最大地块的 75%），工业园/港口地块区间调为 `[6000, 52000]` / `[4000, 45000]`、目标块数 18—40 / 18—36。修后四背景选址全部 `pass`：魔法城邦 40 街区 / 35 场址，现代都市 40 / 26，工业园 18 / 13，港口 18 / 13，**场址数没有减少** | 018 装配未再复现越界 |
 
 ## 交接说明
+
+2026-09-27 暂停交接（root，in_progress）：`planning/siting.py` 增加完整建筑包络的 ≤2 m 采样避水，并由 `siting.site_footprints_dry` 验证；原场景中两处足迹跨水由此被排除。与场景投影、Minecraft 适配器的定向回归合计 29 passed。完整回归按用户要求中断，目标游戏修复版尚未重贴；后续与 018 的交接步骤同步。
 
 开始前重读 014、015、006 的 network/parcels 阶段与 docs/04；注意保留旧修订的世界身份，不改写历史产物。

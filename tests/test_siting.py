@@ -51,6 +51,18 @@ def test_every_background_sits_within_its_rules(planned) -> None:
         assert report["state"] == "pass", (setting, failures)
 
 
+def test_complete_site_envelopes_avoid_planned_water(planned) -> None:
+    from world_builder.planning.siting import _footprint_is_dry
+
+    for setting, (_, _, terrain, plan, report) in planned.items():
+        assert all(_footprint_is_dry(terrain, (site.x0, site.y0, site.x1, site.y1))
+                   for site in plan.sites), setting
+        assert next(check for check in report["checks"]
+                    if check["rule"] == "siting.site_footprints_dry")["state"] == "pass"
+    arcane_terrain = planned["arcane_medieval"][2]
+    assert not _footprint_is_dry(arcane_terrain, (361.157, 285.434, 376.747, 298.424))
+
+
 def test_blocks_tile_the_region_and_respect_their_shares(planned) -> None:
     for setting, (pack, brief, terrain, plan, _) in planned.items():
         spec = load_districts_spec(setting)

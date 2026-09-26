@@ -69,3 +69,13 @@ def test_projected_scene_exports_boxes(scene_package) -> None:
                                 "_south_wall_west", "_north_wall_west")) for source in sources), \
         "the ground storey is split around its opening"
     assert sum(1 for source in sources if "_roof_" in source) > 0
+
+
+def test_scene_water_cannot_overwrite_building_floors(scene_package) -> None:
+    package, _ = scene_package
+    boxes = city_boxes(project_for_minecraft(package), include_interiors=True)
+    water = [index for index, box in enumerate(boxes) if box["block"] == "minecraft:water"]
+    buildings = [index for index, box in enumerate(boxes)
+                 if box["source_id"].startswith("building_")]
+    assert water and buildings
+    assert max(water) < min(buildings), "water must be laid before the shell and floor"
