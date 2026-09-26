@@ -16,7 +16,7 @@ def test_city_contract_is_distinct_from_historical_pilot():
     city = CitySpec(seed=101)
     assert pilot.generator_version == "0.1.0-pilot.3"
     assert pilot.to_dict().get("region_size_m") is None
-    assert city.generator_version == "0.1.0-city.5"
+    assert city.generator_version == "0.1.0-city.6"
     assert city.interior_count == 80
     assert city.world_id != pilot.world_id
     with pytest.raises(ValueError, match="008/009"):
@@ -55,13 +55,19 @@ def test_city_batch_registrations_are_fixed_before_results():
     assert json.loads((root / "city_cases_v3.json").read_text(encoding="utf-8"))["generator_version"] == "0.1.0-city.3"
     assert json.loads((root / "city_cases_v4.json").read_text(encoding="utf-8"))["generator_version"] == "0.1.0-city.4"
     current = json.loads((root / "city_cases_v5.json").read_text(encoding="utf-8"))
-    assert current["generator_version"] == CitySpec().generator_version
+    assert current["generator_version"] == "0.1.0-city.5"
     assert len(current["cases"]) == 30
     modern = json.loads((root / "city_cases_v5_modern.json").read_text(encoding="utf-8"))
-    assert modern["generator_version"] == CitySpec().generator_version
+    assert modern["generator_version"] == "0.1.0-city.5"
     assert len(modern["cases"]) == 30
     assert {case["spec"]["style_profile"] for case in modern["cases"]} == {"modern_grid"}
     assert {case["spec"]["seed"] for case in modern["cases"]} == {case["spec"]["seed"] for case in current["cases"]}
+    assert json.loads((root / "city_cases_v5.json").read_text(encoding="utf-8"))["generator_version"] == "0.1.0-city.5"
+    for name, style in (("city_cases_v6.json", "arcane_medieval"), ("city_cases_v6_modern.json", "modern_grid")):
+        run = json.loads((root / name).read_text(encoding="utf-8"))
+        assert run["generator_version"] == CitySpec().generator_version
+        assert len(run["cases"]) == 30
+        assert {case["spec"]["style_profile"] for case in run["cases"]} == {style}
     for scenario, seed_start in (("riverside", 101), ("hillside", 201), ("dense", 301)):
         cases = [case for case in current["cases"] if case["spec"]["scenario"] == scenario]
         assert [case["spec"]["seed"] for case in cases] == list(range(seed_start, seed_start + 10))

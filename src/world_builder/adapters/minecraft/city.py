@@ -90,6 +90,7 @@ FURNITURE_BLOCKS = {
     "reading_table": "minecraft:oak_slab", "chair": "minecraft:oak_slab", "shelf": "minecraft:bookshelf",
     "long_table": "minecraft:oak_planks", "chest": "minecraft:chest",
     "altar": "minecraft:chiseled_quartz_block", "pew": "minecraft:oak_slab", "cabinet": "minecraft:barrel",
+    "desk": "minecraft:crafting_table",
 }
 
 
@@ -205,7 +206,8 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool,
     storey_count = building["attributes"]["storeys"]
     if type(storey_count) is not int or storey_count < 1:
         raise CityExportError("target.building_storeys", building["id"])
-    upper_z = z0 + g["storey_height_m"]
+    storey_h = g["storey_height_m"]
+    upper_z = z0 + storey_h
     upper_top = upper_z + floor
     void = g["stair_void_local_m"]
     vx0, vn0 = x0 + void["min"][0], n0 + void["min"][1]

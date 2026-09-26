@@ -81,7 +81,7 @@ class CitySpec(PilotSpec):
     interior_count: int = 80
     source_prompt: str = "An editable arcane city across a river."
     region_size_m: int = 512
-    plan_profile: str = "district_v2"
+    plan_profile: str = "district_v3"
     style_profile: str = "arcane_medieval"
 
     def __post_init__(self) -> None:
@@ -91,8 +91,8 @@ class CitySpec(PilotSpec):
             raise ValueError("city building_count must be 80")
         if type(self.interior_count) is not int or not 1 <= self.interior_count <= self.building_count:
             raise ValueError("city interior_count must be between 1 and building_count")
-        if self.plan_profile not in {"district_v1", "district_v2"}:
-            raise ValueError("city plan_profile must be district_v1 or district_v2")
+        if self.plan_profile not in {"district_v1", "district_v2", "district_v3"}:
+            raise ValueError("city plan_profile must be district_v1, district_v2 or district_v3")
         if self.style_profile not in {"arcane_medieval", "modern_grid"}:
             raise ValueError("city style_profile must be arcane_medieval or modern_grid")
         if self.accepted_response_hash is not None or self.model_provenance is not None:

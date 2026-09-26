@@ -39,6 +39,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--timeout-ms", type=int, default=30000)
     parser.add_argument("--max-candidates", type=int, default=3, help="per-stage candidate cap, including the initial candidate")
     parser.add_argument("--layout-profile", choices=["standard", "compact"], default="standard")
+    parser.add_argument("--style", choices=["arcane_medieval", "modern_grid"], default="arcane_medieval",
+                        help="city style profile: pitched-roof arcane town or flat-roofed modern grid")
     parser.add_argument("--lock-stair-void", action="store_true", help="protect the initial building stair reservation")
     parser.add_argument("--prompt", help="compile this prompt using a fixture or configured JSON service")
     parser.add_argument("--model-fixture", type=Path, help="local response JSON, used without a network call")
@@ -83,7 +85,8 @@ def main(argv: list[str] | None = None) -> int:
             spec = spec_type(seed=args.seed, scenario=args.scenario,
                              building_count=args.buildings if args.buildings is not None else (80 if args.city else 6),
                              interior_count=args.interiors if args.interiors is not None else (80 if args.city else 2),
-                             layout_profile=args.layout_profile, lock_stair_void=args.lock_stair_void)
+                             layout_profile=args.layout_profile, lock_stair_void=args.lock_stair_void,
+                             **({"style_profile": args.style} if args.city else {}))
     except (ValueError, OSError) as exc:
         print(json.dumps({"code": getattr(exc, "code", "contract.model_error"), "message": str(exc)}, ensure_ascii=False))
         return 2
