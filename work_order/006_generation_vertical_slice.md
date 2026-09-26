@@ -220,6 +220,7 @@ Minecraft 适配器（策略 `0.1.0-city.4`）改为**按层落墙环与腰线**
 - `python -m pytest -q tests/test_minecraft_city.py tests/test_generation_city.py`：**26 passed**；完整回归 **93 passed in 273.51s**（`artifacts/pytest-city7-full`）；`tools/check_project_docs.py` 零错误。
 - 单例生成：`--city --seed 101 --timeout-ms 120000` 为 `feasible`、5 阶段全部提交、总耗时 **89.9 秒**（其中室内阶段 52.7 秒）。**该次测量与 Minecraft 进程同机重复**，不是空闲基线，不能与 city.6 的 38.6—39.4 秒室内耗时直接比较；批次必须在空闲机器上跑，预算余量按 city.5 现代的教训（最慢 104.7 秒 / 120 秒）看待。
 - Minecraft 导出（含室内，适配器 `0.1.0-city.4`）：源修订 `revision_1f7f0bb521a727ddb2c90cc1`、**3,870 盒、16 分块、675,587 非空气方块**、报告 0 failed（`artifacts/minecraft-city-v7/`）。
+- 现代样式同样生成并导出就绪：世界 `world_52710cf3a8d331a0`（`feasible`，总耗时 **113.8 秒**，距 120 秒世界预算只剩 6 秒）、源修订 `revision_222a7b6f1b923ccc1bf9a5c4`、**5,736 盒、16 分块、696,567 非空气方块**、报告 0 failed（`artifacts/minecraft-city-v7-modern/`）。该城 66/80 栋带退台（层数 2—5：3 层 32 栋、4 层 27 栋、2 层 14 栋、5 层 7 栋），墙环盒按层次出现 `_s1_` 320、`_s2_` 264、`_s3_` 136、`_s4_` 28；现代样式按设计全是平屋顶（80 个平屋顶代理、0 个阶梯屋顶盒）。**余量警告**：两次单例都在 Minecraft 进程同机运行时测得，现代样式已经贴到预算边缘，city.7 现代批次必须等机器空闲再跑，必要时先扩预算。
 
 ### 本轮未做与已知缺口
 
