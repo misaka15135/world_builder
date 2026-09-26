@@ -373,3 +373,55 @@ def render_svg(package: dict, terrain: TerrainPlan, siting: SitingPlan, designs:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(parts), encoding="utf-8")
     return path
+
+
+def render_png(terrain: TerrainPlan, siting: SitingPlan, designs: tuple[BuildingDesign, ...],
+               path: Path, size_px: int = 900) -> Path:
+    """A raster plan for the artifacts record.
+
+    The SVG is the editable version; this PNG is what goes into `artifacts/` as
+    the visual record of a run, so a wake-up can leave evidence without anyone
+    watching the screen. Colours match the SVG: implemented designs orange,
+    designs with no template yet yellow.
+    """
+    from PIL import Image, ImageDraw
+
+    scale = size_px / terrain.region_m
+    image = Image.new("RGB", (size_px, size_px), (232, 228, 216))
+    draw = ImageDraw.Draw(image)
+    low, high = terrain.stats["min_m"], terrain.stats["max_m"]
+    span = max(high - low, 1e-6)
+    step = 8
+    for iy in range(0, terrain.rows, step):
+        for ix in range(0, terrain.columns, step):
+            shade = int(210 - 70 * (terrain.heights[iy][ix] - low) / span)
+            draw.rectangle(
+                [ix * terrain.spacing_m * scale, size_px - (iy + step) * terrain.spacing_m * scale,
+                 (ix + step) * terrain.spacing_m * scale, size_px - iy * terrain.spacing_m * scale],
+                fill=(shade, max(shade - 8, 0), max(shade - 22, 0)))
+    for channel in terrain.channels:
+        points = [(x * scale, size_px - y * scale) for x, y in channel.points]
+        width = max(2, round(channel.width_m * scale))
+        draw.line(points, fill=(61, 111, 168), width=width, joint="curve")
+    for road in siting.roads:
+        colour = {"arterial": (90, 90, 90), "local": (154, 154, 154), "quay": (122, 106, 88),
+                  "rail": (122, 74, 74), "rail_spur": (160, 122, 122)}[road.kind]
+        draw.line([(x * scale, size_px - y * scale) for x, y in road.points],
+                  fill=colour, width=max(1, round(road.width_m * scale)))
+    for bridge in siting.bridges:
+        draw.line([(bridge.start[0] * scale, size_px - bridge.start[1] * scale),
+                   (bridge.end[0] * scale, size_px - bridge.end[1] * scale)],
+                  fill=(139, 90, 43), width=max(2, round(bridge.width_m * scale)))
+    for work in siting.works:
+        draw.line([(x * scale, size_px - y * scale) for x, y in work.points],
+                  fill=(75, 75, 75), width=max(2, round(work.width_m * scale)))
+    for block in siting.blocks:
+        draw.rectangle([block.x0 * scale, size_px - block.y1 * scale,
+                        block.x1 * scale, size_px - block.y0 * scale], outline=(160, 160, 160))
+    for design in designs:
+        colour = (194, 112, 58) if design.design_state == "implemented" else (194, 176, 58)
+        draw.rectangle([design.x0 * scale, size_px - design.y1 * scale,
+                        design.x1 * scale, size_px - design.y0 * scale], fill=colour, outline=(43, 43, 43))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    image.save(path)
+    return path

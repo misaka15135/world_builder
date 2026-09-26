@@ -7,7 +7,8 @@ import sys
 from pathlib import Path
 
 from world_builder.planning import (SceneError, assemble_scene, compile_brief, load_designs,
-                                    load_setting_pack, plan_siting, plan_terrain, render_svg, validate_scene)
+                                    load_setting_pack, plan_siting, plan_terrain, render_png, render_svg,
+                                    validate_scene)
 from world_builder.planning.designer import design_building
 
 
@@ -21,6 +22,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--spacing-m", type=int, default=8)
     parser.add_argument("--output", type=Path, help="write the WIR package JSON here")
     parser.add_argument("--svg", type=Path, help="write a top-down SVG plan here")
+    parser.add_argument("--png", type=Path, help="write a raster plan here, for the artifacts record")
     args = parser.parse_args(argv)
     try:
         brief = compile_brief(args.prompt or f"{args.setting} scene", args.seed)
@@ -52,6 +54,8 @@ def main(argv: list[str] | None = None) -> int:
         args.output.write_text(json.dumps(package, ensure_ascii=False, indent=1), encoding="utf-8")
     if args.svg:
         render_svg(package, terrain, siting, designs, args.svg)
+    if args.png:
+        render_png(terrain, siting, designs, args.png)
     print(f"setting={pack.id} seed={args.seed} world={package['manifest']['world_id']}")
     print(f"  records: {report['record_count']} {report['kinds']}")
     print(f"  designs: {len(designs)}; no template yet for: {sorted(skipped)}")
@@ -63,6 +67,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  package: {args.output}")
     if args.svg:
         print(f"  plan: {args.svg}")
+    if args.png:
+        print(f"  record: {args.png}")
     return 0 if report["state"] == "pass" else 1
 
 
