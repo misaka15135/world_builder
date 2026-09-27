@@ -8,11 +8,13 @@ from pathlib import Path
 
 import pytest
 
-from world_builder.planning import (OpenSpaceDesign, SceneError, compile_brief, load_designs,
-                                    load_setting_pack, plan_siting, plan_terrain, validate_design,
+from world_builder.planning import (BuildingDesign, CompoundDesign, OpenSpaceDesign, SceneError,
+                                    compile_brief, load_designs, load_setting_pack, plan_siting,
+                                    plan_terrain, validate_compound, validate_design,
                                     validate_open_space)
 from world_builder.planning.catalogue import DEFAULT_SETTINGS_ROOT
-from world_builder.planning.designer import FURNITURE, design, design_building
+from world_builder.planning.designer import (COMPOUND_ROLES, FURNITURE, ROOF_STYLES, design,
+                                             design_building)
 
 PROMPTS = {
     "arcane_medieval": "河谷里的魔法城邦，要有城堡和冒险者工会",
@@ -40,8 +42,12 @@ def designed():
                 continue
             plan = design(site, pack.entry(site.type), pack, template, seed=4)
             designs.append(plan)
-            reports.append(validate_open_space(plan, site) if isinstance(plan, OpenSpaceDesign)
-                           else validate_design(plan, site, pack.entry(site.type)))
+            if isinstance(plan, OpenSpaceDesign):
+                reports.append(validate_open_space(plan, site))
+            elif isinstance(plan, CompoundDesign):
+                reports.append(validate_compound(plan, site))
+            else:
+                reports.append(validate_design(plan, site, pack.entry(site.type)))
         result[setting] = (pack, siting, designs, reports, skipped)
     return result
 
@@ -53,6 +59,11 @@ def test_design_templates_load_and_are_coherent() -> None:
         for name, template in templates.items():
             if template.kind == "open_space":
                 assert template.paving and template.path_token and template.fixtures
+                continue
+            if template.kind == "compound":
+                assert template.compound, f"{name} must declare its volumes"
+                assert all(role in COMPOUND_ROLES and roof in ROOF_STYLES
+                           for role, _, roof in template.compound)
                 continue
             assert template.storeys[0] <= template.storeys[1]
             assert all(use in FURNITURE for row in template.room_uses for use in row)
@@ -66,7 +77,7 @@ def test_every_sited_building_is_designed_and_valid(designed) -> None:
         failures = [report for report in reports if report["state"] != "pass"]
         assert not failures, (setting, [report["checks"] for report in failures][:1])
         for design in designs:
-            if isinstance(design, OpenSpaceDesign):
+            if not isinstance(design, BuildingDesign):
                 continue
             site = next(site for site in siting.sites if site.id == design.site_id)
             assert design.area_m2 <= site.area_m2 + 1.0, (setting, design.id)
@@ -89,7 +100,7 @@ def test_height_lands_inside_the_catalogue_range(designed) -> None:
 def test_stairs_and_rooms_are_consistent(designed) -> None:
     for setting, (pack, siting, designs, _, _) in designed.items():
         for design in designs:
-            if isinstance(design, OpenSpaceDesign):
+            if not isinstance(design, BuildingDesign):
                 continue
             if len(design.storeys) >= 2:
                 assert design.stair is not None, (setting, design.id)
@@ -110,7 +121,7 @@ def test_furniture_sits_inside_its_room(designed) -> None:
     total = 0
     for setting, (pack, siting, designs, _, _) in designed.items():
         for design in designs:
-            if isinstance(design, OpenSpaceDesign):
+            if not isinstance(design, BuildingDesign):
                 continue
             rooms = {room.id: room for storey in design.storeys for room in storey.rooms}
             for item in design.furniture:
@@ -172,6 +183,40 @@ def test_open_space_design_paves_and_furnishes_without_storeys() -> None:
                and site.y0 <= item["y0"] and item["y1"] <= site.y1 for item in design.fixtures)
     assert design_open_space(site, template, entry_side="south").to_dict() == design.to_dict(), \
         "the same input gives the same ground plan"
+
+
+def test_compound_design_lays_a_castle_without_overlaps() -> None:
+    """Stage E class 3 (work order 017): a castle is several volumes.
+
+    The curtain wall carries a gate on the street side, the towers sit inside
+    it, and the keep and hall clear each other: the plan is checked for
+    containment, the envelope cap, the required roles and overlaps.
+    """
+    from world_builder.planning import Site
+    from world_builder.planning.designer import DesignTemplate, design_compound, validate_compound
+    pack = load_setting_pack("arcane_medieval")
+    site = Site(id="site_castle", type="castle", role="civic", design_state="planned",
+                block_id="block_000", domain_id="castle", x0=40.0, y0=60.0, x1=118.0, y1=132.0,
+                max_height_m=24.0, max_storeys=6, needs=(), adjacency=())
+    template = DesignTemplate(type="castle", kind="compound",
+                              compound=(("wall", 8.0, "flat"), ("tower", 22.0, "spire"),
+                                        ("keep", 18.0, "gable"), ("hall", 10.0, "gable")))
+    design = design_compound(site, pack, template, entry_side="south")
+    report = validate_compound(design, site)
+    assert report["state"] == "pass", [c for c in report["checks"] if c["state"] != "pass"]
+    roles = [volume["role"] for volume in design.volumes]
+    assert roles.count("tower") == 4 and roles.count("wall") >= 5, roles
+    assert design.height_m <= site.max_height_m + 2e-3
+    assert all(volume["height_m"] <= site.max_height_m + 2e-3 for volume in design.volumes)
+    # The gate leaves a gap: the street-side wall is two runs, not one.
+    south = [v for v in design.volumes if v["role"] == "wall" and abs(v["y0"] - site.y0) < 1e-6]
+    assert len(south) == 2 and south[0]["x1"] < south[1]["x0"], "the entrance side carries a gate"
+    # A cramped bailey still yields a legal castle rather than overlapping parts.
+    tight = Site(id="site_tight", type="castle", role="civic", design_state="planned",
+                 block_id="block_000", domain_id="castle", x0=10.0, y0=10.0, x1=58.0, y1=62.0,
+                 max_height_m=18.0, max_storeys=6, needs=(), adjacency=())
+    tight_report = validate_compound(design_compound(tight, pack, template, entry_side="south"), tight)
+    assert tight_report["state"] == "pass", [c for c in tight_report["checks"] if c["state"] != "pass"]
 
 
 def test_broken_design_templates_are_rejected(tmp_path: Path) -> None:

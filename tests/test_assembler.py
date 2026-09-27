@@ -7,9 +7,9 @@ from pathlib import Path
 
 import pytest
 
-from world_builder.planning import (OpenSpaceDesign, assemble_scene, compile_brief, load_designs,
-                                    load_setting_pack, plan_siting, plan_terrain, render_svg,
-                                    validate_scene)
+from world_builder.planning import (BuildingDesign, CompoundDesign, OpenSpaceDesign, assemble_scene,
+                                    compile_brief, load_designs, load_setting_pack, plan_siting,
+                                    plan_terrain, render_svg, validate_scene)
 from world_builder.planning.designer import design
 
 PROMPTS = {
@@ -45,9 +45,12 @@ def test_every_background_assembles_into_a_valid_package(setting: str) -> None:
     pack, terrain, siting, designs, package, report = _scene(setting)
     failures = [check for check in report["checks"] if check["state"] != "pass"]
     assert report["state"] == "pass", (setting, failures)
-    buildings = [plan for plan in designs if not isinstance(plan, OpenSpaceDesign)]
+    buildings = [plan for plan in designs if isinstance(plan, BuildingDesign)]
     assert report["kinds"]["building"] == len(buildings)
-    assert report["kinds"].get("open_space", 0) == len(designs) - len(buildings)
+    assert report["kinds"].get("open_space", 0) == sum(1 for plan in designs
+                                                       if isinstance(plan, OpenSpaceDesign))
+    assert report["kinds"].get("compound", 0) == sum(1 for plan in designs
+                                                     if isinstance(plan, CompoundDesign))
     for kind in ("world", "terrain", "district", "road", "building", "storey", "room"):
         assert report["kinds"].get(kind, 0) > 0, (setting, kind)
     assert package["manifest"]["revision_id"].startswith("revision_")

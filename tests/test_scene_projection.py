@@ -78,6 +78,11 @@ def test_projected_scene_exports_boxes(scene_package) -> None:
     assert any("_path" in box["source_id"] for box in open_space)
     assert any("_lamp" in box["source_id"] or "_bench" in box["source_id"] or "_tree" in box["source_id"]
                for box in boxes), "the plaza carries fixtures"
+    # The castle (work order 017 class 3) reaches the blocks as separate volumes
+    # rather than one building box.
+    castle = [box for box in boxes if box["source_id"].startswith("compound_")]
+    assert castle, "the scene's castle is exported as a compound"
+    assert any("tower" in box["source_id"] for box in castle), "the castle keeps its towers"
 
 
 def test_scene_water_cannot_overwrite_building_floors(scene_package) -> None:

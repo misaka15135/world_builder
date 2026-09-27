@@ -25,7 +25,7 @@ from world_builder.wir.validator import validate_package
 
 from .brief import SceneBrief
 from .catalogue import SceneError, SettingPack
-from .designer import BuildingDesign, OpenSpaceDesign
+from .designer import BuildingDesign, CompoundDesign, OpenSpaceDesign
 from .siting import SitingPlan
 from .terrain import TerrainPlan
 
@@ -187,6 +187,29 @@ def assemble_scene(brief: SceneBrief, pack: SettingPack, terrain: TerrainPlan, s
             }
             records.append(plaza)
             continue
+        if isinstance(design, CompoundDesign):
+            # A castle is several volumes on one plot, not one box: the entity
+            # carries the part list in its own local frame (work order 017
+            # class 3) and the adapters render each part on its own.
+            compound = entity(f"compound_{design.site_id}", "compound",
+                              f"block_{site_block.get(design.site_id, siting.blocks[0].id)}",
+                              [design.x0, design.y0, 0],
+                              [design.x1 - design.x0, design.y1 - design.y0, design.height_m],
+                              programme=design.type, design_state=design.design_state,
+                              volume_count=len(design.volumes), entry_side=design.entry_side)
+            compound["semantic_completeness"] = "component"
+            compound["geometry"] = {
+                "representation": "compound", "entry_side": design.entry_side,
+                "volumes": [{**volume, "x0": round(volume["x0"] - design.x0, 3),
+                             "x1": round(volume["x1"] - design.x0, 3),
+                             "y0": round(volume["y0"] - design.y0, 3),
+                             "y1": round(volume["y1"] - design.y0, 3)}
+                            for volume in design.volumes],
+                "materials": dict(design.materials),
+                "assignment": "scene_pipeline_stage_e",
+            }
+            records.append(compound)
+            continue
         building = entity(f"building_{design.site_id}", "building",
                           f"block_{site_block.get(design.site_id, siting.blocks[0].id)}",
                           [design.x0, design.y0, 0],
@@ -332,13 +355,17 @@ def validate_scene(package: dict, terrain: TerrainPlan, siting: SitingPlan,
         kinds[record["kind"]] = kinds.get(record["kind"], 0) + 1
     check("scene.layers", all(kinds.get(kind, 0) > 0 for kind in ("world", "terrain", "district", "road", "building")),
           f"layers present: {dict(sorted(kinds.items()))}")
-    buildings = [design for design in designs if not isinstance(design, OpenSpaceDesign)]
+    buildings = [design for design in designs if isinstance(design, BuildingDesign)]
     check("scene.buildings", kinds.get("building", 0) == len(buildings),
           f"{kinds.get('building', 0)} building records for {len(buildings)} building designs")
     check("scene.open_spaces",
-          kinds.get("open_space", 0) == len(designs) - len(buildings),
+          kinds.get("open_space", 0) == sum(1 for design in designs
+                                            if isinstance(design, OpenSpaceDesign)),
           f"{kinds.get('open_space', 0)} open-space record(s) for "
-          f"{len(designs) - len(buildings)} ground plan(s)")
+          f"{sum(1 for design in designs if isinstance(design, OpenSpaceDesign))} ground plan(s)")
+    compounds = [design for design in designs if isinstance(design, CompoundDesign)]
+    check("scene.compounds", kinds.get("compound", 0) == len(compounds),
+          f"{kinds.get('compound', 0)} compound record(s) for {len(compounds)} castle plan(s)")
     for design in buildings:
         building = entities.get(f"building_{design.site_id}")
         if building is None:

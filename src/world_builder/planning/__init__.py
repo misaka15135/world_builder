@@ -13,9 +13,10 @@ from .terrain import (TERRAIN_VERSION, TerrainPlan, TerrainSpec, WaterChannel, l
                       render_preview, validate_terrain)
 from .siting import (DISTRICTS_VERSION, Block, Bridge, DistrictSpec, Domain, Road, Site, SitingPlan,
                      load_districts_spec, plan_siting, validate_siting)
-from .designer import (DESIGN_VERSION, BuildingDesign, DesignTemplate, Furniture, OpenSpaceDesign,
-                       Room, Storey, design_open_space, validate_open_space,
-                       design, design_building, load_designs, parse_designs, validate_design)
+from .designer import (DESIGN_VERSION, BuildingDesign, CompoundDesign, DesignTemplate, Furniture,
+                       OpenSpaceDesign, Room, Storey, design, design_building, design_compound,
+                       design_open_space, load_designs, parse_designs, validate_compound,
+                       validate_design, validate_open_space)
 from .assembler import ASSEMBLY_VERSION, assemble_scene, render_png, render_svg, validate_scene
 
 __all__ = [

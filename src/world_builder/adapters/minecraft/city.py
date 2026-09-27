@@ -534,6 +534,32 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
                 surface_boxes.append(_box(item["id"], ox + item["x0"], ox + item["x1"],
                                           on + item["y0"], on + item["y1"], 0.25, 1.25,
                                           fixture_blocks[item["use"]]))
+        # Compounds (work order 017 class 3): a castle is a keep, towers, a hall
+        # and a curtain wall. Each volume becomes a hollow shell with its own
+        # roof, so the bailey stays open and the parts read as separate masses.
+        for record in entities:
+            if record["kind"] != "compound":
+                continue
+            (ox, on, _), (_, _, _) = record["bounds"]["min"], record["bounds"]["max"]
+            shell_wall = 0.3
+            for volume in record["geometry"]["volumes"]:
+                vx0, vy0 = ox + volume["x0"], on + volume["y0"]
+                vx1, vy1 = ox + volume["x1"], on + volume["y1"]
+                top = volume["height_m"]
+                block = "minecraft:oak_planks" if volume["role"] == "hall" else "minecraft:smooth_stone"
+                name = f"{record['id']}_{volume['id']}"
+                surface_boxes.append(_box(f"{name}_west", vx0, vx0 + shell_wall, vy0, vy1,
+                                          0.0, top, block))
+                surface_boxes.append(_box(f"{name}_east", vx1 - shell_wall, vx1, vy0, vy1,
+                                          0.0, top, block))
+                surface_boxes.append(_box(f"{name}_south", vx0 + shell_wall, vx1 - shell_wall,
+                                          vy0, vy0 + shell_wall, 0.0, top, block))
+                surface_boxes.append(_box(f"{name}_north", vx0 + shell_wall, vx1 - shell_wall,
+                                          vy1 - shell_wall, vy1, 0.0, top, block))
+                roof_height = 0.4 if volume["roof"] == "flat" else \
+                    min(2.4, max(0.6, min(vx1 - vx0, vy1 - vy0) * 0.15))
+                surface_boxes.extend(_roof_boxes(name, vx0, vx1, vy0, vy1, top,
+                                                 roof_height, volume["roof"], "minecraft:oak_planks"))
         # The source forbids wet building footprints. Keep the target robust as
         # well: flat water proxies must not replace a quantised floor or road.
         # Ground and water first, then the street network, and the building
