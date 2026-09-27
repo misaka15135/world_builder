@@ -365,21 +365,37 @@ class BuildingDesign:
         }
 
 
-def _insets(width: float, depth: float, storeys: int, setback_m: float) -> list[tuple[float, float, float, float]]:
+def _insets(width: float, depth: float, storeys: int, setback_m: float,
+            fingerprint: str = "") -> list[tuple[float, float, float, float]]:
     """Per-storey insets (west, east, south, north), ground storey flush.
 
-    The stair strip runs along the east side, so the east edge never moves; the
-    other three step back by whole metres, capped so the rooms keep their floor
-    space. This is the same shape rule the 512 m template settled on after the
-    stepped roofs turned out to be a lid on a box.
+    Building-skill rule 1: a building has to read as more than one volume, so
+    the massing steps. The east side stays put because the stair strip runs
+    along it; the other sides step back by whole metres, capped so the rooms keep
+    their floor space. Which side steps first — and whether the top two storeys
+    step instead of only the top one — comes from the building's own
+    fingerprint, so a street of identical plots does not become a row of
+    identical boxes. Two-storey buildings step only on generous plots.
     """
     insets = [(0.0, 0.0, 0.0, 0.0) for _ in range(storeys)]
-    if storeys < 3 or setback_m <= 0:
+    if storeys < 2 or setback_m <= 0:
         return insets
     cap = min(setback_m, width - 9.0, depth / 2 - 3.0)
     step = math.floor(max(0.0, cap))
-    if step >= 1:
-        insets[-1] = (step, 0.0, step, step)
+    if step < 1:
+        return insets
+    if storeys == 2 and min(width, depth) < 14.0:
+        return insets
+    digest = int.from_bytes(hashlib.sha256(fingerprint.encode("utf-8")).digest()[:4], "big")
+    faces = ("west", "south", "north")
+    first = faces[digest % len(faces)]
+    levels = {storeys - 1}
+    if storeys >= 3 and (digest >> 3) % 3 == 0:
+        levels.add(storeys - 2)
+    for level in levels:
+        insets[level] = (float(step) if first == "west" else 0.0, 0.0,
+                         float(step) if first == "south" else 0.0,
+                         float(step) if first == "north" else 0.0)
     return insets
 
 
@@ -455,7 +471,7 @@ def design_building(site: Site, entry, pack: SettingPack, template: DesignTempla
             squeezed = (site.max_height_m - template.roof_height_m) / chosen
             storey_height = math.floor(max(MIN_STOREY_M, min(storey_height, squeezed)) * 1000) / 1000
         height = chosen * storey_height + template.roof_height_m
-    insets = _insets(width, depth, chosen, template.setback_m)
+    insets = _insets(width, depth, chosen, template.setback_m, fingerprint=site.id)
     stair_void = 3.0
     room_span = max(4.0, width - stair_void - 4.0)
     storeys_out = []

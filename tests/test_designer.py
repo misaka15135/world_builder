@@ -267,3 +267,24 @@ def test_design_tool_prints_a_plan(designed, capsys) -> None:
     assert "failures=0" in printed and "setting=harbour" in printed
     assert "S" in printed or "#" in printed, "a ground-floor plan should be drawn"
     assert "no design template yet for" in printed
+
+
+def test_massing_steps_vary_between_buildings(designed) -> None:
+    """Building-skill rule 1: a street of plots must not be a row of boxes.
+
+    The step pattern comes from the building's own fingerprint, so the same type
+    on different plots steps on different sides (or not at all on a tight plot),
+    and an upper storey is never wider than the one below it.
+    """
+    for setting, (pack, siting, designs, _, _) in designed.items():
+        patterns = set()
+        for design in designs:
+            if not isinstance(design, BuildingDesign) or len(design.storeys) < 2:
+                continue
+            for lower, upper in zip(design.storeys, design.storeys[1:]):
+                assert upper.x0 >= lower.x0 - 1e-6 and upper.x1 <= lower.x1 + 1e-6
+                assert upper.y0 >= lower.y0 - 1e-6 and upper.y1 <= lower.y1 + 1e-6
+            top = design.storeys[-1]
+            patterns.add((round(top.x0 - design.x0, 3), round(top.y0 - design.y0, 3)))
+        if setting == "arcane_medieval":
+            assert len(patterns) >= 2, patterns
