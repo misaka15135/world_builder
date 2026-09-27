@@ -22,7 +22,7 @@ from world_builder.adapters.minecraft.city import export_city
 from world_builder.adapters.minecraft.scene import project_for_minecraft
 from world_builder.planning import (SceneError, assemble_scene, compile_brief, load_designs,
                                     load_setting_pack, plan_siting, plan_terrain, validate_scene)
-from world_builder.planning.designer import design_building
+from world_builder.planning.designer import design
 
 
 def peak_working_set() -> int:
@@ -67,8 +67,8 @@ def run_case(case: dict, registry: dict, output: Path) -> dict:
                 continue
             block = siting.block(site.block_id)
             side = "south" if abs(block.centre[1] - site.y0) < abs(block.centre[1] - site.y1) else "north"
-            designs.append(design_building(site, pack.entry(site.type), pack, template,
-                                           entry_side=side, seed=case["seed"]))
+            designs.append(design(site, pack.entry(site.type), pack, template,
+                                  entry_side=side, seed=case["seed"]))
         designs = tuple(designs)
         package = assemble_scene(brief, pack, terrain, siting, designs)
         report = validate_scene(package, terrain, siting, designs)

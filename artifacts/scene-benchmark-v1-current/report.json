@@ -1,0 +1,523 @@
+{
+ "registry": {
+  "registry_version": "0.1.0",
+  "frozen_at": "2026-09-27",
+  "frozen_note": "Frozen before the first run: four backgrounds x seeds 1-5, offline (zero model calls). Cases are not filtered afterwards; failures stay in the report with their SceneError code. Each case runs in a fresh process so peak memory is per case.",
+  "pipeline": "013-018 (brief -> terrain -> siting -> designs -> assemble -> validate -> project -> minecraft export)",
+  "settings": {
+   "arcane_medieval": "河谷里的魔法城邦，要有城堡和冒险者工会",
+   "modern_metropolis": "现代大都市，有摩天楼和地铁枢纽",
+   "industrial_park": "忙碌的工业产业园，成片厂房和铁路",
+   "harbour": "海运港口，码头货轮和仓库"
+  },
+  "seeds": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "region_m": 512,
+  "spacing_m": 8,
+  "cases": [
+   {
+    "id": "arcane-1",
+    "setting": "arcane_medieval",
+    "seed": 1
+   },
+   {
+    "id": "arcane-2",
+    "setting": "arcane_medieval",
+    "seed": 2
+   },
+   {
+    "id": "arcane-3",
+    "setting": "arcane_medieval",
+    "seed": 3
+   },
+   {
+    "id": "arcane-4",
+    "setting": "arcane_medieval",
+    "seed": 4
+   },
+   {
+    "id": "arcane-5",
+    "setting": "arcane_medieval",
+    "seed": 5
+   },
+   {
+    "id": "modern-1",
+    "setting": "modern_metropolis",
+    "seed": 1
+   },
+   {
+    "id": "modern-2",
+    "setting": "modern_metropolis",
+    "seed": 2
+   },
+   {
+    "id": "modern-3",
+    "setting": "modern_metropolis",
+    "seed": 3
+   },
+   {
+    "id": "modern-4",
+    "setting": "modern_metropolis",
+    "seed": 4
+   },
+   {
+    "id": "modern-5",
+    "setting": "modern_metropolis",
+    "seed": 5
+   },
+   {
+    "id": "industrial-1",
+    "setting": "industrial_park",
+    "seed": 1
+   },
+   {
+    "id": "industrial-2",
+    "setting": "industrial_park",
+    "seed": 2
+   },
+   {
+    "id": "industrial-3",
+    "setting": "industrial_park",
+    "seed": 3
+   },
+   {
+    "id": "industrial-4",
+    "setting": "industrial_park",
+    "seed": 4
+   },
+   {
+    "id": "industrial-5",
+    "setting": "industrial_park",
+    "seed": 5
+   },
+   {
+    "id": "harbour-1",
+    "setting": "harbour",
+    "seed": 1
+   },
+   {
+    "id": "harbour-2",
+    "setting": "harbour",
+    "seed": 2
+   },
+   {
+    "id": "harbour-3",
+    "setting": "harbour",
+    "seed": 3
+   },
+   {
+    "id": "harbour-4",
+    "setting": "harbour",
+    "seed": 4
+   },
+   {
+    "id": "harbour-5",
+    "setting": "harbour",
+    "seed": 5
+   }
+  ]
+ },
+ "summary": {
+  "cases": 20,
+  "passed": 20,
+  "success_rate": 1.0,
+  "failure_reasons": [],
+  "seconds_total": 309.6,
+  "seconds_mean": 15.48,
+  "seconds_max": 20.96,
+  "peak_working_set_max_mb": 147.0,
+  "peak_working_set_mean_mb": 136.8,
+  "model_calls": 0
+ },
+ "results": [
+  {
+   "id": "arcane-1",
+   "setting": "arcane_medieval",
+   "seed": 1,
+   "state": "pass",
+   "validation": "pass",
+   "world_id": "world_486f120f6f421ec8",
+   "revision_id": "revision_6c476c5b5ebfe2cd3e7c01",
+   "record_count": 919,
+   "designs": 73,
+   "skipped_types": [
+    "castle"
+   ],
+   "chunks": 36,
+   "boxes": 2589,
+   "non_air_blocks": 655065,
+   "model_calls": 0,
+   "seconds": 18.011,
+   "peak_working_set_bytes": 143769600
+  },
+  {
+   "id": "arcane-2",
+   "setting": "arcane_medieval",
+   "seed": 2,
+   "state": "pass",
+   "validation": "pass",
+   "world_id": "world_d936950eabf4d78f",
+   "revision_id": "revision_bd52358a4217c7c56d44da",
+   "record_count": 1024,
+   "designs": 73,
+   "skipped_types": [
+    "castle"
+   ],
+   "chunks": 36,
+   "boxes": 2960,
+   "non_air_blocks": 662345,
+   "model_calls": 0,
+   "seconds": 17.626,
+   "peak_working_set_bytes": 144461824
+  },
+  {
+   "id": "arcane-3",
+   "setting": "arcane_medieval",
+   "seed": 3,
+   "state": "pass",
+   "validation": "pass",
+   "world_id": "world_ebfedf070c935be9",
+   "revision_id": "revision_d3cd3bc250032c013a13c7",
+   "record_count": 910,
+   "designs": 73,
+   "skipped_types": [
+    "castle"
+   ],
+   "chunks": 36,
+   "boxes": 2446,
+   "non_air_blocks": 653527,
+   "model_calls": 0,
+   "seconds": 16.792,
+   "peak_working_set_bytes": 143015936
+  },
+  {
+   "id": "arcane-4",
+   "setting": "arcane_medieval",
+   "seed": 4,
+   "state": "pass",
+   "validation": "pass",
+   "world_id": "world_fc3383ea0483264d",
+   "revision_id": "revision_6e0278367b0b90212b809b",
+   "record_count": 947,
+   "designs": 73,
+   "skipped_types": [
+    "castle"
+   ],
+   "chunks": 36,
+   "boxes": 2658,
+   "non_air_blocks": 656634,
+   "model_calls": 0,
+   "seconds": 17.756,
+   "peak_working_set_bytes": 143319040
+  },
+  {
+   "id": "arcane-5",
+   "setting": "arcane_medieval",
+   "seed": 5,
+   "state": "pass",
+   "validation": "pass",
+   "world_id": "world_71dc260d39b012c6",
+   "revision_id": "revision_47c720ab686da627389466",
+   "record_count": 915,
+   "designs": 73,
+   "skipped_types": [],
+   "chunks": 36,
+   "boxes": 2561,
+   "non_air_blocks": 654660,
+   "model_calls": 0,
+   "seconds": 18.749,
+   "peak_working_set_bytes": 143634432
+  },
+  {
+   "id": "modern-1",
+   "setting": "modern_metropolis",
+   "seed": 1,
+   "state": "pass",
+   "validation": "pass",
+   "world_id": "world_dcf12cae6c0b7965",
+   "revision_id": "revision_78f7934bdd01788d9961af",
+   "record_count": 1388,
+   "designs": 30,
+   "skipped_types": [],
+   "chunks": 34,
+   "boxes": 3578,
+   "non_air_blocks": 799799,
+   "model_calls": 0,
+   "seconds": 20.181,
+   "peak_working_set_bytes": 151212032
+  },
+  {
+   "id": "modern-2",
+   "setting": "modern_metropolis",
+   "seed": 2,
+   "state": "pass",
+   "validation": "pass",
+   "world_id": "world_9aecdbf524c0ad5c",
+   "revision_id": "revision_ad8069a51c5f1744b3a36e",
+   "record_count": 1452,
+   "designs": 30,
+   "skipped_types": [],
+   "chunks": 34,
+   "boxes": 3791,
+   "non_air_blocks": 780417,
+   "model_calls": 0,
+   "seconds": 19.923,
+   "peak_working_set_bytes": 149712896
+  },
+  {
+   "id": "modern-3",
+   "setting": "modern_metropolis",
+   "seed": 3,
+   "state": "pass",
+   "validation": "pass",
+   "world_id": "world_fe9ef3d90345e863",
+   "revision_id": "revision_5cbbd9a361027a2407420f",
+   "record_count": 1502,
+   "designs": 32,
+   "skipped_types": [],
+   "chunks": 34,
+   "boxes": 3983,
+   "non_air_blocks": 781353,
+   "model_calls": 0,
+   "seconds": 20.958,
+   "peak_working_set_bytes": 154103808
+  },
+  {
+   "id": "modern-4",
+   "setting": "modern_metropolis",
+   "seed": 4,
+   "state": "pass",
+   "validation": "pass",
+   "world_id": "world_04e96252a5cf8a46",
+   "revision_id": "revision_c3026b3bb0b514909f5f74",
+   "record_count": 1495,
+   "designs": 32,
+   "skipped_types": [],
+   "chunks": 34,
+   "boxes": 3812,
+   "non_air_blocks": 804035,
+   "model_calls": 0,
+   "seconds": 20.011,
+   "peak_working_set_bytes": 150863872
+  },
+  {
+   "id": "modern-5",
+   "setting": "modern_metropolis",
+   "seed": 5,
+   "state": "pass",
+   "validation": "pass",
+   "world_id": "world_a3045fb688179da9",
+   "revision_id": "revision_0dacb53cb1cde1e9073363",
+   "record_count": 1199,
+   "designs": 25,
+   "skipped_types": [],
+   "chunks": 34,
+   "boxes": 3204,
+   "non_air_blocks": 731434,
+   "model_calls": 0,
+   "seconds": 18.766,
+   "peak_working_set_bytes": 148312064
+  },
+  {
+   "id": "industrial-1",
+   "setting": "industrial_park",
+   "seed": 1,
+   "state": "pass",
+   "validation": "pass",
+   "world_id": "world_cce9050ad5ee1076",
+   "revision_id": "revision_6697aa3d2940cd3c6019c8",
+   "record_count": 339,
+   "designs": 16,
+   "skipped_types": [
+    "silo_tank"
+   ],
+   "chunks": 34,
+   "boxes": 1047,
+   "non_air_blocks": 591058,
+   "model_calls": 0,
+   "seconds": 12.835,
+   "peak_working_set_bytes": 139296768
+  },
+  {
+   "id": "industrial-2",
+   "setting": "industrial_park",
+   "seed": 2,
+   "state": "pass",
+   "validation": "pass",
+   "world_id": "world_d4d3a8cee98011a7",
+   "revision_id": "revision_9723ac2ae72d46ffd6829a",
+   "record_count": 340,
+   "designs": 16,
+   "skipped_types": [
+    "silo_tank"
+   ],
+   "chunks": 34,
+   "boxes": 1020,
+   "non_air_blocks": 591073,
+   "model_calls": 0,
+   "seconds": 13.055,
+   "peak_working_set_bytes": 139718656
+  },
+  {
+   "id": "industrial-3",
+   "setting": "industrial_park",
+   "seed": 3,
+   "state": "pass",
+   "validation": "pass",
+   "world_id": "world_c74ab5b5fa30e8a7",
+   "revision_id": "revision_9ad960dd9273b29459e2f1",
+   "record_count": 338,
+   "designs": 16,
+   "skipped_types": [
+    "silo_tank"
+   ],
+   "chunks": 34,
+   "boxes": 1108,
+   "non_air_blocks": 587628,
+   "model_calls": 0,
+   "seconds": 13.291,
+   "peak_working_set_bytes": 142057472
+  },
+  {
+   "id": "industrial-4",
+   "setting": "industrial_park",
+   "seed": 4,
+   "state": "pass",
+   "validation": "pass",
+   "world_id": "world_82590e52568d7ac8",
+   "revision_id": "revision_3af59ff7106f83d00cb13b",
+   "record_count": 339,
+   "designs": 16,
+   "skipped_types": [
+    "silo_tank"
+   ],
+   "chunks": 34,
+   "boxes": 1046,
+   "non_air_blocks": 590276,
+   "model_calls": 0,
+   "seconds": 13.136,
+   "peak_working_set_bytes": 141459456
+  },
+  {
+   "id": "industrial-5",
+   "setting": "industrial_park",
+   "seed": 5,
+   "state": "pass",
+   "validation": "pass",
+   "world_id": "world_056d7e564de44564",
+   "revision_id": "revision_26e6d9101880a06fcfec78",
+   "record_count": 336,
+   "designs": 16,
+   "skipped_types": [
+    "silo_tank"
+   ],
+   "chunks": 33,
+   "boxes": 1051,
+   "non_air_blocks": 587093,
+   "model_calls": 0,
+   "seconds": 13.118,
+   "peak_working_set_bytes": 139890688
+  },
+  {
+   "id": "harbour-1",
+   "setting": "harbour",
+   "seed": 1,
+   "state": "pass",
+   "validation": "pass",
+   "world_id": "world_5d4660581f2edd96",
+   "revision_id": "revision_4dd0b6124b493214f4c825",
+   "record_count": 344,
+   "designs": 13,
+   "skipped_types": [
+    "dry_dock"
+   ],
+   "chunks": 35,
+   "boxes": 1189,
+   "non_air_blocks": 619095,
+   "model_calls": 0,
+   "seconds": 11.149,
+   "peak_working_set_bytes": 139464704
+  },
+  {
+   "id": "harbour-2",
+   "setting": "harbour",
+   "seed": 2,
+   "state": "pass",
+   "validation": "pass",
+   "world_id": "world_1e11d43df7f5955e",
+   "revision_id": "revision_0dec7110ea662d84ccd02f",
+   "record_count": 329,
+   "designs": 14,
+   "skipped_types": [],
+   "chunks": 35,
+   "boxes": 1186,
+   "non_air_blocks": 617047,
+   "model_calls": 0,
+   "seconds": 10.924,
+   "peak_working_set_bytes": 140046336
+  },
+  {
+   "id": "harbour-3",
+   "setting": "harbour",
+   "seed": 3,
+   "state": "pass",
+   "validation": "pass",
+   "world_id": "world_287a55d3d5c51de3",
+   "revision_id": "revision_aab73e1793fd6ba8eda1f7",
+   "record_count": 282,
+   "designs": 11,
+   "skipped_types": [],
+   "chunks": 34,
+   "boxes": 1000,
+   "non_air_blocks": 613052,
+   "model_calls": 0,
+   "seconds": 10.943,
+   "peak_working_set_bytes": 137547776
+  },
+  {
+   "id": "harbour-4",
+   "setting": "harbour",
+   "seed": 4,
+   "state": "pass",
+   "validation": "pass",
+   "world_id": "world_d387dde2dfa293df",
+   "revision_id": "revision_6885a2aaddb54d12e10579",
+   "record_count": 341,
+   "designs": 14,
+   "skipped_types": [
+    "dry_dock"
+   ],
+   "chunks": 36,
+   "boxes": 1212,
+   "non_air_blocks": 612156,
+   "model_calls": 0,
+   "seconds": 11.301,
+   "peak_working_set_bytes": 139538432
+  },
+  {
+   "id": "harbour-5",
+   "setting": "harbour",
+   "seed": 5,
+   "state": "pass",
+   "validation": "pass",
+   "world_id": "world_cf9a1c9b1131bf6a",
+   "revision_id": "revision_6967c74ba4629d2dbd6205",
+   "record_count": 324,
+   "designs": 14,
+   "skipped_types": [
+    "dry_dock"
+   ],
+   "chunks": 34,
+   "boxes": 1245,
+   "non_air_blocks": 611268,
+   "model_calls": 0,
+   "seconds": 11.07,
+   "peak_working_set_bytes": 138477568
+  }
+ ]
+}

@@ -1,6 +1,7 @@
 {
-  "setting_version": "0.1.0",
+  "setting_version": "0.1.1",
   "id": "industrial_park",
+  "default_prompt": "忙碌的工业产业园，成片厂房和铁路",
   "display_name": "工业产业园",
   "eras": ["industrial"],
   "summary": "平缓用地上的生产区：整齐的主干道与铁路支线串联厂房、仓库、储罐与货场，办公与工人宿舍集中在园区入口。",

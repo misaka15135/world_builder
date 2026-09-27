@@ -1,6 +1,7 @@
 {
-  "setting_version": "0.1.0",
+  "setting_version": "0.1.1",
   "id": "modern_metropolis",
+  "default_prompt": "现代大都市，有摩天楼和地铁枢纽",
   "display_name": "现代大都市",
   "eras": ["contemporary"],
   "summary": "沿人工水道与轨道枢纽展开的高密度都市：中心是摩天楼群与退台天际线，外围是规整街区的住宅、学校、医院与公园。",

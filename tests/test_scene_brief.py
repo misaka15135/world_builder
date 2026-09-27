@@ -36,6 +36,13 @@ def test_all_setting_packs_load_and_validate(packs) -> None:
         assert counts["entries"] == counts["implemented"] + counts["planned"]
 
 
+def test_default_prompts_match_the_frozen_scene_registry(packs) -> None:
+    registry = json.loads((REPO / "benchmarks" / "scene_cases_v1.json").read_text(encoding="utf-8"))
+    for setting, pack in packs.items():
+        assert pack.default_prompt == registry["settings"][setting]
+        assert compile_brief(pack.default_prompt, seed=4).setting == setting
+
+
 def test_settings_are_actually_different_backgrounds(packs) -> None:
     """Four packs must not be the same list under four names."""
     required = {setting: {entry.type for entry in pack.required_entries} for setting, pack in packs.items()}
@@ -232,6 +239,12 @@ def test_unknown_setting_and_typo_fields_are_rejected(tmp_path: Path) -> None:
     with pytest.raises(SceneError) as failure:
         load_setting_pack("arcane_medieval", tmp_path)
     assert "unknown field" in str(failure.value) or "missing" in str(failure.value)
+
+    setting = json.loads((source / "setting.json").read_text(encoding="utf-8"))
+    setting.pop("default_prompt")
+    (broken / "setting.json").write_text(json.dumps(setting, ensure_ascii=False), encoding="utf-8")
+    with pytest.raises(SceneError, match="default_prompt"):
+        load_setting_pack("arcane_medieval", tmp_path)
 
 
 def test_fixture_model_response_runs_through_the_same_rules(packs) -> None:

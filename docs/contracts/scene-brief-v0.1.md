@@ -56,6 +56,8 @@ settings/<setting>/
 
 `setting.json` 的 `materials` 只允许 `shell`/`floor`/`roof`/`street`/`accent` 五个角色，值是具体方块或材质名，供 017 与目标适配器映射。`terrain_preferences` 是**给 014 的描述性偏好**（可执行的地形 Schema 由 014 定义），因此这里只校验"是字符串映射"，不假装它是地形数据。
 
+2026-09-27 背景包小版本更新：`setting_version` 为 `0.1.1`，新增必填、非空的 `default_prompt`。`assemble_scene.py --setting` 用该提示词编译简报；四个背景的值与预登记 `benchmarks/scene_cases_v1.json` 完全相同。`--prompt` 仍使用用户原文，因此只有两者文本相同时才承诺 WIR 一致；已冻结的批次登记及历史产物不改。
+
 ## 4. 风物目录条目
 
 | 字段 | 含义 |

@@ -31,10 +31,11 @@ def main(argv: list[str] | None = None) -> int:
                         help="materialise interiors; the adapter needs stair geometry for that")
     args = parser.parse_args(argv)
     try:
-        brief = compile_brief(args.prompt or f"{args.setting} scene", args.seed)
-        pack = load_setting_pack(args.setting or brief.setting)
-        if args.setting and brief.setting != args.setting:
-            brief = compile_brief(args.prompt or f"{args.setting} scene", args.seed)
+        pack = load_setting_pack(args.setting) if args.setting else None
+        brief = compile_brief(args.prompt if args.prompt else pack.default_prompt, args.seed)
+        pack = pack or load_setting_pack(brief.setting)
+        if brief.setting != pack.id:
+            raise SceneError("brief.setting", f"default prompt for {pack.id!r} resolved to {brief.setting!r}")
         terrain = plan_terrain(pack.id, seed=args.seed, region_m=args.region_m, spacing_m=args.spacing_m)
         siting = plan_siting(brief, pack, terrain)
         templates = load_designs(pack.id)

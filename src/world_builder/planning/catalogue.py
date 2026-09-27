@@ -17,7 +17,7 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
-SETTING_VERSION = "0.1.0"
+SETTING_VERSION = "0.1.1"
 CATALOGUE_VERSION = "0.1.0"
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_SETTINGS_ROOT = REPO_ROOT / "settings"
@@ -34,7 +34,7 @@ SITE_FEATURES = ("plaza", "water", "coast", "road", "rail", "centre", "hill", "g
 MATERIAL_ROLES = ("shell", "floor", "roof", "street", "accent")
 
 SETTING_KEYS = {"setting_version", "id", "display_name", "eras", "summary", "style_profile",
-                "materials", "terrain_preferences", "default_scale", "default_targets"}
+                "materials", "terrain_preferences", "default_scale", "default_targets", "default_prompt"}
 CATALOGUE_KEYS = {"catalogue_version", "setting", "entries"}
 ENTRY_REQUIRED_KEYS = {"type", "role", "required", "count_range", "design_state"}
 ENTRY_OPTIONAL_KEYS = {"footprint_m2_range", "linear_m", "width_m_range", "height_m_range",
@@ -99,6 +99,7 @@ class SettingPack:
     terrain_preferences: dict
     default_scale: dict
     default_targets: tuple[str, ...]
+    default_prompt: str
     entries: dict
     root: Path
 
@@ -231,7 +232,7 @@ def parse_setting(payload: dict, setting_id: str) -> dict:
         raise SceneError(code, f"setting_version must be {SETTING_VERSION}")
     if payload["id"] != setting_id:
         raise SceneError(code, f"setting id {payload['id']!r} does not match directory {setting_id!r}")
-    for field in ("display_name", "summary"):
+    for field in ("display_name", "summary", "default_prompt"):
         if not isinstance(payload[field], str) or not payload[field].strip():
             raise SceneError(code, f"{field} must be a nonempty string")
     eras = payload["eras"]
@@ -263,7 +264,8 @@ def parse_setting(payload: dict, setting_id: str) -> dict:
     return {"display_name": payload["display_name"], "eras": tuple(eras), "summary": payload["summary"],
             "style_profile": payload["style_profile"], "materials": dict(materials),
             "terrain_preferences": dict(preferences),
-            "default_scale": {"region_m": region, "buildings": buildings}, "default_targets": tuple(targets)}
+            "default_scale": {"region_m": region, "buildings": buildings}, "default_targets": tuple(targets),
+            "default_prompt": payload["default_prompt"]}
 
 
 def available_settings(root: Path | str = DEFAULT_SETTINGS_ROOT) -> tuple[str, ...]:

@@ -1,6 +1,7 @@
 {
-  "setting_version": "0.1.0",
+  "setting_version": "0.1.1",
   "id": "harbour",
+  "default_prompt": "海运港口，码头货轮和仓库",
   "display_name": "港口",
   "eras": ["maritime_modern"],
   "summary": "海湾与突堤组成的港区：沿码头排布泊位、仓库与集装箱堆场，船坞、灯塔与海关分布在防波堤与入口两侧。",

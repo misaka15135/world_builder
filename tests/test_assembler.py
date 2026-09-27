@@ -1,6 +1,7 @@
 """Stage F: assembling the scene into one WIR package (work order 018)."""
 from __future__ import annotations
 
+import importlib.util
 import json
 from pathlib import Path
 
@@ -73,3 +74,15 @@ def test_svg_plan_is_written(tmp_path: Path) -> None:
     assert text.startswith("<svg") and text.rstrip().endswith("</svg>")
     assert "<polyline" in text and "<rect" in text
     assert text.count("<polyline") >= len(terrain.channels), "water is drawn"
+
+
+def test_setting_and_registered_prompt_produce_the_same_scene(tmp_path: Path) -> None:
+    script = Path(__file__).resolve().parents[1] / "tools" / "assemble_scene.py"
+    spec = importlib.util.spec_from_file_location("assemble_scene_tool", script)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    setting_path = tmp_path / "by-setting.json"
+    prompt_path = tmp_path / "by-prompt.json"
+    assert module.main(["--setting", "harbour", "--seed", "4", "--output", str(setting_path)]) == 0
+    assert module.main(["--prompt", PROMPTS["harbour"], "--seed", "4", "--output", str(prompt_path)]) == 0
+    assert json.loads(setting_path.read_text(encoding="utf-8")) == json.loads(prompt_path.read_text(encoding="utf-8"))

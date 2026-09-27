@@ -1,6 +1,7 @@
 {
-  "setting_version": "0.1.0",
+  "setting_version": "0.1.1",
   "id": "arcane_medieval",
+  "default_prompt": "河谷里的魔法城邦，要有城堡和冒险者工会",
   "display_name": "魔法中世纪城邦",
   "eras": ["high_medieval"],
   "summary": "河谷两岸的石造城邦：环城石墙、中央城堡与广场、行会与教堂围绕市场带，住宅沿外缘密集分布。",
