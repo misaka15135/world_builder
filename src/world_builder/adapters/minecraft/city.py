@@ -476,6 +476,29 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool,
                        else "minecraft:smooth_stone")
         head = z0 + floor + float(entry["height_m"])
         depth = 1.0
+        # Daylight (building-skill rule 9): a one-metre glazing column every six
+        # metres along the long faces, written after the wall so the glass wins
+        # those cells. The entrance face is left alone so the doorway and its
+        # porch keep their opening.
+        span, width_m = 6.0, 1.0
+        for level, (sx0, sx1, sn0, sn1) in enumerate(outlines):
+            low = z0 + level * storey_h + floor + 1.0
+            high = low + max(1.0, min(1.5, storey_h - 2.0))
+            ceiling = wall_top if level == storey_count - 1 else z0 + (level + 1) * storey_h
+            if high >= ceiling:
+                continue
+            suffix = "" if level == 0 else f"_s{level}"
+            for face, along0, along1, fixed in (("south", sx0 + wall, sx1 - wall, sn0),
+                                                ("north", sx0 + wall, sx1 - wall, sn1 - wall)):
+                if level == 0 and face == side:
+                    continue
+                position, index = along0 + 1.5, 0
+                while position + width_m <= along1 - 0.5:
+                    parts.append(_box(f"{name}{suffix}_window_{face}_{index:02}",
+                                      position, position + width_m, fixed, fixed + wall,
+                                      low, high, "minecraft:glass"))
+                    position += span
+                    index += 1
         if horizontal:
             s0, s1 = (gn0 - depth, gn0) if side == "south" else (gn1, gn1 + depth)
             parts.append(_box(f"{name}_entry_step", door_a0, door_a1, s0, s1, z0, z0 + floor,
