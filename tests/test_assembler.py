@@ -89,3 +89,30 @@ def test_setting_and_registered_prompt_produce_the_same_scene(tmp_path: Path) ->
     assert module.main(["--setting", "harbour", "--seed", "4", "--output", str(setting_path)]) == 0
     assert module.main(["--prompt", PROMPTS["harbour"], "--seed", "4", "--output", str(prompt_path)]) == 0
     assert json.loads(setting_path.read_text(encoding="utf-8")) == json.loads(prompt_path.read_text(encoding="utf-8"))
+
+
+def test_multi_storey_buildings_carry_one_flight_per_storey() -> None:
+    """Work orders 017/022: every storey above the first needs its own flight.
+
+    One flight to the second floor leaves the storeys above it unreachable, so
+    each building with n storeys carries n-1 stair entities whose floor levels
+    step by exactly one storey height.
+    """
+    _pack, _terrain, _siting, _designs, package, _report = _scene("arcane_medieval")
+    entities = [r for r in package["records"] if r["record_type"] == "entity"]
+    children: dict[str, list[dict]] = {}
+    for record in entities:
+        children.setdefault(record.get("parent_id") or "", []).append(record)
+    checked = 0
+    for building in (r for r in entities if r["kind"] == "building"):
+        storeys = building["attributes"]["storeys"]
+        if storeys < 2:
+            continue
+        flights = [c for c in children.get(building["id"], []) if c["kind"] == "stair"]
+        assert len(flights) == storeys - 1, (building["id"], storeys, len(flights))
+        heights = building["geometry"]["storey_height_m"]
+        levels = sorted(flight["geometry"]["floor_levels_m"][0] for flight in flights)
+        for index in range(1, len(levels)):
+            assert abs((levels[index] - levels[index - 1]) - heights) < 1e-6, building["id"]
+        checked += 1
+    assert checked > 0, "the arcane scene has multi-storey buildings to check"

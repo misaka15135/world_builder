@@ -431,29 +431,38 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool,
         if stairs:
             raise CityExportError("target.interior_plan", building["id"])
         return parts
-    if len(stairs) != 1:
+    if not stairs:
         raise CityExportError("target.interior_plan", building["id"])
-    stair = stairs[0]
-    sg = stair["geometry"]
-    if sg["representation"] != "straight_stair" or sg["steps"] < 1:
-        raise CityExportError("target.interior_geometry", building["id"])
-    (sx0, sn0, _), (sx1, sn1, _) = stair["bounds"]["min"], stair["bounds"]["max"]
-    # Source bounds are rounded to six decimals while the void is derived from
-    # the lot origin, so a stair that fills its reservation exactly can land a
-    # femtometre outside it. Compare the plan fit with that epsilon allowed.
-    if not (vx0 - COORD_EPS_M <= sx0 < sx1 <= vx1 + COORD_EPS_M
-            and vn0 - COORD_EPS_M <= sn0 < sn1 <= vn1 + COORD_EPS_M
-            and abs(sg["floor_levels_m"][0] - (z0 + floor)) < 0.01
-            and abs(sg["floor_levels_m"][1] - upper_top) < 0.01):
-        raise CityExportError("target.interior_void", building["id"])
-    step_run, step_rise = sg["run_m"] / sg["steps"], sg["rise_m"] / sg["steps"]
-    clear_x0 = sx0 + (sx1 - sx0 - sg["clear_width_m"]) / 2
-    for index in range(sg["steps"]):
-        parts.append(_box(f"{stair['id']}_tread_{index + 1:02}", clear_x0, clear_x0 + sg["clear_width_m"],
-                          sn0 + index * step_run, sn0 + (index + 1) * step_run,
-                          z0 + floor, z0 + floor + (index + 1) * step_rise, plank))
-    parts.append(_box(stair["id"] + "_landing", clear_x0, clear_x0 + sg["clear_width_m"],
-                      sn0 + sg["run_m"], sn1, upper_z, upper_top, plank))
+    # Every storey above the first needs its own flight, and each flight has to
+    # start and end on storey floor levels: that is what makes the upper floors
+    # reachable at all (work orders 017/022). One flight was the old contract.
+    levels = [round(z0 + floor + index * storey_h, 3) for index in range(storey_count)]
+    for stair in stairs:
+        sg = stair["geometry"]
+        if sg["representation"] != "straight_stair" or sg["steps"] < 1:
+            raise CityExportError("target.interior_geometry", building["id"])
+        (sx0, sn0, _), (sx1, sn1, _) = stair["bounds"]["min"], stair["bounds"]["max"]
+        flight_levels = sg.get("floor_levels_m") or []
+        if len(flight_levels) != 2 or abs((flight_levels[1] - flight_levels[0]) - storey_h) > 0.01:
+            raise CityExportError("target.interior_void", building["id"])
+        if not any(abs(flight_levels[0] - level) < 0.01 for level in levels):
+            raise CityExportError("target.interior_void", building["id"])
+        # Source bounds are rounded to six decimals while the void is derived
+        # from the lot origin, so a stair that fills its reservation exactly can
+        # land a femtometre outside it. Compare the plan fit with that epsilon.
+        if not (vx0 - COORD_EPS_M <= sx0 < sx1 <= vx1 + COORD_EPS_M
+                and vn0 - COORD_EPS_M <= sn0 < sn1 <= vn1 + COORD_EPS_M):
+            raise CityExportError("target.interior_void", building["id"])
+        step_run, step_rise = sg["run_m"] / sg["steps"], sg["rise_m"] / sg["steps"]
+        clear_x0 = sx0 + (sx1 - sx0 - sg["clear_width_m"]) / 2
+        base, top = flight_levels[0], flight_levels[1]
+        for index in range(sg["steps"]):
+            parts.append(_box(f"{stair['id']}_tread_{index + 1:02}", clear_x0,
+                              clear_x0 + sg["clear_width_m"],
+                              sn0 + index * step_run, sn0 + (index + 1) * step_run,
+                              base, base + (index + 1) * step_rise, plank))
+        parts.append(_box(stair["id"] + "_landing", clear_x0, clear_x0 + sg["clear_width_m"],
+                          sn0 + sg["run_m"], sn1, top - floor, top, plank))
     return parts
 
 

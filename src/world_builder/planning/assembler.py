@@ -270,26 +270,39 @@ def assemble_scene(brief: SceneBrief, pack: SettingPack, terrain: TerrainPlan, s
         if design.stair:
             stair = design.stair
             flight = design.storey_height_m
-            stair_record = entity(f"{design.site_id}_stair", "stair", building["id"],
-                                  [stair["x0"] - design.x0, stair["y0"] - design.y0, 0.3],
-                                  [stair["width_m"], stair["run_m"] + stair["landing_m"],
-                                   flight + 2.4],
-                                  parent_origin=building_origin,
-                                  stair_kind="straight", design_state=design.design_state)
-            # The target adapters build the treads themselves, and they read the
-            # flight from geometry rather than from the box: without these the
-            # assembled stair is a plain volume and an interiors export refuses.
-            stair_record["geometry"] = {
-                "representation": "straight_stair",
-                "size_m": [stair["width_m"], stair["run_m"] + stair["landing_m"], flight + 2.4],
-                "rise_m": flight, "run_m": stair["run_m"], "clear_width_m": stair["width_m"],
-                "headroom_m": 2.4, "steps": stair["steps"], "landing_length_m": stair["landing_m"],
-                "floor_levels_m": [round(building_origin[2] + 0.3, 3),
-                                   round(building_origin[2] + 0.3 + flight, 3)],
-            }
-            records.append(stair_record)
-            records.append(relation(f"relation_{design.site_id}_stair", "connects", f"{design.site_id}_stair",
-                                    [room.id for storey in design.storeys for room in storey.rooms]))
+            # One flight per storey. A building whose only stair stops at the
+            # first floor leaves everything above it unreachable, which is a
+            # functional defect rather than a design choice (work order 017).
+            # The first flight keeps the unsuffixed id so probes still resolve.
+            for level in range(1, len(design.storeys)):
+                base = round(building_origin[2] + 0.3 + (level - 1) * flight, 3)
+                suffix = "" if level == 1 else f"_s{level}"
+                stair_record = entity(f"{design.site_id}_stair{suffix}", "stair", building["id"],
+                                      [stair["x0"] - design.x0, stair["y0"] - design.y0,
+                                       round(0.3 + (level - 1) * flight, 3)],
+                                      [stair["width_m"], stair["run_m"] + stair["landing_m"],
+                                       flight + 2.4],
+                                      parent_origin=building_origin,
+                                      stair_kind="straight", design_state=design.design_state,
+                                      serves_level=level)
+                # The target adapters build the treads themselves and read the
+                # flight from geometry rather than the box: without this the
+                # assembled stair is a plain volume and an interiors export
+                # refuses.
+                stair_record["geometry"] = {
+                    "representation": "straight_stair",
+                    "size_m": [stair["width_m"], stair["run_m"] + stair["landing_m"],
+                               flight + 2.4],
+                    "rise_m": flight, "run_m": stair["run_m"], "clear_width_m": stair["width_m"],
+                    "headroom_m": 2.4, "steps": stair["steps"],
+                    "landing_length_m": stair["landing_m"],
+                    "floor_levels_m": [base, round(base + flight, 3)],
+                }
+                records.append(stair_record)
+                records.append(relation(f"relation_{design.site_id}_stair{suffix}", "connects",
+                                        f"{design.site_id}_stair{suffix}",
+                                        [room.id for storey in design.storeys
+                                         for room in storey.rooms]))
 
     package_id = "package_" + hashlib.sha256(json.dumps(records, sort_keys=True).encode("utf-8")).hexdigest()[:22]
     revision_id = "revision_" + package_id[8:]
