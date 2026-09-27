@@ -8,7 +8,7 @@
     "market": {"share": [0.10, 0.25], "centre_distance": [0.05, 0.40], "road_width_m": 8, "height_factor": 0.95, "footprint_factor": 0.95},
     "residential": {"share": [0.30, 0.55], "centre_distance": [0.30, 1.0], "road_width_m": 6, "height_factor": 0.65, "footprint_factor": 0.85},
     "industrial": {"share": [0.05, 0.20], "centre_distance": [0.45, 1.0], "road_width_m": 8, "height_factor": 0.5, "footprint_factor": 1.0},
-    "green": {"share": [0.05, 0.18], "centre_distance": [0.0, 1.0], "road_width_m": 4, "height_factor": 0.2, "footprint_factor": 0.5}
+    "green": {"share": [0.05, 0.18], "centre_distance": [0.0, 1.0], "road_width_m": 4, "height_factor": 1.0, "footprint_factor": 0.5}
   },
   "domains": {
     "business_core": {"kind": "municipality", "height_factor": 1.3, "footprint_factor": 1.1, "prefers": ["civic", "market"]},

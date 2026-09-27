@@ -471,7 +471,7 @@ def _fixture(fixture_id: str, use: str, x: float, y: float, height_m: float = 1.
 
 
 def design_open_space(site: Site, template: DesignTemplate, *, entry_side: str = "south",
-                      fixture_cap: int = 24) -> OpenSpaceDesign:
+                      fixture_cap: int = 32) -> OpenSpaceDesign:
     """A plaza or a park: paving, one path from the street, fixed furniture.
 
     The source declares surfaces, not blocks: the paving and path tokens name a
