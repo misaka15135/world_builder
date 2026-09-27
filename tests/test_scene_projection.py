@@ -144,7 +144,13 @@ def test_scene_streets_are_laid_before_the_building_shells(scene_package) -> Non
     """
     package, _ = scene_package
     boxes = city_boxes(project_for_minecraft(package), include_interiors=False)
-    streets = [index for index, box in enumerate(boxes) if box["block"] == "minecraft:stone_bricks"]
+    # Stone bricks are both street setts and (since the facade relief landed)
+    # the plinth course, so the street set is filtered by what a street is: a
+    # run that belongs to the network, not to a building.
+    streets = [index for index, box in enumerate(boxes)
+               if box["block"] == "minecraft:stone_bricks"
+               and "_plinth_" not in box["source_id"] and "_post_" not in box["source_id"]
+               and not box["source_id"].startswith(("building", "open_space", "compound"))]
     shells = [index for index, box in enumerate(boxes)
               if box["source_id"].startswith("building_site_")]
     assert streets and shells

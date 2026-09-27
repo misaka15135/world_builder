@@ -154,7 +154,9 @@ def test_block_types_land_at_the_source_coordinates(city) -> None:
         inner_x, inner_z = int(bx0) + 2, -(int(bn0) + 2)
         assert at(inner_x, slab, inner_z) == "minecraft:oak_planks"      # ground floor slab
         assert at(inner_x, slab + 1, inner_z) == "minecraft:air"         # hollow interior
-        assert at(int(bx0), slab + 1, inner_z) == "minecraft:smooth_stone"  # west wall
+        # The west wall's lowest course is the plinth (building skill rule 3),
+        # so the ground band reads as a base rather than as more wall.
+        assert at(int(bx0), slab + 1, inner_z) == "minecraft:stone_bricks"  # west wall plinth
         door_z = -(int(bn0) + 3)                                         # declared east entry, north n0+2..n0+4
         assert at(int(bx1) - 1, slab, door_z) == "minecraft:oak_planks"  # slab runs under the doorway
         assert at(int(bx1) - 1, slab + 1, door_z) == "minecraft:air"     # doorway

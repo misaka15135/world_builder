@@ -73,6 +73,19 @@ def _street_block(style: str) -> str:
     return "minecraft:gray_concrete" if style == "modern_grid" else "minecraft:stone_bricks"
 
 
+def _facade_blocks(style: str) -> tuple[str, str]:
+    """Plinth and corner-post blocks: relief that contrasts by value, not hue.
+
+    Building-skill rule 3 asks every facade for at least two devices that catch
+    the light. The storey band already exists; the plinth and the corner posts
+    are the other two, and both are the same boxes the adapter already knows how
+    to place, so no source data changes.
+    """
+    if style == "modern_grid":
+        return "minecraft:gray_concrete", "minecraft:light_gray_concrete"
+    return "minecraft:stone_bricks", "minecraft:dark_oak_planks"
+
+
 def corridor_spacing(width: float, factor: float = CORRIDOR_SPACING) -> float:
     """Centre spacing of the square chain for one corridor (never below 0.5 m)."""
     return max(float(width) * float(factor), 0.5)
@@ -411,6 +424,31 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool,
     parts.extend(_roof_boxes(name, tx0, tx1, tn0, tn1, z1, roof, roof_style, plank))
     band_block = "minecraft:glass" if style == "modern_grid" else "minecraft:dark_oak_planks"
     parts.extend(_storey_bands(name, outlines, z0, wall, wall_top, storey_h, band_block))
+    # Facade relief (building skill rule 3): a plinth along the ground storey
+    # and corner posts on every storey edge. The entrance side keeps its plinth
+    # gap so the doorway stays clear; everything else is additive, so existing
+    # wall boxes and probe coordinates do not move.
+    plinth_block, post_block = _facade_blocks(style)
+    gx0, gx1, gn0, gn1 = outlines[0]
+    plinth_top = z0 + floor + 1.0
+    for face, box in (("south", (gx0, gx1, gn0, gn0 + wall)),
+                      ("north", (gx0, gx1, gn1 - wall, gn1)),
+                      ("west", (gx0, gx0 + wall, gn0 + wall, gn1 - wall)),
+                      ("east", (gx1 - wall, gx1, gn0 + wall, gn1 - wall))):
+        if face == side:
+            continue
+        parts.append(_box(f"{name}_plinth_{face}", box[0], box[1], box[2], box[3],
+                          z0 + floor, plinth_top, plinth_block))
+    for level, (sx0, sx1, sn0, sn1) in enumerate(outlines):
+        bottom = z0 + level * storey_h + floor
+        top = wall_top if level == storey_count - 1 else z0 + (level + 1) * storey_h
+        suffix = "" if level == 0 else f"_s{level}"
+        parts.extend([
+            _box(f"{name}{suffix}_post_sw", sx0, sx0 + wall, sn0, sn0 + wall, bottom, top, post_block),
+            _box(f"{name}{suffix}_post_se", sx1 - wall, sx1, sn0, sn0 + wall, bottom, top, post_block),
+            _box(f"{name}{suffix}_post_nw", sx0, sx0 + wall, sn1 - wall, sn1, bottom, top, post_block),
+            _box(f"{name}{suffix}_post_ne", sx1 - wall, sx1, sn1 - wall, sn1, bottom, top, post_block),
+        ])
     if not with_interior:
         return parts
     children = [r for r in entities.values() if r["parent_id"] == building["id"]]
