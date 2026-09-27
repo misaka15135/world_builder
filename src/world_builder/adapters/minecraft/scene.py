@@ -5,8 +5,9 @@ width, a wall is a corridor, water is a channel or a coastline. The Minecraft
 adapter predates that and reads boxes with a `city_spec` style. This module is
 the translation layer between the two, so neither side has to lie:
 
-* every polyline entity becomes a chain of segment boxes, which is also what
-  lets a non-orthogonal arterial reach the game;
+* every polyline entity becomes a chain of corridor boxes, which is also what
+  lets a non-orthogonal arterial reach the game without turning into its own
+  bounding rectangle;
 * the world spec gains a `city_spec` block carrying the style, so the existing
   material lookup works unchanged.
 
@@ -16,6 +17,8 @@ channel network, and an entrance on any side rather than east only.
 from __future__ import annotations
 
 import copy
+
+from world_builder.adapters.minecraft.city import CORRIDOR_SPACING, corridor_boxes
 
 BOX_KINDS = {"road", "rail", "wall", "pier", "quay", "work"}
 SETTING_STYLES = {"arcane_medieval": "arcane_medieval", "modern_metropolis": "modern_grid",
@@ -54,22 +57,25 @@ def project_for_minecraft(package: dict) -> dict:
             for index in range(len(points) - 1):
                 x0, y0 = points[index]
                 x1, y1 = points[index + 1]
-                segment = copy.deepcopy(record)
-                segment["id"] = f"{record['id']}_seg{index:03d}"
-                segment["bounds"] = {
-                    "min": [min(x0, x1) - width / 2, min(y0, y1) - width / 2, record["bounds"]["min"][2]],
-                    "max": [max(x0, x1) + width / 2, max(y0, y1) + width / 2, record["bounds"]["max"][2]],
-                }
-                segment["geometry"] = {"representation": "box",
-                                       "size_m": [segment["bounds"]["max"][0] - segment["bounds"]["min"][0],
-                                                  segment["bounds"]["max"][1] - segment["bounds"]["min"][1],
-                                                  max(segment["bounds"]["max"][2] - segment["bounds"]["min"][2], 0.4)]}
-                segment["extensions"] = {**record.get("extensions", {}),
-                                         "projected_from": record["id"], "segment": index}
-                flattened.append(segment)
+                for sub, (bx0, by0, bx1, by1) in enumerate(
+                        corridor_boxes(x0, y0, x1, y1, width, CORRIDOR_SPACING)):
+                    segment = copy.deepcopy(record)
+                    segment["id"] = f"{record['id']}_seg{index:03d}_{sub:02d}"
+                    segment["bounds"] = {
+                        "min": [bx0, by0, record["bounds"]["min"][2]],
+                        "max": [bx1, by1, record["bounds"]["max"][2]],
+                    }
+                    segment["geometry"] = {"representation": "box",
+                                           "size_m": [bx1 - bx0, by1 - by0,
+                                                      max(record["bounds"]["max"][2]
+                                                          - record["bounds"]["min"][2], 0.4)]}
+                    segment["extensions"] = {**record.get("extensions", {}),
+                                             "projected_from": record["id"], "segment": index,
+                                             "sub_index": sub}
+                    flattened.append(segment)
             continue
         flattened.append(record)
     projected["records"] = flattened
     projected["manifest"]["extensions"] = {**projected["manifest"].get("optional_extensions", {}),
-                                           "projection": "minecraft-city-0.1"}
+                                           "projection": "minecraft-city-0.2"}
     return projected

@@ -1,6 +1,8 @@
 """Projection of a scene package into the Minecraft adapter's vocabulary."""
 from __future__ import annotations
 
+import math
+
 import pytest
 
 from world_builder.adapters.minecraft.city import CityExportError, city_boxes
@@ -79,3 +81,59 @@ def test_scene_water_cannot_overwrite_building_floors(scene_package) -> None:
                  if box["source_id"].startswith("building_")]
     assert water and buildings
     assert max(water) < min(buildings), "water must be laid before the shell and floor"
+
+
+def test_projected_corridors_stay_near_the_corridor_area(scene_package) -> None:
+    """A diagonal run must not turn into its own bounding rectangle.
+
+    Work order 020: with the bounding-box projection a single 187 x 368 m
+    street box paved more ground than the whole 512 m scene, and 30 of 33
+    building slabs came out as stone. The rasterised corridor keeps every
+    cross-grid box one corridor wide and the painted area near the corridor.
+    """
+    package, _ = scene_package
+    projected = project_for_minecraft(package)
+    sources = {record["id"]: record for record in package["records"] if record["record_type"] == "entity"}
+    boxes = [record for record in projected["records"]
+             if record["record_type"] == "entity" and record["kind"] in {"road", "wall"}
+             and record["geometry"]["representation"] == "box"]
+    assert boxes
+    box_area = 0.0
+    for record in boxes:
+        source = sources[record["extensions"]["projected_from"]]
+        width = float(source["geometry"].get("width_m", 4.0))
+        start = source["geometry"]["points_m"][record["extensions"]["segment"]]
+        end = source["geometry"]["points_m"][record["extensions"]["segment"] + 1]
+        size = record["geometry"]["size_m"]
+        axis_aligned = abs(end[0] - start[0]) < 1e-9 or abs(end[1] - start[1]) < 1e-9
+        if axis_aligned:
+            assert size[0] <= abs(end[0] - start[0]) + width + 1e-6, record["id"]
+            assert size[1] <= abs(end[1] - start[1]) + width + 1e-6, record["id"]
+        else:
+            assert max(size[0], size[1]) <= width + 1e-6, record["id"]
+        box_area += size[0] * size[1]
+    corridor_area = 0.0
+    for source in sources.values():
+        geometry = source.get("geometry") or {}
+        if source["kind"] not in {"road", "wall"} or geometry.get("representation") != "polyline":
+            continue
+        width = float(geometry.get("width_m", 4.0))
+        points = geometry["points_m"]
+        corridor_area += sum(math.dist(start, end) for start, end in zip(points, points[1:])) * width
+    assert box_area <= corridor_area * 1.5, (box_area, corridor_area)
+
+
+def test_scene_streets_are_laid_before_the_building_shells(scene_package) -> None:
+    """A street corridor and a ground slab share a block row: the building wins.
+
+    The scene branch lays ground and water, then the street network, then the
+    building shells, so `building_site_*` floors keep the material the WIR
+    declares even where a corridor crosses the footprint (work order 020).
+    """
+    package, _ = scene_package
+    boxes = city_boxes(project_for_minecraft(package), include_interiors=False)
+    streets = [index for index, box in enumerate(boxes) if box["block"] == "minecraft:stone_bricks"]
+    shells = [index for index, box in enumerate(boxes)
+              if box["source_id"].startswith("building_site_")]
+    assert streets and shells
+    assert max(streets) < min(shells), "streets must be laid before the shell and floor"

@@ -1,8 +1,8 @@
 # 020 场景道路走廊栅格化与地面填充顺序
 
-- 状态：planned
+- 状态：in_progress
 - 创建日期：2026-09-27
-- 执行者：待认领
+- 执行者：root
 - 依赖：018（场景装配与目标导出）、016（区块与路网）
 - 修改范围（计划）：`src/world_builder/adapters/minecraft/scene.py`、`src/world_builder/adapters/minecraft/city.py`、`tests/test_scene_projection.py`、`tests/test_assembler.py`、[场景装配合同](../docs/contracts/scene-assembly-v0.1.md)
 
@@ -32,11 +32,40 @@
 
 ## 工作项
 
-- [ ] 在投影层实现走廊栅格化：按段长与走向把 `points_m` 折线拆成若干轴对齐盒，写入 `projected_from`/`segment`/`sub_index`，并保留源包不做修改。
-- [ ] 调整场景分支填充顺序或加"街面不得覆盖建筑足迹"的规则，使一层楼板材质与 WIR 一致。
-- [ ] 扩充 `tests/test_scene_projection.py`：断言单盒长边上限、走廊面积占比上限（例如街面总面积 ≤ 场景面积 × 1.25）、斜段不再产生外接大盒。
-- [ ] 重导 512 m 魔法城邦（`tools/assemble_scene.py --export-minecraft`），跑完整回归与文档检查，版本升到 `0.1.0-city.5`。
+- [x] ~~在投影层实现走廊栅格化：按段长与走向把 `points_m` 折线拆成若干轴对齐盒，写入 `projected_from`/`segment`/`sub_index`，并保留源包不做修改。~~
+- [x] ~~调整场景分支填充顺序或加"街面不得覆盖建筑足迹"的规则，使一层楼板材质与 WIR 一致。~~
+- [x] ~~扩充 `tests/test_scene_projection.py`：断言单盒长边上限、走廊面积占比上限、斜段不再产生外接大盒。~~
+- [x] ~~重导 512 m 魔法城邦（`tools/assemble_scene.py --export-minecraft`），跑完整回归与文档检查，版本升到 `0.1.0-city.5`。~~
 - [ ] 重贴目标世界并复验：地面草地区块比例、`building_site_032`/`building_site_026` 一层材质、街面探针，截图存档到 `artifacts/minecraft-scene-arcane-interiors-5/target-<日期>/`。
+
+## 执行记录
+
+| 日期 | 执行者 | 动作 | 结果与证据 | 下一步 |
+|---|---|---|---|---|
+| 2026-09-27 | root | 走廊栅格化与填充顺序修复 | 见下节；定向回归 26 passed（`tests/test_scene_projection.py`、`tests/test_assembler.py`、`tests/test_minecraft_city.py`），离线重导 36 分块 / 3,535 盒 / 626,181 方块、`validation: pass` | 目标世界重贴与方块复验 |
+
+### 本次落地（2026-09-27）
+
+**实现**：
+
+1. `adapters/minecraft/city.py` 新增 `corridor_boxes()` / `corridor_spacing()`：轴对齐段仍是一个盒（那个盒就是走廊本身）；跨网格段改为**沿线的方链**——边长等于走廊宽度、中心间距为 0.7 倍宽度（相邻方块必然重叠），因此横向覆盖恰为 ±宽度/2、覆盖面积接近真实走廊。
+2. 场景分支的**水面**改用同一助手，河道/海岸线不再折叠成大矩形；记录 id 追加 `_sub` 序号。
+3. 场景分支**填充顺序**改为"地面 → 水面 → 街网/城墙/桥 → 建筑壳体与楼板"：街面与一层楼板共用同一方块行，建筑在自己足迹内必须赢。006 冻结的 city.7 分支逐箱顺序**未改动**（用 `shell_ranges` 索引切分，不重排旧路径）。
+4. 版本：适配器 `0.1.0-city.4` → **`0.1.0-city.5`**，投影 `minecraft-city-0.1` → **`minecraft-city-0.2`**。源场景身份（`world_39d0699d1d4a3907`）不变——变的是目标侧策略，世界身份按 006 口径由源侧决定。
+
+**离线量化（`artifacts/scene-arcane-020/`，同一 seed 4 输入）**：
+
+| 指标 | 修复前（interiors-3） | 修复后（interiors-4） |
+|---|---|---|
+| 街面盒总面积（解析 manifest） | 565,292 m² | **112,575 m²**（road+wall；走廊真值 90,561 m²，比值 1.24） |
+| 单个最大街面盒 | 187 m × 368 m | 219.9 m × 5 m（轴对齐直路，本身即走廊） |
+| 跨网格盒的横截面 | 外接矩形（最大 368 m） | **≤ 1 倍走廊宽度**（测试强制） |
+| 地面层石砖占比 / 草地占比 | 72.0% / 27.4% | **25.1% / 72.6%** |
+| 地面层木地板（建筑一层）占比 | 0.6% | **2.3%** |
+| 分块 / 盒 / 非空气方块 | 36 / 1,024 / 629,926 | 36 / 3,535 / **626,181** |
+
+地面层对照 PNG 由 manifest 的前后两份逐箱重绘（列表顺序即填充顺序，后箱覆盖先箱）：
+`ground-layer-before-20260927.png`（大片石板）与 `ground-layer-after-20260927.png`（网格街道 + 放射状斜街 + 草地 + 建筑木地板）。
 
 ## 验收标准
 

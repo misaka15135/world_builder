@@ -17,10 +17,17 @@ from pathlib import Path
 
 from world_builder.wir.validator import validate_package
 
-ADAPTER_VERSION = "0.1.0-city.4"
+ADAPTER_VERSION = "0.1.0-city.5"
 PROFILE_ID = "profile_minecraft_city_12111"
 TARGET_VERSION = "1.21.11+worldedit-7.3.19+schem-v3"
 CHUNK_SIZE_M = 128
+# A polyline corridor is rasterised into axis-aligned boxes so that a diagonal
+# street stays a street. A run that already lies on an axis stays one box; a run
+# that cuts across the grid becomes a chain of squares one corridor wide, spaced
+# this fraction of a width apart so consecutive squares overlap. Measured on the
+# 512 m arcane city that chain covers ~1.4 x the corridor area, where the old
+# bounding box covered 2.4 x the whole scene for a single 187 x 368 m street.
+CORRIDOR_SPACING = 0.7
 # A roof that stops flush with the wall reads as a lid; building guides get
 # their depth from an eave, so the roof oversails the walls by half a metre.
 ROOF_EAVE_M = 0.6
@@ -64,6 +71,36 @@ def _shell_materials(style: str) -> tuple[str, str]:
 def _street_block(style: str) -> str:
     """Modern streets read as asphalt; the arcane profile keeps stone setts."""
     return "minecraft:gray_concrete" if style == "modern_grid" else "minecraft:stone_bricks"
+
+
+def corridor_spacing(width: float, factor: float = CORRIDOR_SPACING) -> float:
+    """Centre spacing of the square chain for one corridor (never below 0.5 m)."""
+    return max(float(width) * float(factor), 0.5)
+
+
+def corridor_boxes(x0: float, y0: float, x1: float, y1: float, width: float,
+                   factor: float = CORRIDOR_SPACING) -> list[tuple[float, float, float, float]]:
+    """Split one polyline segment into axis-aligned corridor boxes.
+
+    Every returned tuple is the (x0, y0, x1, y1) footprint of one box. An
+    axis-aligned run returns a single box that *is* the corridor. A run that cuts
+    across the grid returns a chain of squares of side `width`, centred on the
+    line and spaced `corridor_spacing()` apart, so the union follows the line
+    instead of filling the run's bounding rectangle. Lateral coverage is exact
+    (a square covers +/- width/2 either side of a centre), and the chain is
+    connected because the spacing is below one width.
+    """
+    width = float(width)
+    half = width / 2.0
+    dx, dy = x1 - x0, y1 - y0
+    if abs(dx) < 1e-9 or abs(dy) < 1e-9:
+        return [(min(x0, x1) - half, min(y0, y1) - half,
+                 max(x0, x1) + half, max(y0, y1) + half)]
+    length = math.hypot(dx, dy)
+    count = max(2, math.ceil(length / corridor_spacing(width, factor)) + 1)
+    return [(x0 + dx * index / (count - 1) - half, y0 + dy * index / (count - 1) - half,
+             x0 + dx * index / (count - 1) + half, y0 + dy * index / (count - 1) + half)
+            for index in range(count)]
 
 
 def _storey_bands(name: str, outlines: list[tuple[float, float, float, float]], z0: float, wall: float,
@@ -413,6 +450,7 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
         raise CityExportError("target.city_layers", "city is missing required spatial layers")
     style = (specs[0].get("extensions") or {}).get("city_spec", {}).get("style_profile", "arcane_medieval")
     boxes: list[dict] = []
+    shell_ranges: list[tuple[int, int]] = []
     for record in entities:
         if record["kind"] not in {"road", "bridge", "building", "wall"}:
             continue
@@ -420,7 +458,9 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
             raise CityExportError("target.city_geometry", record["id"])
         if record["kind"] == "building":
             with_interior = include_interiors and record["attributes"]["interior_state"] == "generated"
+            start = len(boxes)
             boxes.extend(_building_shell(record, by_id, with_interior=with_interior, style=style))
+            shell_ranges.append((start, len(boxes)))
             continue
         low, high = record["bounds"]["min"], record["bounds"]["max"]
         block = {"road": _street_block(style), "bridge": "minecraft:oak_planks",
@@ -445,12 +485,19 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
             for index in range(len(points) - 1):
                 x0, y0 = points[index][0], points[index][1]
                 x1, y1 = points[index + 1][0], points[index + 1][1]
-                surface_boxes.append(_box(f"{record['id']}_water_{index:03}", min(x0, x1) - width / 2,
-                                          max(x0, x1) + width / 2, min(y0, y1) - width / 2,
-                                          max(y0, y1) + width / 2, -0.05, 0.05, "minecraft:water"))
+                for sub, (wx0, wy0, wx1, wy1) in enumerate(corridor_boxes(x0, y0, x1, y1, width)):
+                    surface_boxes.append(_box(f"{record['id']}_water_{index:03}_{sub:02}", wx0, wx1,
+                                              wy0, wy1, -0.05, 0.05, "minecraft:water"))
         # The source forbids wet building footprints. Keep the target robust as
         # well: flat water proxies must not replace a quantised floor or road.
-        return surface_boxes + boxes
+        # Ground and water first, then the street network, and the building
+        # shells last: a street corridor and a ground slab share the same block
+        # row, and the building's own floor material has to win inside its
+        # footprint. The legacy city.7 path keeps its original box order.
+        shell_cells = {index for start, stop in shell_ranges for index in range(start, stop)}
+        network = [box for index, box in enumerate(boxes) if index not in shell_cells]
+        shells = [box for index, box in enumerate(boxes) if index in shell_cells]
+        return surface_boxes + network + shells
     river = next(r for r in entities if r["kind"] == "river")
     rlo, rhi = river["bounds"]["min"], river["bounds"]["max"]
     if not (tlo[0] < rlo[0] < rhi[0] < thi[0] and tlo[1] == rlo[1] and thi[1] == rhi[1]):
