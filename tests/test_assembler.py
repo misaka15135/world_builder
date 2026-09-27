@@ -6,9 +6,10 @@ from pathlib import Path
 
 import pytest
 
-from world_builder.planning import (assemble_scene, compile_brief, load_designs, load_setting_pack,
-                                    plan_siting, plan_terrain, render_svg, validate_scene)
-from world_builder.planning.designer import design_building
+from world_builder.planning import (OpenSpaceDesign, assemble_scene, compile_brief, load_designs,
+                                    load_setting_pack, plan_siting, plan_terrain, render_svg,
+                                    validate_scene)
+from world_builder.planning.designer import design
 
 PROMPTS = {
     "arcane_medieval": "河谷里的魔法城邦，要有城堡和冒险者工会",
@@ -31,7 +32,7 @@ def _scene(setting: str, seed: int = 4):
             continue
         block = siting.block(site.block_id)
         side = "south" if abs(block.centre[1] - site.y0) < abs(block.centre[1] - site.y1) else "north"
-        designs.append(design_building(site, pack.entry(site.type), pack, template,
+        designs.append(design(site, pack.entry(site.type), pack, template,
                                        entry_side=side, seed=seed))
     designs = tuple(designs)
     package = assemble_scene(brief, pack, terrain, siting, designs)
@@ -43,7 +44,9 @@ def test_every_background_assembles_into_a_valid_package(setting: str) -> None:
     pack, terrain, siting, designs, package, report = _scene(setting)
     failures = [check for check in report["checks"] if check["state"] != "pass"]
     assert report["state"] == "pass", (setting, failures)
-    assert report["kinds"]["building"] == len(designs)
+    buildings = [plan for plan in designs if not isinstance(plan, OpenSpaceDesign)]
+    assert report["kinds"]["building"] == len(buildings)
+    assert report["kinds"].get("open_space", 0) == len(designs) - len(buildings)
     for kind in ("world", "terrain", "district", "road", "building", "storey", "room"):
         assert report["kinds"].get(kind, 0) > 0, (setting, kind)
     assert package["manifest"]["revision_id"].startswith("revision_")

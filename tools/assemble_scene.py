@@ -11,7 +11,7 @@ from world_builder.planning import (SceneError, assemble_scene, compile_brief, l
                                     validate_scene)
 from world_builder.adapters.minecraft.city import CityExportError, export_city
 from world_builder.adapters.minecraft.scene import project_for_minecraft
-from world_builder.planning.designer import design_building
+from world_builder.planning.designer import design
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -50,7 +50,7 @@ def main(argv: list[str] | None = None) -> int:
             continue
         block = siting.block(site.block_id)
         entry_side = "south" if abs(block.centre[1] - site.y0) < abs(block.centre[1] - site.y1) else "north"
-        designs.append(design_building(site, pack.entry(site.type), pack, template,
+        designs.append(design(site, pack.entry(site.type), pack, template,
                                        entry_side=entry_side, seed=args.seed))
     designs = tuple(designs)
     package = assemble_scene(brief, pack, terrain, siting, designs)

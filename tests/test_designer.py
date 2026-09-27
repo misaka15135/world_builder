@@ -8,10 +8,11 @@ from pathlib import Path
 
 import pytest
 
-from world_builder.planning import (SceneError, compile_brief, load_designs, load_setting_pack, plan_siting,
-                                    plan_terrain, validate_design)
+from world_builder.planning import (OpenSpaceDesign, SceneError, compile_brief, load_designs,
+                                    load_setting_pack, plan_siting, plan_terrain, validate_design,
+                                    validate_open_space)
 from world_builder.planning.catalogue import DEFAULT_SETTINGS_ROOT
-from world_builder.planning.designer import FURNITURE, design_building
+from world_builder.planning.designer import FURNITURE, design, design_building
 
 PROMPTS = {
     "arcane_medieval": "河谷里的魔法城邦，要有城堡和冒险者工会",
@@ -37,9 +38,10 @@ def designed():
             if template is None:
                 skipped.add(site.type)
                 continue
-            design = design_building(site, pack.entry(site.type), pack, template, seed=4)
-            designs.append(design)
-            reports.append(validate_design(design, site, pack.entry(site.type)))
+            plan = design(site, pack.entry(site.type), pack, template, seed=4)
+            designs.append(plan)
+            reports.append(validate_open_space(plan, site) if isinstance(plan, OpenSpaceDesign)
+                           else validate_design(plan, site, pack.entry(site.type)))
         result[setting] = (pack, siting, designs, reports, skipped)
     return result
 
@@ -49,6 +51,9 @@ def test_design_templates_load_and_are_coherent() -> None:
         templates = load_designs(setting)
         assert templates
         for name, template in templates.items():
+            if template.kind == "open_space":
+                assert template.paving and template.path_token and template.fixtures
+                continue
             assert template.storeys[0] <= template.storeys[1]
             assert all(use in FURNITURE for row in template.room_uses for use in row)
             assert template.roof in ("flat", "gable", "spire")
@@ -61,6 +66,8 @@ def test_every_sited_building_is_designed_and_valid(designed) -> None:
         failures = [report for report in reports if report["state"] != "pass"]
         assert not failures, (setting, [report["checks"] for report in failures][:1])
         for design in designs:
+            if isinstance(design, OpenSpaceDesign):
+                continue
             site = next(site for site in siting.sites if site.id == design.site_id)
             assert design.area_m2 <= site.area_m2 + 1.0, (setting, design.id)
             assert design.height_m <= site.max_height_m + 2e-3, (setting, design.id)
@@ -82,6 +89,8 @@ def test_height_lands_inside_the_catalogue_range(designed) -> None:
 def test_stairs_and_rooms_are_consistent(designed) -> None:
     for setting, (pack, siting, designs, _, _) in designed.items():
         for design in designs:
+            if isinstance(design, OpenSpaceDesign):
+                continue
             if len(design.storeys) >= 2:
                 assert design.stair is not None, (setting, design.id)
                 void = design.stair["void"]
@@ -101,6 +110,8 @@ def test_furniture_sits_inside_its_room(designed) -> None:
     total = 0
     for setting, (pack, siting, designs, _, _) in designed.items():
         for design in designs:
+            if isinstance(design, OpenSpaceDesign):
+                continue
             rooms = {room.id: room for storey in design.storeys for room in storey.rooms}
             for item in design.furniture:
                 room = rooms[item.room_id]

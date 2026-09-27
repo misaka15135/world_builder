@@ -510,6 +510,27 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
                 for sub, (wx0, wy0, wx1, wy1) in enumerate(corridor_boxes(x0, y0, x1, y1, width)):
                     surface_boxes.append(_box(f"{record['id']}_water_{index:03}_{sub:02}", wx0, wx1,
                                               wy0, wy1, -0.05, 0.05, "minecraft:water"))
+        # Open spaces (work order 017 class 2): a plaza or a park is paving, a
+        # path and fixed furniture on the ground row. The source names material
+        # families; the palette decides the blocks.
+        paving_blocks = {"stone": "minecraft:stone_bricks", "path": "minecraft:smooth_stone",
+                         "gravel": "minecraft:gray_concrete"}
+        fixture_blocks = {"lamp": "minecraft:glass", "bench": "minecraft:oak_slab",
+                          "tree": "minecraft:oak_fence", "planter": "minecraft:grass_block"}
+        for record in entities:
+            if record["kind"] != "open_space":
+                continue
+            (ox, on, _), (mx, mn, _) = record["bounds"]["min"], record["bounds"]["max"]
+            plan = record["geometry"]
+            surface_boxes.append(_box(record["id"], ox, mx, on, mn, 0.0, 0.25,
+                                      paving_blocks[plan["paving_token"]]))
+            px0, py0, px1, py1 = plan["path"]["rect"]
+            surface_boxes.append(_box(f"{record['id']}_path", ox + px0, ox + px1, on + py0, on + py1,
+                                      0.25, 0.4, paving_blocks[plan["path"]["token"]]))
+            for item in plan["fixtures"]:
+                surface_boxes.append(_box(item["id"], ox + item["x0"], ox + item["x1"],
+                                          on + item["y0"], on + item["y1"], 0.25, 1.25,
+                                          fixture_blocks[item["use"]]))
         # The source forbids wet building footprints. Keep the target robust as
         # well: flat water proxies must not replace a quantised floor or road.
         # Ground and water first, then the street network, and the building

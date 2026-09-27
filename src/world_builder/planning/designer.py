@@ -462,10 +462,10 @@ def _even_spans(low: float, high: float, step: float) -> list[float]:
             if low + (high - low) * index / max(count, 1) <= high]
 
 
-def _fixture(fixture_id: str, use: str, x: float, y: float) -> dict:
+def _fixture(fixture_id: str, use: str, x: float, y: float, height_m: float = 1.0) -> dict:
     """One 1 m fixture footprint, anchored on its centre."""
     return {"id": fixture_id, "use": use, "x0": round(x - 0.5, 3), "y0": round(y - 0.5, 3),
-            "x1": round(x + 0.5, 3), "y1": round(y + 0.5, 3), "height_m": 1.0}
+            "x1": round(x + 0.5, 3), "y1": round(y + 0.5, 3), "height_m": round(height_m, 3)}
 
 
 def design_open_space(site: Site, template: DesignTemplate, *, entry_side: str = "south",
@@ -482,6 +482,13 @@ def design_open_space(site: Site, template: DesignTemplate, *, entry_side: str =
     if template.kind != "open_space":
         raise SceneError("design.kind", f"{template.type} is not an open space template")
     x0, y0, x1, y1 = site.x0, site.y0, site.x1, site.y1
+    # The catalogue's envelope for a plaza or a park can be as low as 0.6 m, so
+    # the fixtures rise to whatever the site allows instead of assuming a metre.
+    height = max(0.2, min(1.0, float(site.max_height_m)))
+    # A `green` block's height factor can squeeze a park's envelope to 0.2 m,
+    # which no fixture fits in. The paving still is a park; the furniture waits
+    # for a taller envelope (the siting data is the lever, recorded in 016).
+    wants_fixtures = float(site.max_height_m) >= 0.4
     if entry_side in {"north", "south"}:
         centre = (x0 + x1) / 2
         path = (centre - 1.0, y0, centre + 1.0, y1)
@@ -489,29 +496,29 @@ def design_open_space(site: Site, template: DesignTemplate, *, entry_side: str =
         centre = (y0 + y1) / 2
         path = (x0, centre - 1.0, x1, centre + 1.0)
     fixtures: list[dict] = []
-    if "lamp" in template.fixtures:
+    if wants_fixtures and "lamp" in template.fixtures:
         for index, x in enumerate(_even_spans(x0 + 1.5, x1 - 1.5, 8.0)):
-            fixtures.append(_fixture(f"{site.id}_lamp_s{index}", "lamp", x, y0 + 1.5))
-            fixtures.append(_fixture(f"{site.id}_lamp_n{index}", "lamp", x, y1 - 1.5))
+            fixtures.append(_fixture(f"{site.id}_lamp_s{index}", "lamp", x, y0 + 1.5, height))
+            fixtures.append(_fixture(f"{site.id}_lamp_n{index}", "lamp", x, y1 - 1.5, height))
         for index, y in enumerate(_even_spans(y0 + 1.5, y1 - 1.5, 8.0)):
-            fixtures.append(_fixture(f"{site.id}_lamp_w{index}", "lamp", x0 + 1.5, y))
-            fixtures.append(_fixture(f"{site.id}_lamp_e{index}", "lamp", x1 - 1.5, y))
-    if "bench" in template.fixtures:
+            fixtures.append(_fixture(f"{site.id}_lamp_w{index}", "lamp", x0 + 1.5, y, height))
+            fixtures.append(_fixture(f"{site.id}_lamp_e{index}", "lamp", x1 - 1.5, y, height))
+    if wants_fixtures and "bench" in template.fixtures:
         for index, x in enumerate(_even_spans(x0 + 3.0, x1 - 3.0, 6.0)):
-            fixtures.append(_fixture(f"{site.id}_bench{index}", "bench", x, y0 + 3.5))
-    if "tree" in template.fixtures:
+            fixtures.append(_fixture(f"{site.id}_bench{index}", "bench", x, y0 + 3.5, height))
+    if wants_fixtures and "tree" in template.fixtures:
         for row, y in enumerate(_even_spans(y0 + 4.0, y1 - 4.0, 6.0)):
             for col, x in enumerate(_even_spans(x0 + 4.0, x1 - 4.0, 6.0)):
                 if len(fixtures) >= fixture_cap:
                     break
-                fixtures.append(_fixture(f"{site.id}_tree{row}_{col}", "tree", x, y))
+                fixtures.append(_fixture(f"{site.id}_tree{row}_{col}", "tree", x, y, height))
     return OpenSpaceDesign(id=f"design_{site.id}", type=template.type, role=site.role,
                            design_state=site.design_state, site_id=site.id,
                            x0=round(x0, 3), y0=round(y0, 3), x1=round(x1, 3), y1=round(y1, 3),
                            entry_side=entry_side, paving=template.paving,
                            path_token=template.path_token,
                            path=tuple(round(value, 3) for value in path),
-                           fixtures=tuple(fixtures[:fixture_cap]))
+                           fixtures=tuple(fixtures[:fixture_cap]), height_m=round(height, 3))
 
 
 def validate_open_space(design: OpenSpaceDesign, site: Site) -> dict:
@@ -521,14 +528,16 @@ def validate_open_space(design: OpenSpaceDesign, site: Site) -> dict:
     def check(rule: str, passed: bool, message: str) -> None:
         results.append({"rule": rule, "state": "pass" if passed else "fail", "message": message})
 
-    check("design.outline", site.x0 - 1e-6 <= design.x0 and design.x1 <= site.x1 + 1e-6
-          and site.y0 - 1e-6 <= design.y0 and design.y1 <= site.y1 + 1e-6,
+    # Design coordinates live on the millimetre grid (a rounded outline can land
+    # 1 mm outside the site's own value), so containment is checked that way.
+    check("design.outline", site.x0 - 2e-3 <= design.x0 and design.x1 <= site.x1 + 2e-3
+          and site.y0 - 2e-3 <= design.y0 and design.y1 <= site.y1 + 2e-3,
           f"paving {round(design.area_m2)} m² inside the site")
     check("design.height", design.height_m <= site.max_height_m + 2e-3,
           f"{design.height_m} m against the envelope {site.max_height_m} m")
     check("design.fixtures_inside",
-          all(design.x0 - 1e-6 <= item["x0"] and item["x1"] <= design.x1 + 1e-6
-              and design.y0 - 1e-6 <= item["y0"] and item["y1"] <= design.y1 + 1e-6
+          all(design.x0 - 2e-3 <= item["x0"] and item["x1"] <= design.x1 + 2e-3
+              and design.y0 - 2e-3 <= item["y0"] and item["y1"] <= design.y1 + 2e-3
               for item in design.fixtures),
           f"{len(design.fixtures)} fixture(s) inside the paving")
     px0, py0, px1, py1 = design.path

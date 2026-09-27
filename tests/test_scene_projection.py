@@ -9,7 +9,7 @@ from world_builder.adapters.minecraft.city import CityExportError, city_boxes
 from world_builder.adapters.minecraft.scene import project_for_minecraft
 from world_builder.planning import (assemble_scene, compile_brief, load_designs, load_setting_pack,
                                     plan_siting, plan_terrain)
-from world_builder.planning.designer import design_building
+from world_builder.planning.designer import design
 
 
 @pytest.fixture(scope="module")
@@ -27,7 +27,7 @@ def scene_package():
             continue
         block = siting.block(site.block_id)
         side = "south" if abs(block.centre[1] - site.y0) < abs(block.centre[1] - site.y1) else "north"
-        designs.append(design_building(site, pack.entry(site.type), pack, template,
+        designs.append(design(site, pack.entry(site.type), pack, template,
                                        entry_side=side, seed=4))
     return assemble_scene(brief, pack, terrain, siting, tuple(designs)), siting
 
@@ -71,6 +71,13 @@ def test_projected_scene_exports_boxes(scene_package) -> None:
                                 "_south_wall_west", "_north_wall_west")) for source in sources), \
         "the ground storey is split around its opening"
     assert sum(1 for source in sources if "_roof_" in source) > 0
+    # The plaza (work order 017 class 2) reaches the blocks as paving, a path
+    # and its fixtures rather than as a building.
+    open_space = [box for box in boxes if box["source_id"].startswith("open_space_")]
+    assert open_space, "the scene's plaza is exported as a ground plan"
+    assert any("_path" in box["source_id"] for box in open_space)
+    assert any("_lamp" in box["source_id"] or "_bench" in box["source_id"] or "_tree" in box["source_id"]
+               for box in boxes), "the plaza carries fixtures"
 
 
 def test_scene_water_cannot_overwrite_building_floors(scene_package) -> None:

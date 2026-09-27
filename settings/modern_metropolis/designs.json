@@ -11,6 +11,7 @@
     "transit_hub": {"storeys": [1, 2], "storey_height_m": 5.0, "roof": "flat", "roof_height_m": 0.6, "setback_m": 0.0, "stair": "none", "aspect": 2.0, "room_uses": [["lobby", "customs_hall"], ["office", "store"]]},
     "hospital": {"storeys": [3, 5], "storey_height_m": 3.4, "roof": "flat", "roof_height_m": 0.4, "setback_m": 1.0, "stair": "straight", "aspect": 1.5, "room_uses": [["lobby", "ward"], ["ward", "consulting"], ["ward", "office"], ["ward", "store"], ["ward", "office"]]},
     "school": {"storeys": [2, 3], "storey_height_m": 3.2, "roof": "flat", "roof_height_m": 0.4, "setback_m": 1.0, "stair": "straight", "aspect": 1.6, "room_uses": [["lobby", "classroom"], ["classroom", "classroom"], ["staff_room", "classroom"]]},
-    "government": {"storeys": [4, 6], "storey_height_m": 3.6, "roof": "flat", "roof_height_m": 0.5, "setback_m": 2.0, "stair": "straight", "aspect": 1.4, "room_uses": [["lobby", "office"], ["council_chamber", "records_room"], ["office", "office"], ["office", "records_room"], ["office", "store"], ["office", "store"]]}
+    "government": {"storeys": [4, 6], "storey_height_m": 3.6, "roof": "flat", "roof_height_m": 0.5, "setback_m": 2.0, "stair": "straight", "aspect": 1.4, "room_uses": [["lobby", "office"], ["council_chamber", "records_room"], ["office", "office"], ["office", "records_room"], ["office", "store"], ["office", "store"]]},
+    "park": {"kind": "open_space", "paving": "path", "path": "gravel", "fixtures": ["lamp", "bench", "tree"]}
   }
 }

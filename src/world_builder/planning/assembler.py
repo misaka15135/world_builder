@@ -25,7 +25,7 @@ from world_builder.wir.validator import validate_package
 
 from .brief import SceneBrief
 from .catalogue import SceneError, SettingPack
-from .designer import BuildingDesign
+from .designer import BuildingDesign, OpenSpaceDesign
 from .siting import SitingPlan
 from .terrain import TerrainPlan
 
@@ -158,7 +158,35 @@ def assemble_scene(brief: SceneBrief, pack: SettingPack, terrain: TerrainPlan, s
         records.append(body)
 
     # Buildings: the design, exploded into storeys, rooms, partitions and furniture.
+    # Open spaces (work order 017 class 2) are surfaces, not buildings: they stay
+    # one entity carrying paving, a path and fixtures, with no storeys at all.
     for design in designs:
+        if isinstance(design, OpenSpaceDesign):
+            plaza = entity(f"open_space_{design.site_id}", "open_space",
+                           f"block_{site_block.get(design.site_id, siting.blocks[0].id)}",
+                           [design.x0, design.y0, 0],
+                           [design.x1 - design.x0, design.y1 - design.y0, design.height_m],
+                           programme=design.type, design_state=design.design_state,
+                           paving=design.paving, path_token=design.path_token,
+                           fixture_count=len(design.fixtures))
+            plaza["semantic_completeness"] = "component"
+            plaza["geometry"] = {
+                "representation": "ground_plan", "paving_token": design.paving,
+                "path": {"token": design.path_token,
+                         "rect": [round(design.path[0] - design.x0, 3),
+                                  round(design.path[1] - design.y0, 3),
+                                  round(design.path[2] - design.x0, 3),
+                                  round(design.path[3] - design.y0, 3)]},
+                # Fixtures travel in the parent's local frame, like every other
+                # child payload in the package.
+                "fixtures": [{**item, "x0": round(item["x0"] - design.x0, 3),
+                              "x1": round(item["x1"] - design.x0, 3),
+                              "y0": round(item["y0"] - design.y0, 3),
+                              "y1": round(item["y1"] - design.y0, 3)} for item in design.fixtures],
+                "assignment": "scene_pipeline_stage_e",
+            }
+            records.append(plaza)
+            continue
         building = entity(f"building_{design.site_id}", "building",
                           f"block_{site_block.get(design.site_id, siting.blocks[0].id)}",
                           [design.x0, design.y0, 0],
@@ -304,9 +332,14 @@ def validate_scene(package: dict, terrain: TerrainPlan, siting: SitingPlan,
         kinds[record["kind"]] = kinds.get(record["kind"], 0) + 1
     check("scene.layers", all(kinds.get(kind, 0) > 0 for kind in ("world", "terrain", "district", "road", "building")),
           f"layers present: {dict(sorted(kinds.items()))}")
-    check("scene.buildings", kinds.get("building", 0) == len(designs),
-          f"{kinds.get('building', 0)} building records for {len(designs)} designs")
-    for design in designs:
+    buildings = [design for design in designs if not isinstance(design, OpenSpaceDesign)]
+    check("scene.buildings", kinds.get("building", 0) == len(buildings),
+          f"{kinds.get('building', 0)} building records for {len(buildings)} building designs")
+    check("scene.open_spaces",
+          kinds.get("open_space", 0) == len(designs) - len(buildings),
+          f"{kinds.get('open_space', 0)} open-space record(s) for "
+          f"{len(designs) - len(buildings)} ground plan(s)")
+    for design in buildings:
         building = entities.get(f"building_{design.site_id}")
         if building is None:
             check("scene.building_present", False, f"{design.site_id} has no building record")

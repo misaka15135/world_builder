@@ -32,6 +32,8 @@
 
 下一个可分配编号：021。编号由协调者串行分配，避免并行碰撞。
 
+**2026-09-27 更新（open_space 全线接通）**：`kind: open_space` 从设计端接到 WIR 与 Minecraft 适配器——装配器产出 `open_space_<site>` 实体（`ground_plan` 几何：铺装/步道 token + 局部坐标固定块表），`validate_scene` 增加 `scene.open_spaces` 并只对建筑设计检查楼层链；适配器按 token 落块（`stone→stone_bricks`、`path→smooth_stone`、`gravel→gray_concrete`、`lamp→glass`、`bench→oak_slab`、`tree→oak_fence`、`planter→grass_block`）；魔法城邦加 `plaza`、现代都市加 `park` 模板。**实测 seed 4**：魔法城邦 72 个设计（71 建筑 + 1 广场），`no template yet` 只剩 `castle`；现代都市 32 个设计、**缺失类型清单为空**；两者都导出 36/34 分块且 `validation: pass`，清单里出现 `open_space_*`、`*_path` 与 `*_lamp/bench/tree` 盒。**两个真实约束**：地表景观的目录高度只有 0—1 m，选址给的包络可能低到 0.62 m（古代广场）甚至 **0.2 m**（现代 `green` 街区 `height_factor 0.2`）——固定块高度随包络收缩、包络 < 0.4 m 时只铺装；"green 街区高度因子过狠"已记为 016 的工作项。
+
 **2026-09-27 更新（018 端到端预登记批次）**：新增冻结登记 `benchmarks/scene_cases_v1.json`（四个背景 × seed 1—5 = 20 例）与运行器 `tools/benchmark_scene.py`（每例独立进程、导出写临时目录、离线零模型调用）。首轮 17/20，三例失败：一例是运行器自身的 `FileExistsError`（单例冒烟残留），两例是真实缺陷 `target.interior_void: building_site_006`——港口 6.85 m 进深的建筑**梯段比预留井长出 1.15 m**。修法：梯段前缘余量与平台随进深收缩，并新增源端规则 `design.stair_fits_void`（在源头拦，不再靠导出报错）。复跑 **20/20 通过、成功率 1.0、无失败原因**；耗时合计 300.2 s、单例均值 15.0 s、最大 19.9 s；进程峰值内存最大 146.1 MB、均值 136.9 MB；模型调用 0。报告 [artifacts/scene-benchmark-v1/report.json](../artifacts/scene-benchmark-v1/report.json)。
 
 **2026-09-27 更新（现代都市贴入目标世界）**：把现代都市的新导出放到目标世界**不相交的 `z +2048` 区带**（`x −128—640, z 1408—2048`），与魔法城邦（`z 384—1024`）并存；34/34 分块的文件名 → 粘贴点 → `blocks affected` 与清单一致（795,205 非空气方块）。过程中把 z 偏移算错一次（分块顺序镜像），已整列清空重贴；列 4 漏贴一格、多贴一格也已纠正——两次错误都写在 016 的执行记录里。探针：街道 `gray_concrete` ✓、走廊外草地 ✓；建筑内部材质与离线预测不符（既非 `smooth_stone` 也非水），未查明，如实记录。截图存 `artifacts/minecraft-scene-modern_metropolis-dense/target-20260927/`。
