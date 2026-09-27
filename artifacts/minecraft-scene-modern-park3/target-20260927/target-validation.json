@@ -1,0 +1,49 @@
+{
+  "chunks": [
+    {
+      "source_sha256": "sha256:5fcedd9703f7725e76d9e1918341697370a55d15908e415b5f55803fb091d383",
+      "origin": [
+        256,
+        -61,
+        3584
+      ],
+      "pass": true,
+      "observed_blocks": 32806,
+      "chunk_id": "c02_04",
+      "manifest_blocks": 32806,
+      "game_schematic": "modern_park_current_c02_04.schem",
+      "game_sha256": "sha256:5fcedd9703f7725e76d9e1918341697370a55d15908e415b5f55803fb091d383"
+    },
+    {
+      "source_sha256": "sha256:5932c0ba29c83e643fde1a0e48830f8ba6f9fc4f14c2dee36cb321271e298549",
+      "origin": [
+        256,
+        -61,
+        3712
+      ],
+      "pass": true,
+      "observed_blocks": 57233,
+      "chunk_id": "c02_03",
+      "manifest_blocks": 57233,
+      "game_schematic": "modern_park_current_c02_03.schem",
+      "game_sha256": "sha256:5932c0ba29c83e643fde1a0e48830f8ba6f9fc4f14c2dee36cb321271e298549"
+    }
+  ],
+  "screenshot": "target-20260927/park-overhead.png",
+  "source_world_id": "world_04e96252a5cf8a46",
+  "probes": [
+    {
+      "message": "park_path_ok",
+      "pass": true
+    },
+    {
+      "message": "park_lamp_ok",
+      "pass": true
+    }
+  ],
+  "target": "Minecraft Java 1.21.11 + WorldEdit 7.3.19",
+  "source_revision_id": "revision_c3026b3bb0b514909f5f74",
+  "status": "pass",
+  "offset_note": "new isolated z bands; no existing city cleared",
+  "world": "WB Verify Flat"
+}

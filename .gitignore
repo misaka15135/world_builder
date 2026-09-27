@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.pytest_tmp_*/
 .mypy_cache/
 .ruff_cache/
 *.egg-info/
@@ -62,4 +63,5 @@ adapters/unity/sample_project/Assets/Readme.asset*
 adapters/unity/sample_project/Assets/InputSystem_Actions.inputactions*
 artifacts/unity-sample/editor-*.log
 artifacts/unity-city/editor-*.log
+artifacts/unity-scene-open-space-plaza/editor*.log
 artifacts/unity-sample/v1/

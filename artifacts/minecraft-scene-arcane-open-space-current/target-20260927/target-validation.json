@@ -1,0 +1,35 @@
+{
+  "chunks": [
+    {
+      "source_sha256": "sha256:4c42370bfefc0305628818b753424409b25516bd859b932727f8e32e196d006b",
+      "origin": [
+        256,
+        -61,
+        2816
+      ],
+      "pass": true,
+      "observed_blocks": 46096,
+      "chunk_id": "c02_02",
+      "manifest_blocks": 46096,
+      "game_schematic": "arcane_plaza_current_c02_02.schem",
+      "game_sha256": "sha256:4c42370bfefc0305628818b753424409b25516bd859b932727f8e32e196d006b"
+    }
+  ],
+  "screenshot": "target-20260927/plaza-overhead.png",
+  "source_world_id": "world_fc3383ea0483264d",
+  "probes": [
+    {
+      "message": "plaza_path_ok",
+      "pass": true
+    },
+    {
+      "message": "plaza_lamp_ok",
+      "pass": true
+    }
+  ],
+  "target": "Minecraft Java 1.21.11 + WorldEdit 7.3.19",
+  "source_revision_id": "revision_6e0278367b0b90212b809b",
+  "status": "pass",
+  "offset_note": "new isolated z bands; no existing city cleared",
+  "world": "WB Verify Flat"
+}

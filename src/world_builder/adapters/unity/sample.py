@@ -66,23 +66,24 @@ def _pieces() -> list[dict]:
     return parts
 
 
-def _glb(pieces: list[dict]) -> bytes:
+def _glb(pieces: list[dict], materials: list[tuple[str, tuple[float, float, float, float]]] | None = None) -> bytes:
     """Write GLB 2.0 with one indexed, flat-shaded cuboid mesh per part.
 
     glTF uses RH Y-up: WIR (east,north,up) -> (west,up,north).
     glTFast 6.20.0 reflects the glTF X axis on import, so Unity receives
     (east,up,north). This is verified against an asymmetric bay window.
     """
-    colors = [(0.48, 0.48, 0.52, 1), (0.47, 0.27, 0.13, 1),
-              (0.54, 0.77, 0.86, 0.6), (0.31, 0.17, 0.08, 1)]
+    materials = materials or [
+        ("stone", (0.48, 0.48, 0.52, 1)), ("oak", (0.47, 0.27, 0.13, 1)),
+        ("glass", (0.54, 0.77, 0.86, 0.6)), ("dark_oak", (0.31, 0.17, 0.08, 1))]
     doc = {"asset": {"version": "2.0", "generator": "world_builder unity sample 0.1"},
            "scene": 0, "scenes": [{"nodes": list(range(len(pieces)))}],
            "nodes": [], "meshes": [], "materials": [], "accessors": [], "bufferViews": [], "buffers": []}
-    for i, color in enumerate(colors):
+    for i, (name, color) in enumerate(materials):
         pbr = {"baseColorFactor": color, "metallicFactor": 0, "roughnessFactor": 0.9}
-        mat = {"name": ("stone", "oak", "glass", "dark_oak")[i],
+        mat = {"name": name,
                "pbrMetallicRoughness": pbr, "doubleSided": False}
-        if i == 2:
+        if color[3] < 1:
             mat["alphaMode"] = "BLEND"
         doc["materials"].append(mat)
     binary = bytearray()

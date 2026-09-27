@@ -1,0 +1,6 @@
+editor.log: WorldBuilder open space imported: 34 pieces, revision revision_6e0278367b0b90212b809b
+editor.log: Exiting batchmode successfully now!
+editor.log: Exiting without the bug reporter. Application will terminate with return code 0
+editor-reopen.log: WorldBuilder saved open space verified: 34
+editor-reopen.log: Exiting batchmode successfully now!
+editor-reopen.log: Exiting without the bug reporter. Application will terminate with return code 0

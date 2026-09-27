@@ -1,0 +1,13 @@
+{
+    "unity_version": "6000.3.24f1",
+    "source_world_id": "world_fc3383ea0483264d",
+    "source_revision_id": "revision_6e0278367b0b90212b809b",
+    "source_id": "open_space_site_001",
+    "target_load": "pass",
+    "collision": "pass",
+    "expected_pieces": 34,
+    "mapped_pieces": 34,
+    "mesh_colliders": 34,
+    "scene_path": "Assets/WorldBuilderOpenSpace/OpenSpacePlaza.unity",
+    "error": ""
+}
