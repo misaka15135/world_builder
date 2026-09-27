@@ -8,7 +8,7 @@ from pathlib import Path
 
 from world_builder.planning import (SceneError, compile_brief, load_designs, load_setting_pack,
                                     plan_siting, plan_terrain, validate_design)
-from world_builder.planning.designer import design_building
+from world_builder.planning.designer import OpenSpaceDesign, design as design_for, validate_open_space
 
 
 def render_plan(design, width: int = 56) -> str:
@@ -71,9 +71,10 @@ def main(argv: list[str] | None = None) -> int:
             continue
         block = siting.block(site.block_id)
         entry_side = "south" if abs(block.centre[1] - site.y0) < abs(block.centre[1] - site.y1) else "north"
-        design = design_building(site, pack.entry(site.type), pack, template, entry_side=entry_side,
-                                 seed=args.seed)
-        report = validate_design(design, site, pack.entry(site.type))
+        design = design_for(site, pack.entry(site.type), pack, template, entry_side=entry_side,
+                            seed=args.seed)
+        report = (validate_open_space(design, site) if isinstance(design, OpenSpaceDesign)
+                  else validate_design(design, site, pack.entry(site.type)))
         if report["state"] != "pass":
             failures.append({"design": design.id, "type": design.type,
                              "checks": [check for check in report["checks"] if check["state"] != "pass"]})
@@ -89,21 +90,25 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps({"code": "design.not_found", "message": f"no {args.show} was sited"},
                              ensure_ascii=False))
             return 1
-        print(render_plan(match))
+        print(json.dumps(match.to_dict(), ensure_ascii=False, indent=1) if isinstance(match, OpenSpaceDesign)
+              else render_plan(match))
         print()
     by_type: dict[str, int] = {}
     for design, _ in designs:
         by_type[design.type] = by_type.get(design.type, 0) + 1
-    storeys = [len(design.storeys) for design, _ in designs]
+    storeys = [len(design.storeys) for design, _ in designs
+               if not isinstance(design, OpenSpaceDesign)]
     print(f"setting={pack.id} seed={args.seed} designs={len(designs)} skipped={len(skipped)} "
           f"failures={len(failures)}")
     print(f"  by type: {dict(sorted(by_type.items()))}")
     if storeys:
         print(f"  storeys: min {min(storeys)} max {max(storeys)} mean {round(sum(storeys)/len(storeys), 2)}")
         print(f"  heights: max {max(round(design.height_m, 1) for design, _ in designs)} m")
-        with_stair = sum(1 for design, _ in designs if design.stair)
+        with_stair = sum(1 for design, _ in designs if not isinstance(design, OpenSpaceDesign)
+                         and design.stair)
         print(f"  with stair: {with_stair}; furniture pieces: "
-              f"{sum(len(design.furniture) for design, _ in designs)}")
+              f"{sum(len(design.furniture) for design, _ in designs if not isinstance(design, OpenSpaceDesign))}; "
+              f"open spaces: {sum(1 for design, _ in designs if isinstance(design, OpenSpaceDesign))}")
     if skipped:
         print(f"  no design template yet for: {sorted(set(skipped))}")
     for failure in failures[:5]:

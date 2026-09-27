@@ -97,7 +97,9 @@ class DesignTemplate:
 
 
 OPEN_SPACE_PAVING = ("stone", "path", "gravel")
-OPEN_SPACE_FIXTURES = ("lamp", "bench", "tree", "planter")
+# `crate` and `stack` are the yard vocabulary: a freight yard stacks pallets, a
+# container yard stacks boxes, and both are surface plans rather than buildings.
+OPEN_SPACE_FIXTURES = ("lamp", "bench", "tree", "planter", "crate", "stack")
 
 
 @dataclass(frozen=True)
@@ -512,6 +514,17 @@ def design_open_space(site: Site, template: DesignTemplate, *, entry_side: str =
                 if len(fixtures) >= fixture_cap:
                     break
                 fixtures.append(_fixture(f"{site.id}_tree{row}_{col}", "tree", x, y, height))
+    # Yards stack their goods in rows: crates and containers follow the same
+    # grid the trees use, spaced by their own step, so a freight yard or a
+    # container yard reads as stacks rather than scattered objects.
+    for token, step in (("crate", 5.0), ("stack", 6.0)):
+        if not wants_fixtures or token not in template.fixtures:
+            continue
+        for row, y in enumerate(_even_spans(y0 + 4.0, y1 - 4.0, step)):
+            for col, x in enumerate(_even_spans(x0 + 4.0, x1 - 4.0, step)):
+                if len(fixtures) >= fixture_cap:
+                    break
+                fixtures.append(_fixture(f"{site.id}_{token}{row}_{col}", token, x, y, height))
     return OpenSpaceDesign(id=f"design_{site.id}", type=template.type, role=site.role,
                            design_state=site.design_state, site_id=site.id,
                            x0=round(x0, 3), y0=round(y0, 3), x1=round(x1, 3), y1=round(y1, 3),

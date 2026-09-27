@@ -516,7 +516,10 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
         paving_blocks = {"stone": "minecraft:stone_bricks", "path": "minecraft:smooth_stone",
                          "gravel": "minecraft:gray_concrete"}
         fixture_blocks = {"lamp": "minecraft:glass", "bench": "minecraft:oak_slab",
-                          "tree": "minecraft:oak_fence", "planter": "minecraft:grass_block"}
+                          "tree": "minecraft:oak_fence", "planter": "minecraft:grass_block",
+                          # Yards: a crate is a barrel, a stacked container is a
+                          # plain block that reads as a box.
+                          "crate": "minecraft:barrel", "stack": "minecraft:gray_concrete"}
         for record in entities:
             if record["kind"] != "open_space":
                 continue
