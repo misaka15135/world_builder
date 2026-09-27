@@ -97,6 +97,9 @@ class DesignTemplate:
     # `kind: "compound"` (work order 017 class 3): a castle is several volumes —
     # a keep, corner towers, a hall and a curtain wall — not one box.
     compound: tuple[tuple[str, float, str], ...] = ()
+    # Curtain-wall layout: a rectangle of runs, or a polygonal ring for the
+    # "circular wall around the castle" the brief asks for.
+    ring: str = "rectangle"
 
 
 OPEN_SPACE_PAVING = ("stone", "path", "gravel")
@@ -106,6 +109,7 @@ OPEN_SPACE_FIXTURES = ("lamp", "bench", "tree", "planter", "crate", "stack")
 # Compound volumes: role, height in metres, roof style. The layout rule derives
 # footprints from the site, so a template only states how tall each part is.
 COMPOUND_ROLES = ("wall", "tower", "keep", "hall")
+COMPOUND_RINGS = ("rectangle", "circle")
 
 
 @dataclass(frozen=True)
@@ -211,8 +215,11 @@ def parse_designs(payload: dict, setting: str) -> dict:
                                                path_token=raw["path"], fixtures=tuple(fixtures))
             continue
         if isinstance(raw, dict) and raw.get("kind") == "compound":
-            if set(raw) != {"kind", "parts"}:
-                raise SceneError(code, f"{type_name} must contain exactly kind and parts")
+            if set(raw) not in ({"kind", "parts"}, {"kind", "parts", "ring"}):
+                raise SceneError(code, f"{type_name} must contain kind, parts and an optional ring")
+            ring = raw.get("ring", "rectangle")
+            if ring not in COMPOUND_RINGS:
+                raise SceneError(code, f"{type_name}.ring must be one of {', '.join(COMPOUND_RINGS)}")
             parts = raw["parts"]
             if not isinstance(parts, list) or not parts:
                 raise SceneError(code, f"{type_name}.parts must list the volumes")
@@ -227,7 +234,7 @@ def parse_designs(payload: dict, setting: str) -> dict:
                     raise SceneError(code, f"{type_name}.{item['role']}.height_m must be 3—90 m")
                 declared.append((item["role"], float(item["height_m"]), item["roof"]))
             parsed[type_name] = DesignTemplate(type=type_name, kind="compound",
-                                               compound=tuple(declared))
+                                               compound=tuple(declared), ring=ring)
             continue
         keys = {"storeys", "storey_height_m", "roof", "roof_height_m", "setback_m", "stair",
                 "room_uses", "aspect"}
@@ -684,24 +691,57 @@ def design_compound(site: Site, pack: SettingPack, template: DesignTemplate, *,
             ("north", (x0, y1 - wall, x1, y1)),
             ("west", (x0, y0 + wall, x0 + wall, y1 - wall)),
             ("east", (x1 - wall, y0 + wall, x1, y1 - wall))]
-    for name, rect in runs:
-        if name != entry_side:
-            volumes.append(part("wall", rect))
-            continue
-        if name in {"north", "south"}:
-            centre = (x0 + x1) / 2
-            volumes.append(part("wall", (rect[0], rect[1], centre - gate / 2, rect[3])))
-            volumes.append(part("wall", (centre + gate / 2, rect[1], rect[2], rect[3])))
-        else:
-            centre = (y0 + y1) / 2
-            volumes.append(part("wall", (rect[0], rect[1], rect[2], centre - gate / 2)))
-            volumes.append(part("wall", (rect[0], centre + gate / 2, rect[2], rect[3])))
+    ring_circle = template.ring == "circle" and min(width, depth) >= 30.0
+    centre = ((x0 + x1) / 2, (y0 + y1) / 2)
+    radius = min(width, depth) / 2 - 1.5
+    if ring_circle:
+        # "圆形环绕的城墙": the wall follows a polygonal ring whose chords are
+        # short boxes, so the bailey reads as a round courtyard. The street side
+        # keeps its gate: the segments inside the approach arc are skipped.
+        segments = max(16, min(32, int(math.pi * radius / 2.0)))
+        approach = {"south": -math.pi / 2, "north": math.pi / 2,
+                    "west": math.pi, "east": 0.0}[entry_side]
+        for index in range(segments):
+            angle = 2 * math.pi * index / segments
+            midpoint = angle + math.pi / segments
+            gap = abs((midpoint - approach + math.pi) % (2 * math.pi) - math.pi)
+            if gap * radius <= gate / 2:
+                continue
+            ax, ay = centre[0] + radius * math.cos(angle), centre[1] + radius * math.sin(angle)
+            bx, by = (centre[0] + radius * math.cos(angle + 2 * math.pi / segments),
+                      centre[1] + radius * math.sin(angle + 2 * math.pi / segments))
+            volumes.append(part("wall", (min(ax, bx) - wall / 2, min(ay, by) - wall / 2,
+                                         max(ax, bx) + wall / 2, max(ay, by) + wall / 2)))
+    else:
+        for name, rect in runs:
+            if name != entry_side:
+                volumes.append(part("wall", rect))
+                continue
+            if name in {"north", "south"}:
+                centre = (x0 + x1) / 2
+                volumes.append(part("wall", (rect[0], rect[1], centre - gate / 2, rect[3])))
+                volumes.append(part("wall", (centre + gate / 2, rect[1], rect[2], rect[3])))
+            else:
+                centre = (y0 + y1) / 2
+                volumes.append(part("wall", (rect[0], rect[1], rect[2], centre - gate / 2)))
+                volumes.append(part("wall", (rect[0], centre + gate / 2, rect[2], rect[3])))
     # Corner towers, then the keep, then the hall along the far side from the gate.
     tower = max(6.0, min(10.0, min(width, depth) * 0.18))
     # Towers sit inside the curtain wall, so they touch its inner face rather
     # than overlapping the runs at the corners.
-    for cx, cy in ((x0 + wall, y0 + wall), (x1 - wall - tower, y0 + wall),
-                   (x0 + wall, y1 - wall - tower), (x1 - wall - tower, y1 - wall - tower)):
+    if ring_circle:
+        # Towers ride the ring at the four diagonal points, just inside it.
+        cx0, cy0 = centre
+        # Towers straddle the ring itself: their mass is part of the curtain, so
+        # they neither overlap the wall run (allowed) nor reach into the bailey
+        # where the keep stands.
+        centres = [(cx0 + radius * math.cos(math.pi / 4 + step * math.pi / 2) - tower / 2,
+                    cy0 + radius * math.sin(math.pi / 4 + step * math.pi / 2) - tower / 2)
+                   for step in range(4)]
+    else:
+        centres = [(x0 + wall, y0 + wall), (x1 - wall - tower, y0 + wall),
+                   (x0 + wall, y1 - wall - tower), (x1 - wall - tower, y1 - wall - tower)]
+    for cx, cy in centres:
         rect = (cx, cy, cx + tower, cy + tower)
         if not any(_overlaps(rect, (v["x0"], v["y0"], v["x1"], v["y1"])) for v in volumes
                    if v["role"] == "keep"):
@@ -714,11 +754,24 @@ def design_compound(site: Site, pack: SettingPack, template: DesignTemplate, *,
     volumes.append(part("keep", keep, 16.0))
     hall_depth = max(6.0, depth * 0.22)
     hall_width = max(8.0, width * 0.5)
-    hall_y = (y0 + wall + 1.0) if entry_side == "north" else (y1 - wall - 1.0 - hall_depth)
-    hall = ((x0 + x1) / 2 - hall_width / 2, hall_y,
-            (x0 + x1) / 2 + hall_width / 2, hall_y + hall_depth)
-    hall_rect = (max(hall[0], x0 + wall), max(hall[1], y0 + wall),
-                 min(hall[2], x1 - wall), min(hall[3], y1 - wall))
+    if ring_circle:
+        # A round bailey has no straight far wall, so the hall sits inside the
+        # ring opposite the gate and shrinks until its corners clear the wall.
+        direction = {"south": (0.0, 1.0), "north": (0.0, -1.0),
+                     "west": (1.0, 0.0), "east": (-1.0, 0.0)}[entry_side]
+        offset = keep_side / 2 + hall_depth / 2 + 1.5
+        limit = radius - wall - 1.0
+        while hall_width > 6.0 and math.hypot(hall_width / 2, offset + hall_depth / 2) > limit:
+            hall_width -= 1.0
+        hall_centre = (centre[0] + direction[0] * offset, centre[1] + direction[1] * offset)
+        hall_rect = (hall_centre[0] - hall_width / 2, hall_centre[1] - hall_depth / 2,
+                     hall_centre[0] + hall_width / 2, hall_centre[1] + hall_depth / 2)
+    else:
+        hall_y = (y0 + wall + 1.0) if entry_side == "north" else (y1 - wall - 1.0 - hall_depth)
+        hall = ((x0 + x1) / 2 - hall_width / 2, hall_y,
+                (x0 + x1) / 2 + hall_width / 2, hall_y + hall_depth)
+        hall_rect = (max(hall[0], x0 + wall), max(hall[1], y0 + wall),
+                     min(hall[2], x1 - wall), min(hall[3], y1 - wall))
     if hall_rect[2] - hall_rect[0] > 4.0 and hall_rect[3] - hall_rect[1] > 4.0:
         if not any(_overlaps(hall_rect, (v["x0"], v["y0"], v["x1"], v["y1"]))
                    for v in volumes if v["role"] == "keep"):
@@ -750,10 +803,15 @@ def validate_compound(design: CompoundDesign, site: Site) -> dict:
           f"{design.height_m} m against the envelope {site.max_height_m} m")
     check("design.parts", {"wall", "tower", "keep"} <= set(roles),
           f"a castle needs a wall, towers and a keep: {sorted(set(roles))}")
-    rects = [(v["x0"], v["y0"], v["x1"], v["y1"]) for v in design.volumes]
-    overlap = any(_overlaps(rects[i], rects[j])
-                  for i in range(len(rects)) for j in range(i + 1, len(rects)))
-    check("design.volumes_clear", not overlap, "no two volumes overlap")
+    # Wall segments are one continuous run — a polygonal ring's chords overlap at
+    # the corners by construction — so only the distinct structures (towers,
+    # keep, hall) have to stay clear of everything.
+    rects = [(v["role"], v["x0"], v["y0"], v["x1"], v["y1"]) for v in design.volumes]
+    overlap = any(_overlaps(rects[i][1:], rects[j][1:])
+                  for i in range(len(rects)) for j in range(i + 1, len(rects))
+                  if "wall" not in (rects[i][0], rects[j][0]))
+    check("design.volumes_clear", not overlap,
+          "no two structures overlap (wall segments may overlap in their run)")
     return {"design_id": design.id, "type": design.type, "kind": "compound",
             "state": "pass" if all(item["state"] == "pass" for item in results) else "fail",
             "checks": results}

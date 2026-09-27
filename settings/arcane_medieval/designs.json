@@ -11,6 +11,6 @@
     "town_hall": {"storeys": [2, 3], "storey_height_m": 3.2, "roof": "gable", "roof_height_m": 2.0, "setback_m": 1.0, "stair": "straight", "aspect": 1.2, "room_uses": [["council_chamber", "records_room"], ["office", "records_room"], ["office", "store"]]},
     "guild_hall": {"storeys": [2, 3], "storey_height_m": 3.4, "roof": "gable", "roof_height_m": 2.0, "setback_m": 1.0, "stair": "straight", "aspect": 1.3, "room_uses": [["task_board", "taproom"], ["dormitory", "store"], ["dormitory", "office"]]},
     "plaza": {"kind": "open_space", "paving": "stone", "path": "path", "fixtures": ["lamp", "bench", "tree"]},
-    "castle": {"kind": "compound", "parts": [{"role": "wall", "height_m": 8.0, "roof": "flat"}, {"role": "tower", "height_m": 22.0, "roof": "spire"}, {"role": "keep", "height_m": 18.0, "roof": "gable"}, {"role": "hall", "height_m": 10.0, "roof": "gable"}]}
+    "castle": {"kind": "compound", "ring": "circle", "parts": [{"role": "wall", "height_m": 8.0, "roof": "flat"}, {"role": "tower", "height_m": 22.0, "roof": "spire"}, {"role": "keep", "height_m": 18.0, "roof": "gable"}, {"role": "hall", "height_m": 10.0, "roof": "gable"}]}
   }
 }
