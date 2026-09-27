@@ -357,17 +357,25 @@ def design_building(site: Site, entry, pack: SettingPack, template: DesignTempla
         # The reservation has to sit strictly inside the shell: a void that
         # reaches the outer face is not a stairwell, and the target adapter
         # rejects it (a 2-storey scene building was rejected exactly so).
+        # The void has to hold the *whole flight* as well, not just its clear
+        # width: the adapter checks the stair box against the reservation, and a
+        # 6.85 m deep harbour building had the flight overhang it by 1.15 m
+        # (2026-09-27). Front margin, run, landing and rear margin all live
+        # inside the outline, so the margins give way first and the run follows.
         depth = ground.y1 - ground.y0
-        run = max(2.0, min(8.0 if width >= 14 else 4.0, depth - 6.0))
+        # 3 + 2 + 3 = 8 m is what the roomier front margin needs; below that the
+        # margins shrink to 1 m so the reservation still fits with a 2 m run.
+        front, landing = (3.0, 2.0) if depth >= 8.0 else (1.0, 1.0)
+        run = max(2.0, min(8.0 if width >= 14 else 4.0, depth - front - landing - 1.0))
         void_x0 = ground.x1 - stair_void - 1.0
         void_x1 = ground.x1 - 1.0
-        void_y0 = ground.y0 + 3.0
-        void_y1 = min(void_y0 + run + 2.0, ground.y1 - 1.0)
+        void_y0 = ground.y0 + front
+        void_y1 = void_y0 + run + landing
         stair = {"representation": "straight_stair", "side": "east",
                  "x0": round(void_x0, 3), "y0": round(void_y0, 3),
                  "width_m": 2.0, "run_m": run, "rise_m": storey_height, "steps": 20,
-                 "landing_m": 2.0, "void": [round(void_x0, 3), round(void_x1, 3),
-                                            round(void_y0, 3), round(void_y1, 3)]}
+                 "landing_m": landing, "void": [round(void_x0, 3), round(void_x1, 3),
+                                                round(void_y0, 3), round(void_y1, 3)]}
     return BuildingDesign(id=f"design_{site.id}", type=entry.type, role=entry.role,
                            design_state=entry.design_state, site_id=site.id,
                            # Rounded to the same millimetre grid as the storey
@@ -427,6 +435,16 @@ def validate_design(design: BuildingDesign, site: Site, entry) -> dict:
             check("design.stair_void", all(not (room.x0 < void[1] and room.x1 > void[0]
                                                 and room.y0 < void[3] and room.y1 > void[2]) for room in rooms),
                   f"storey {storey.index}: rooms clear the stair reservation")
+            # The target adapter checks the flight against its reservation, so
+            # the source has to hold that invariant itself: a 6.85 m deep
+            # harbour building shipped a flight that overhung the void by
+            # 1.15 m and only the export caught it (2026-09-27).
+            run_end = design.stair["y0"] + design.stair["run_m"] + design.stair["landing_m"]
+            check("design.stair_fits_void",
+                  void[0] - 1e-6 <= design.stair["x0"]
+                  and design.stair["x0"] + design.stair["width_m"] <= void[1] + 1e-6
+                  and void[2] - 1e-6 <= design.stair["y0"] and run_end <= void[3] + 1e-6,
+                  f"storey {storey.index}: the flight and its landing fit the reservation")
     if len(design.storeys) >= 2:
         check("design.stair", design.stair is not None
               and design.stair["rise_m"] > 0 and design.stair["width_m"] >= 1.2,

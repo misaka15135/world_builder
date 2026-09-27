@@ -23,6 +23,8 @@ artifacts/benchmark-city-v3-batch/*/
 artifacts/benchmark-city-*.log
 artifacts/benchmark-city-*/benchmark*.log
 artifacts/benchmark-city-*.err.log
+# Scene batch: keep the report, drop the per-case exports it produces.
+artifacts/scene-benchmark-*/*/
 artifacts/city-smoke-v1*/
 artifacts/city-smoke-v2/
 artifacts/city-smoke-v3*/
