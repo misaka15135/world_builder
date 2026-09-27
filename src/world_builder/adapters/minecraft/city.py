@@ -17,7 +17,7 @@ from pathlib import Path
 
 from world_builder.wir.validator import validate_package
 
-ADAPTER_VERSION = "0.1.0-city.5"
+ADAPTER_VERSION = "0.1.0-city.6"
 PROFILE_ID = "profile_minecraft_city_12111"
 TARGET_VERSION = "1.21.11+worldedit-7.3.19+schem-v3"
 CHUNK_SIZE_M = 128
@@ -326,6 +326,16 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool,
     door_clear_low = math.ceil(z0 + floor)
     door_blocks_tall = max(2, int(entry["height_m"]))
     lintel_low = max(door_top, door_clear_low + door_blocks_tall)
+    # A storey squeezed below "slab + two walkable blocks" cannot hold that
+    # opening above the slab (a 2.92 m apartment storey in the modern scene hit
+    # this on 2026-09-27). Instead of refusing the shell, the doorway is taken
+    # down to the ground: the ground slab is split around the doorway below and
+    # the opening runs from the ground up, so the threshold is the 0.2—0.3 m
+    # step from the terrain onto the slab and the way in stays walkable.
+    carved = lintel_low > z0 + storey_h
+    if carved:
+        door_clear_low = math.floor(z0 + floor)
+        lintel_low = max(door_top, door_clear_low + door_blocks_tall)
     # The ground storey carries the entrance, so the door and its lintel have to
     # fit inside that storey rather than somewhere up the facade. A door that
     # already reaches the storey line simply has no lintel to place.
@@ -334,7 +344,19 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool,
         raise CityExportError("target.building_entry", building["id"])
     name = building["id"]
     shell, plank = _shell_materials(style)
-    parts = [_box(name, ground[0], ground[1], ground[2], ground[3], z0, z0 + floor, plank)]
+    if carved:
+        if horizontal:
+            parts = [_box(f"{name}_floor_west", ground[0], door_a0, ground[2], ground[3],
+                          z0, z0 + floor, plank),
+                     _box(f"{name}_floor_east", door_a1, ground[1], ground[2], ground[3],
+                          z0, z0 + floor, plank)]
+        else:
+            parts = [_box(f"{name}_floor_south", ground[0], ground[1], ground[2], door_a0,
+                          z0, z0 + floor, plank),
+                     _box(f"{name}_floor_north", ground[0], ground[1], door_a1, ground[3],
+                          z0, z0 + floor, plank)]
+    else:
+        parts = [_box(name, ground[0], ground[1], ground[2], ground[3], z0, z0 + floor, plank)]
     for level in range(1, storey_count):
         top = z0 + level * g["storey_height_m"]
         if top + floor > z1 - roof:

@@ -36,7 +36,8 @@ ENTRY_HEIGHT_M = 2.4
 DOOR_SPAN_MIN_M = 3.31
 # 2.8 m stays the squeeze floor: a 2.4 m door plus the floor slab needs 2.7 m,
 # and the test suite pins "squeeze the storeys, do not drop them" for a tight
-# envelope. A storey that cannot carry the door is caught by the span rule.
+# envelope. A storey too short for the quantised opening is handled on the
+# target side by carving the doorway through the ground slab (adapter 0.1.0-city.6).
 MIN_STOREY_M = 2.8
 # Furniture per room use: a small vocabulary with sizes in metres. Stage E
 # places it; stage F and the target adapters only read it.

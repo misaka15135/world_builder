@@ -103,7 +103,7 @@
     {
       "type": "inn",
       "role": "commerce",
-      "required": false,
+      "required": true,
       "count_range": [1, 6],
       "footprint_m2_range": [200, 600],
       "height_m_range": [6, 16],
@@ -129,8 +129,8 @@
     {
       "type": "office_block",
       "role": "commerce",
-      "required": false,
-      "count_range": [0, 6],
+      "required": true,
+      "count_range": [1, 6],
       "footprint_m2_range": [400, 1200],
       "height_m_range": [12, 30],
       "needs": ["road"],

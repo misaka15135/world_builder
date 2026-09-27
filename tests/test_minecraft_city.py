@@ -335,3 +335,34 @@ def test_roof_style_drives_the_silhouette() -> None:
     assert spire[-1]["x0"] > spire[0]["x0"] and spire[-1]["z0"] > spire[0]["z0"], "a spire narrows on both axes"
     assert spire[-1]["y1"] == 20 and spire[0]["y0"] == 17, "steps stack from the eaves to the ridge"
     assert spire[0]["x0"] < 0 and spire[0]["z1"] > 0, "the lowest step oversails the footprint"
+
+
+def test_short_ground_storey_carves_the_doorway_through_the_floor() -> None:
+    """A squeezed storey still gets a walkable entrance (adapter 0.1.0-city.6).
+
+    The ground slab occupies block 0, so a 2.92 m storey cannot hold a two-block
+    opening above it: the lintel would land at 3.0 m. Rather than reject the
+    shell, the adapter cuts the doorway through the slab so the opening starts
+    at the ground and the threshold is the 0.3 m step onto the slab. A modern
+    apartment storey hit exactly this on 2026-09-27.
+    """
+    building = {
+        "id": "building_short", "kind": "building", "parent_id": "parcel_x",
+        "attributes": {"storeys": 1, "interior_state": "deferred"},
+        "bounds": {"min": [0.0, 0.0, 2.0], "max": [16.0, 18.0, 5.32]},
+        "geometry": {"representation": "parametric_building", "storey_height_m": 2.92,
+                     "wall_thickness_m": 0.2, "floor_thickness_m": 0.3, "roof_height_m": 0.4,
+                     "stair_void_local_m": {"min": [0, 0, 0], "max": [0, 0, 0]},
+                     "entry": {"side": "south", "offset_m": 6.0, "width_m": 2.0, "height_m": 2.4},
+                     "roof_style": "flat"},
+    }
+    parts = {part["source_id"]: part for part in _building_shell(building, {}, with_interior=False)}
+    assert {"building_short_floor_west", "building_short_floor_east"} <= set(parts), \
+        "the ground slab is split around the doorway"
+    assert parts["building_short_floor_west"]["x1"] == 6.0
+    assert parts["building_short_floor_east"]["x0"] == 8.0
+    # 2.0 m base + 0.3 m slab + the 2.4 m door: the lintel starts above the door
+    # and still stops under the 2.92 m storey line at 4.92 m.
+    lintel = parts["building_short_south_door_lintel"]
+    assert lintel["y0"] == pytest.approx(4.7)
+    assert lintel["y1"] <= 2.0 + 2.92 + 1e-6
