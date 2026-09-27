@@ -1,0 +1,407 @@
+[Licensing::Module] Trying to connect to existing licensing client channel...
+Built from '6000.3/staging' branch; Version is '6000.3.24f1 (4e7b9b5b6244) revision 5143451'; Using compiler version '194234433'; Build Type 'Release'
+[Licensing::IpcConnector] Channel LicenseClient-misak doesn't exist
+OS: 'Windows 11  (10.0.26200) Professional' Language: 'zh' Physical Memory: 65154 MB
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
+System  architecture: x64
+Process architecture: x64
+Date: 2026-09-27T14:18:16Z
+[Licensing::Module] Successfully launched the LicensingClient (PId: 44888)
+
+COMMAND LINE ARGUMENTS:
+C:\Program Files\Unity\Hub\Editor\6000.3.24f1\Editor\Unity.exe
+-batchmode
+-nographics
+-quit
+-projectPath
+D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project
+-executeMethod
+WorldBuilderStreetHouseBuilder.Build
+-logFile
+D:\TongJi_Bache\RIKA\world_builder\artifacts\building-style-study\v1\unity-build.log
+Successfully changed project path to: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project
+D:/TongJi_Bache/RIKA/world_builder/adapters/unity/sample_project
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-gfx=262144"
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-preload-manager=33554432"
+    "memorysetup-remapper-allocator-initial-capacity=32768"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=33554432"
+    "memorysetup-bucket-allocator-block-count=8"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=33554432"
+    "memorysetup-profiler-bucket-allocator-block-count=8"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=16777216"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+Player connection [49120]  Target information:
+
+Player connection [49120]  * "[IP] 192.168.157.1 [Port] 55504 [Flags] 2 [Guid] 1158396248 [EditorId] 1158396248 [Version] 1048832 [Id] WindowsEditor(7,MISAKA) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [49120]  * "[IP] 192.168.109.1 [Port] 55504 [Flags] 2 [Guid] 1158396248 [EditorId] 1158396248 [Version] 1048832 [Id] WindowsEditor(7,MISAKA) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [49120]  * "[IP] 192.168.255.74 [Port] 55504 [Flags] 2 [Guid] 1158396248 [EditorId] 1158396248 [Version] 1048832 [Id] WindowsEditor(7,MISAKA) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [49120]  * "[IP] 172.31.208.1 [Port] 55504 [Flags] 2 [Guid] 1158396248 [EditorId] 1158396248 [Version] 1048832 [Id] WindowsEditor(7,MISAKA) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [49120]  * "[IP] 169.254.83.107 [Port] 55504 [Flags] 2 [Guid] 1158396248 [EditorId] 1158396248 [Version] 1048832 [Id] WindowsEditor(7,MISAKA) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [49120]  * "[IP] 100.81.109.64 [Port] 55504 [Flags] 2 [Guid] 1158396248 [EditorId] 1158396248 [Version] 1048832 [Id] WindowsEditor(7,MISAKA) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [49120]  * "[IP] 192.168.137.1 [Port] 55504 [Flags] 2 [Guid] 1158396248 [EditorId] 1158396248 [Version] 1048832 [Id] WindowsEditor(7,MISAKA) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [49120] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [49120] Host joined alternative multi-casting on [225.0.0.222:34997]...
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-misak" at "2026-09-27T14:18:16.5871626Z"
+[Licensing::Client] Code 10 while verifying Licensing Client signature (process Id: 44888, path: "C:/Program Files/Unity/Hub/Editor/6000.3.24f1/Editor/Data/Resources/Licensing/Client/Unity.Licensing.Client.exe")
+[Licensing::Module] LicensingClient has failed validation; ignoring
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.18.3+d7ffd15
+  Session Id:              941386e61f58490fbbbdff18945de1c3
+  Correlation Id:          cc60e484014e3e3ff6b84ce47b3e8fec
+  External correlation Id: 2962884771170639027
+  Machine Id:              lgwBODsYWfDOcGc98+mljIfLU40=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-misak" (connect: 0.57s, validation: 0.22s, handshake: 0.05s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-misak-notifications" at "2026-09-27T14:18:16.8507689Z"
+[Licensing::Module] Connected to LicensingClient (PId: 44888, launch time: 0.01, total connection time: 0.83s)
+[Licensing::Module] Error: Access token is unavailable; failed to update
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] License group:
+  Id: 18968508429920-UnityPersXXXX
+  Product: Unity Personal
+  Type: Assigned
+  Expiration: Unlimited
+[Licensing::Client] Successfully updated license, isAsync: True, time: 0.01
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] Licensing Background thread has ended after 0.89s
+[Package Manager] Connected to IPC stream "Upm-46912" after 0.4 seconds.
+[Licensing::Client] Successfully resolved entitlement details
+Library Redirect Path: Library/
+[Physics::Module] Selected backend.
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+Refreshing native plugins compatible for Editor in 2.44 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Initialize engine version: 6000.3.24f1 (4e7b9b5b6244)
+[Subsystems] Discovering subsystems at path C:/Program Files/Unity/Hub/Editor/6000.3.24f1/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path D:/TongJi_Bache/RIKA/world_builder/adapters/unity/sample_project/Assets
+Forcing GfxDevice: Null
+GfxDevice: creating device client; kGfxThreadingModeNonThreaded
+NullGfxDevice:
+    Version:  NULL 1.0 [1.0]
+    Renderer: Null Device
+    Vendor:   Unity Technologies
+Initialize mono
+Mono path[0] = 'C:/Program Files/Unity/Hub/Editor/6000.3.24f1/Editor/Data/Managed'
+Mono path[1] = 'C:/Program Files/Unity/Hub/Editor/6000.3.24f1/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
+Mono config path = 'C:/Program Files/Unity/Hub/Editor/6000.3.24f1/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56912
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+ImportWorker Server TCP listen port: 0
+AcceleratorClientConnectionCallback - disconnected - :0
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.3.24f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Registered in 0.003286 seconds.
+- Loaded All Assemblies, in  0.485 seconds
+Native extension for WindowsStandalone target not found
+Package Manager log level set to [2]
+ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.374 seconds
+Domain Reload Profiling: 855ms
+	BeginReloadAssembly (215ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (0ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (31ms)
+	RebuildCommonClasses (42ms)
+	RebuildNativeTypeToScriptingClass (13ms)
+	initialDomainReloadingComplete (56ms)
+	LoadAllAssembliesAndSetupDomain (154ms)
+		LoadAssemblies (180ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (152ms)
+			TypeCache.Refresh (150ms)
+				TypeCache.ScanAssembly (136ms)
+			BuildScriptInfoCaches (0ms)
+			ResolveRequiredComponents (0ms)
+	FinalizeReload (374ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (338ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (44ms)
+			SetLoadedEditorAssemblies (3ms)
+			BeforeProcessingInitializeOnLoad (71ms)
+			ProcessInitializeOnLoadAttributes (127ms)
+			ProcessInitializeOnLoadMethodAttributes (93ms)
+			AfterProcessingInitializeOnLoad (0ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (0ms)
+[Licensing::Client] Successfully resolved entitlement details
+Application.AssetDatabase Initial Refresh Start
+[Package Manager] Restoring resolved packages state from cache
+[Licensing::Client] Successfully resolved entitlement details
+[Package Manager] Registered 66 packages:
+  Packages from [https://packages.unity.com]:
+    com.unity.ai.navigation@2.0.14 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.ai.navigation@134dd6a3b97b)
+    com.unity.analytics@3.8.2 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.analytics@c9d14a6bdec6)
+    com.unity.cloud.gltfast@6.20.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.cloud.gltfast@11ddc2436f97)
+    com.unity.collab-proxy@2.13.6 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.collab-proxy@4628d2ba6ea4)
+    com.unity.ide.rider@3.0.40 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.ide.rider@e4950c6d131b)
+    com.unity.ide.visualstudio@2.0.26 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.ide.visualstudio@a99d56dec63f)
+    com.unity.inputsystem@1.20.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.inputsystem@7a4e1a2a8194)
+    com.unity.purchasing@4.15.1 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.purchasing@265595791a69)
+    com.unity.timeline@1.8.13 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.timeline@3a22918286f5)
+    com.unity.visualscripting@1.9.12 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.visualscripting@4edfcc09512f)
+    com.unity.xr.legacyinputhelpers@2.1.13 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.xr.legacyinputhelpers@9535ff2c27ac)
+    com.unity.services.core@1.18.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.services.core@3464cb68d709)
+    com.unity.burst@1.8.30 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.burst@2f3d916873ea)
+    com.unity.collections@2.6.8 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.collections@84e8eb3fc12e)
+    com.unity.mathematics@1.3.3 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.mathematics@19a9377c4ffa)
+    com.unity.services.analytics@6.3.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.services.analytics@cde4e6cf92f9)
+    com.unity.searcher@4.9.5 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.searcher@a463122f2c00)
+    com.unity.nuget.newtonsoft-json@3.2.2 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.nuget.newtonsoft-json@4dfd81071c64)
+    com.unity.nuget.mono-cecil@1.11.6 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.nuget.mono-cecil@ecb9724e46ff)
+    com.unity.test-framework.performance@3.5.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.test-framework.performance@8b56083ec0f0)
+  Built-in packages:
+    com.unity.2d.sprite@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.2d.sprite@5b922524bd83)
+    com.unity.2d.tilemap@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.2d.tilemap@f666889fd587)
+    com.unity.multiplayer.center@1.0.1 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.multiplayer.center@f01f4ba8d00a)
+    com.unity.render-pipelines.universal@17.3.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.render-pipelines.universal@a8b4b2fc3560)
+    com.unity.test-framework@1.6.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.test-framework@bd7f943e9647)
+    com.unity.ugui@2.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.ugui@b996e7548785)
+    com.unity.modules.accessibility@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.accessibility)
+    com.unity.modules.adaptiveperformance@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.adaptiveperformance)
+    com.unity.modules.ai@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.ai)
+    com.unity.modules.androidjni@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.androidjni)
+    com.unity.modules.animation@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.animation)
+    com.unity.modules.assetbundle@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.assetbundle)
+    com.unity.modules.audio@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.audio)
+    com.unity.modules.cloth@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.cloth)
+    com.unity.modules.director@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.director)
+    com.unity.modules.imageconversion@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.imageconversion)
+    com.unity.modules.imgui@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.imgui)
+    com.unity.modules.jsonserialize@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.jsonserialize)
+    com.unity.modules.particlesystem@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.particlesystem)
+    com.unity.modules.physics@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.physics)
+    com.unity.modules.physics2d@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.physics2d)
+    com.unity.modules.screencapture@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.screencapture)
+    com.unity.modules.terrain@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.terrain)
+    com.unity.modules.terrainphysics@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.terrainphysics)
+    com.unity.modules.tilemap@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.tilemap)
+    com.unity.modules.ui@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.ui)
+    com.unity.modules.uielements@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.uielements)
+    com.unity.modules.umbra@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.umbra)
+    com.unity.modules.unityanalytics@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.unityanalytics)
+    com.unity.modules.unitywebrequest@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.unitywebrequest)
+    com.unity.modules.unitywebrequestassetbundle@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.unitywebrequestassetbundle)
+    com.unity.modules.unitywebrequestaudio@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.unitywebrequestaudio)
+    com.unity.modules.unitywebrequesttexture@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.unitywebrequesttexture)
+    com.unity.modules.unitywebrequestwww@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.unitywebrequestwww)
+    com.unity.modules.vectorgraphics@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.vectorgraphics)
+    com.unity.modules.vehicles@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.vehicles)
+    com.unity.modules.video@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.video)
+    com.unity.modules.vr@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.vr)
+    com.unity.modules.wind@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.wind)
+    com.unity.modules.xr@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.xr)
+    com.unity.modules.subsystems@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.subsystems)
+    com.unity.modules.hierarchycore@1.0.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.modules.hierarchycore)
+    com.unity.ext.nunit@2.0.5 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.ext.nunit@d8c07649098d)
+    com.unity.render-pipelines.core@17.3.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.render-pipelines.core@0bb36005e9ba)
+    com.unity.shadergraph@17.3.0 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.shadergraph@30c2e3926b79)
+    com.unity.render-pipelines.universal-config@17.0.3 (location: D:\TongJi_Bache\RIKA\world_builder\adapters\unity\sample_project\Library\PackageCache\com.unity.render-pipelines.universal-config@8dc1aab4af1d)
+[Package Manager] com.unity.purchasing@4.15.1 is deprecated: Unity IAP 4 is unsupported as of June 8, 2026. IAP 5 is the supported version going forward.
+[Subsystems] No new subsystems found in resolved package list.
+[Package Manager] Done registering packages in 0.04 seconds
+[ScriptCompilation] Requested script compilation because: Assetdatabase observed changes in script compilation related files
+Starting: C:\Program Files\Unity\Hub\Editor\6000.3.24f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1900b0aE.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssemblies
+WorkingDir: D:/TongJi_Bache/RIKA/world_builder/adapters/unity/sample_project
+DisplayProgressbar: Compiling Scripts
+ExitCode: 4 Duration: 0s228ms
+Rebuilding DAG because FileSignature timestamp changed: Library/Bee/1900b0aE-inputdata.json
+*** Tundra requires additional run (0.18 seconds), 0 items updated, 32 evaluated
+Starting: C:\Program Files\Unity\Hub\Editor\6000.3.24f1\Editor\Data\netcorerun\netcorerun.exe "C:\Program Files\Unity\Hub\Editor\6000.3.24f1\Editor\Data\Tools\BuildPipeline\ScriptCompilationBuildProgram.exe" "Library/Bee/1900b0aE.dag.json" "Library/Bee/1900b0aE-inputdata.json" "Library\Bee\buildprogram0.traceevents"
+WorkingDir: D:/TongJi_Bache/RIKA/world_builder/adapters/unity/sample_project
+ExitCode: 0 Duration: 1s74ms
+Starting: C:\Program Files\Unity\Hub\Editor\6000.3.24f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1900b0aE.dag" --continue-on-failure --dagfilejson="Library\Bee\1900b0aE.dag.json" --profile="Library/Bee/backend2.traceevents" ScriptAssemblies
+WorkingDir: D:/TongJi_Bache/RIKA/world_builder/adapters/unity/sample_project
+ExitCode: 0 Duration: 2s580ms
+Finished compiling graph: 1381 nodes, 27466 flattened edges (22566 ToBuild, 228 ToUse), maximum node priority 1442
+[ 634/1377  0s] WriteText Library/Bee/artifacts/1900b0aE.dag/Assembly-CSharp-Editor.rsp
+[1051/1377  0s] ILPP-Configuration Library/ilpp-configuration.nevergeneratedoutput
+[1373/1377  1s] Csc Library/Bee/artifacts/1900b0aE.dag/Assembly-CSharp-Editor.dll (+2 others)
+[1374/1377  0s] ILPostProcess Library/Bee/artifacts/1900b0aE.dag/post-processed/Assembly-CSharp-Editor.dll (+pdb)
+Processing assembly Library/Bee/artifacts/1900b0aE.dag/Assembly-CSharp-Editor.dll, with 137 defines and 362 references
+
+processors: Unity.Jobs.CodeGen.JobsILPostProcessor, zzzUnity.Burst.CodeGen.BurstILPostProcessor
+
+running Unity.Jobs.CodeGen.JobsILPostProcessor
+
+running zzzUnity.Burst.CodeGen.BurstILPostProcessor
+[1375/1377  0s] CopyFiles Library/ScriptAssemblies/Assembly-CSharp-Editor.pdb
+[1376/1377  0s] CopyFiles Library/ScriptAssemblies/Assembly-CSharp-Editor.dll
+*** Tundra build success (2.55 seconds), 6 items updated, 1377 evaluated
+AssetDatabase: script compilation time: 4.571264s
+Begin MonoManager ReloadAssembly
+- Loaded All Assemblies, in  1.263 seconds
+Start importing Assets/WorldBuilderStreetHouse using Guid(523fc3f1e5bd92a4a8c0bc4af61fc7e2) (DefaultImporter) -> (artifact id: '64d12c2586f4704c9b3e2d61a3b79429') in 0.0167993 seconds
+Start importing Assets/WorldBuilderStreetHouse/Editor using Guid(e7a4100bb4d610c48bba49ee598efe37) (DefaultImporter) -> (artifact id: '7ed64c497c40afec1e0af8e2b938c20c') in 0.0020313 seconds
+Refreshing native plugins compatible for Editor in 16.62 ms, found 4 plugins.
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 6.63 ms, found 4 plugins.
+ScheduleIndexationOnStartup MainProcess:True IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  3.922 seconds
+Domain Reload Profiling: 5175ms
+	BeginReloadAssembly (314ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (26ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (154ms)
+	RebuildCommonClasses (34ms)
+	RebuildNativeTypeToScriptingClass (13ms)
+	initialDomainReloadingComplete (34ms)
+	LoadAllAssembliesAndSetupDomain (857ms)
+		LoadAssemblies (640ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (313ms)
+			TypeCache.Refresh (205ms)
+				TypeCache.ScanAssembly (191ms)
+			BuildScriptInfoCaches (92ms)
+			ResolveRequiredComponents (12ms)
+	FinalizeReload (3922ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (3517ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (18ms)
+			SetLoadedEditorAssemblies (5ms)
+			BeforeProcessingInitializeOnLoad (188ms)
+			ProcessInitializeOnLoadAttributes (3001ms)
+			ProcessInitializeOnLoadMethodAttributes (295ms)
+			AfterProcessingInitializeOnLoad (10ms)
+			EditorAssembliesLoaded (1ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (21ms)
+Start importing Assets/WorldBuilderStreetHouse/street_house.glb using Guid(0419f724135663d43947137331a1cff1) (ScriptedImporter)Launched and connected shader compiler UnityShaderCompiler.exe after 0.04 seconds
+ -> (artifact id: '113927436eb0d3c6e158e2c24755deb6') in 0.2717023 seconds
+Start importing Assets/WorldBuilderStreetHouse/manifest.json using Guid(c9fa1f02336c75148b9aa62cd6a821de) (TextScriptImporter) -> (artifact id: 'ed0803d377ff09984f3c1406de13501d') in 0.0046186 seconds
+Refreshing native plugins compatible for Editor in 6.36 ms, found 4 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=37f62384d4d1c564c9e5303587a6bd0a): Total: 11.692 seconds - Initiated by InitialRefreshV2(ForceSynchronousImport)
+	Summary:
+		Imports: total=4 (actual=4, local cache=0, cache server=0)
+		Asset DB Process Time: managed=3 ms, native=5035 ms
+		Asset DB Callback time: managed=677 ms, native=50 ms
+		Scripting: domain reloads=1, domain reload time=1263 ms, compile time=4573 ms, other=90 ms
+		Project Asset Count: scripts=1702, non-scripts=2783
+		Asset File Changes: new=5, changed=5, moved=0, deleted=0
+		Scan Filter Count: 0
+	InvokeCustomDependenciesCallbacks: 0.002ms
+	InvokePackagesCallback: 42.194ms
+	ApplyChangesToAssetFolders: 0.882ms
+	Scan: 254.904ms
+	OnSourceAssetsModified: 0.855ms
+	CategorizeAssetsWithTransientArtifact: 117.096ms
+	ProcessAssetsWithTransientArtifactChanges: 84.492ms
+	CategorizeAssets: 61.488ms
+	ImportOutOfDateAssets: 4257.505ms (-617.996ms without children)
+		ImportManagerImport: 300.596ms (4.485ms without children)
+			ImportInProcess: 296.055ms
+			UpdateCategorizedAssets: 0.057ms
+		CompileScripts: 4572.856ms
+		ReloadNativeAssets: 0.028ms
+		UnloadImportedAssets: 0.824ms
+		ReloadImportedAssets: 0.003ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.612ms
+		InitializingProgressBar: 0.007ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.001ms
+		OnDemandSchedulerStart: 0.575ms
+	PostProcessAllAssets: 678.282ms
+	Hotreload: 8.854ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.003ms
+	UnloadStreamsBegin: 1.458ms
+	PersistCurrentRevisions: 0.206ms
+	UnloadStreamsEnd: 0.001ms
+	GenerateScriptTypeHashes: 2.605ms
+	Untracked: 6183.958ms
+
+Application.AssetDatabase Initial Refresh End
+Scanning for USB devices : 2.798ms
+Initializing Unity extensions:
+[MODES] ModeService[none].Initialize
+[MODES] ModeService[none].LoadModes
+[MODES] Loading mode Default (0) for mode-current-id-com.unity.template.urp-blank
+Unloading 64 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 8097 unused Assets / (11.6 MB). Loaded Objects now: 8851.
+Memory consumption went from 244.9 MB to 233.3 MB.
+Total: 18.505900 ms (FindLiveObjects: 0.560000 ms CreateObjectMapping: 0.338500 ms MarkObjects: 11.152900 ms  DeleteObjects: 6.453000 ms)
+
+Asset Pipeline Refresh (id=300a3c4adfceaa54c8ad497c99667e23): Total: 0.070 seconds - Initiated by RefreshV2(NoUpdateAssetOptions)
+Unloading 1 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 459 unused Assets / (68.5 KB). Loaded Objects now: 8851.
+Memory consumption went from 198.7 MB to 198.6 MB.
+Total: 12.035400 ms (FindLiveObjects: 0.294900 ms CreateObjectMapping: 0.144600 ms MarkObjects: 11.289400 ms  DeleteObjects: 0.305000 ms)
+
+Start importing Assets/WorldBuilderStreetHouse/StreetHouse.unity using Guid(cca6b79356894e84493f90f98e705edc) (DefaultImporter) -> (artifact id: '0d1a83c57b244252bceead826183ee9c') in 0.0013102 seconds
+Refreshing native plugins compatible for Editor in 7.30 ms, found 4 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=eb05f10c3c5d6a840ba4373829bc05cc): Total: 0.065 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+WorldBuilder street house imported: 91
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+WorldBuilderStreetHouseBuilder:Build () (at Assets/WorldBuilderStreetHouse/Editor/WorldBuilderStreetHouseBuilder.cs:87)
+
+(Filename: Assets/WorldBuilderStreetHouse/Editor/WorldBuilderStreetHouseBuilder.cs Line: 87)
+
+Batchmode quit successfully invoked - shutting down!
+[Physics::Module] Cleanup current backend.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input System polling thread exited.
+Input System module state changed to: Shutdown.
+[Licensing::IpcConnector] LicenseClient-misak-notifications channel disconnected successfully.
+[Licensing::IpcConnector] LicenseClient-misak channel disconnected successfully.
+AcceleratorClientConnectionCallback - disconnected - :0
+Cleanup mono
+Exiting batchmode successfully now!
+Exiting without the bug reporter. Application will terminate with return code 0

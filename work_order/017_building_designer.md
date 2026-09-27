@@ -2,9 +2,9 @@
 
 - 状态：in_progress
 - 创建日期：2026-09-26
-- 执行者：待认领
+- 执行者：root
 - 依赖：015（目录与设计条目）、016（site 与包络）
-- 修改范围：未来的 `world_builder/planning/designer.py`、`settings/<name>/designs/*.json`、`skills/building-*/SKILL.md`、`tests/test_building_design.py`、`docs/contracts/building-design-v0.1.md`
+- 修改范围：`src/world_builder/planning/designer.py`、`settings/<name>/designs.json`、`skills/building-design/`、`tests/test_building_skill.py`、`docs/contracts/building-design-v0.1.md`；本轮限于建筑 skill、其参考资料及工单记录
 
 ## 目标与范围
 
@@ -28,6 +28,8 @@
 | `furniture[]` | 家具：用途、位置、尺寸、所属房间 |
 
 ## 工作项
+
+- [x] ~~面向古今中外多风格、多类型建筑，检索可核对的建造指南，扩充建筑 skill 的选型、构图、施工步骤与来源边界（2026-09-27 用户追加；本轮范围仅指导资料，不宣称生成器已实现）。~~
 
 - [x] ~~定义 `BuildingDesign` Schema；所有尺寸显式单位，且必须在 site 包络内。~~
 - [x] ~~把 006 已验证的形状规则搬进来作为**参考实现**：多层壳、楼板开口、隔墙与门洞、直跑楼梯、逐层退台、屋顶原型、出檐、楼层腰线。~~
@@ -76,6 +78,9 @@
 | 2026-09-27 | root | class 3 首项：**多体量组合 `kind: compound`**，城堡落地 | 模板第三种类：`{"kind": "compound", "parts": [{role, height_m, roof}, …]}`，角色词汇 `{wall, tower, keep, hall}`。新增 `design_compound()`：幕墙（临街边留 4 m 门洞，因此是两段）、四座角塔（贴幕墙内face，不与墙体重叠）、中央主楼、靠里侧的大厅；每件都按包络**等比缩放**（模板给绝对高度，包络放不下时整体缩，塔楼 18 m→主楼 14.7 m→大厅 8.2 m→幕墙 6.5 m 保持剪影，不会拍成一样高）；包络太窄时宁可少一件（大厅放不下就不放），校验 `validate_compound()` 管"在场地内、不超包络、有墙塔主楼、两两不重叠"。装配器产出 `compound_<site>` 实体（`representation: compound`，parts 走局部坐标），`validate_scene` 新增 `scene.compounds`；Minecraft 适配器把每件落成**中空壳体 + 屋顶**（墙/塔/主楼用 `smooth_stone`、大厅用 `oak_planks`，屋顶按 flat/gable/spire），因此城堡是空心的、内部天井留白而不是实心大方块。`settings/arcane_medieval/designs.json` 加 `castle` 模板。**实测 seed 4**：魔法城邦 **74 个设计（72 建筑 + 1 广场 + 1 城堡）**，`no template yet` **首次为空**；导出 36 分块 / 2,719 盒 / 665,060 方块 / `validation: pass`，其中城堡 **61 个盒**（5 段幕墙 × 5 + 4 角塔 × 6 + 主楼 6 + 大厅 6）。布局图 `artifacts/scene-open-space/castle-layout-20260927.png`。**未做**：城堡没有室内、没有门楼与坡道，护城河依赖 014 的地形开挖 | class 3 其余（圆柱 silo、船体、干船坞）与城堡室内 |
 | 2026-09-27 | root | 城堡幕墙改为**圆形环绕**（对应用户点名的"圆形环绕的城墙"） | 模板加可选键 `"ring": "rectangle" | "circle"`：圆形时幕墙沿一条**多边形圆环**铺（弦长按半径取 16—32 段，段盒用弦的外接盒，半径 = 短边一半 − 1.5 m），临街方向的弧段按门宽跳过留出城门；四座塔**跨在墙环上**（塔身与墙体重叠是允许的——它们本来就是同一条墙线），大厅因为"圆环没有直的远墙"改为放在环内、正对城门的内侧，并按半径收缩到四角不撞墙。`validate_compound()` 相应放宽："墙段之间可以相接/重叠（同一道墙线），其它结构两两必须留空"。**实测 seed 4**：城堡 38 件（32 段墙 + 4 塔 + 主楼 + 大厅）、场地内/不超包络/无结构重叠全部 pass；导出 36 分块 / 2,853 盒 / 665,884 方块 / `validation: pass`。布局图 `artifacts/scene-open-space/castle-ring-20260927.png`。矩形环仍是默认值（其它背景/紧凑场地可用） | 城堡室内与门楼；class 3 其余（圆柱 silo、船体、干船坞） |
 | 2026-09-27 | root | 用户评审 E 阶段：建筑既没美感也没设计感、功能也不全 → 落 skill + 记缺陷 | 用户原话：E 阶段"完全是自己想怎么构造就这么构造，造出来既没有美感，又没有设计感（所有建筑都是四方建筑，没有特性），功能性又缺失（**只有一层楼梯，不能到达其他楼层**）"。本轮① 新增 [skills/building-design/SKILL.md](../skills/building-design/SKILL.md)：十条规则（体量 2—4 个且高差 ≥2 m、开间:进深 1.0—1.6、层高 ≥3.0 m、立面深度靠腰线/出檐≥0.6 m/勒脚/角柱、屋顶原型与出檐、材质 3—4 种靠明度区分、入口 2.0×2.4 m 与门垛 ≥1 m、**每层都要有可达楼梯**、每层 ≥2 间用途房间+通道、每 6—8 m 一扇窗、与环境的关系）+ 机器校验清单 + 能力边界（只有轴对齐盒/退台/三种屋顶，圆柱与自由曲面还没有）+ 来源与访问状态（Wiki《Tutorial:Construction》可读、直连被 Cloudflare 403、`Building tips` 等页面不存在、DuckDuckGo 返回人机验证按规则不破解）+ 明确标注哪几条是**设计判断**而非文献结论。② 新增 `tests/test_building_skill.py` 钉住 skill 存在、九类主题齐全、关键数字（3.0/0.6/2.0/2.4/1.0/0.3 m）与能力边界/来源都在。**未做（按用户评审拆成下一批）**：a) 竖向交通只到二层——设计师每层都要出楼梯、适配器要渲染多部梯并逐层复核井与落点；b) 体量与立面深度还没进模板（现在同类型建筑仍是同一个盒子，只靠尺寸与退台分异）；c) 采光/窗户、门廊台阶、与环境的高度协调都还没有对应字段 | a) 多部楼梯与逐层可达；b) 给模板加体量组合与立面线脚字段；c) 用 skill 的十条规则逐条补设计与校验 |
+| 2026-09-27 | root | 按用户追加要求联网扩充建筑 skill | 查阅 Minecraft 官方建造教程/访谈，以及 UNESCO、Historic England、English Heritage、NPS 关于东亚、欧洲、西亚/北非、南亚、西非、美洲及近现代建筑的案例资料（链接与访问日期逐卡记录）。将 skill 改为索引 + 三份参考卡：13 个历史/地方卡、6 个近现代/工业卡、10 类功能空间与七步建造流程；把旧版“一律 2—4 体量/≥2 房/≤4 材质”等经验规则降为有条件的设计选项，入口尺寸与门垛仍单独标为当前适配器约束。`skill-creator` 首次快检因 Windows 默认 GBK 解码 UTF-8 失败，设置 `PYTHONUTF8=1` 后为 `Skill is valid!`；`pytest tests/test_building_skill.py -q` 为 1 passed；最终项目文档检查 87 Markdown/118 本地链接/6 JSON/21 工单、零错误。新卡是研究与设计转译，**尚未进入生成器，也没有目标平台样件** | 从一栋具体建筑开始按风格卡做设计、导出、同视角观感与逐层通行验证；优先解决多层楼梯和窗/立面词汇 |
+
+| 2026-09-27 | root | 按风格卡完成首个木构街屋双目标样件 | [021](021_style_building_cross_target_sample.md) 手工 20×18×12 m 店住楼已在 Unity 和 Minecraft 分别加载、截图、连续走通一层入口与楼梯至二层。证明该参考卡能指导一个具体样件；尚未证明 E 设计器可以自动选样式、生成相同细节。目标侧仍见 Minecraft 室内缺固定照明、屋顶退台和木框缺细部 | 将楼梯井/入口净空、照明采光与立面屋顶词汇提入设计契约和模板，选第二种跨文化/现代风格再做对照 |
 
 ## 交接说明
 

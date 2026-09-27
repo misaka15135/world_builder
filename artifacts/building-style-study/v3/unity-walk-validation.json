@@ -1,0 +1,72 @@
+{
+    "unity_version": "6000.3.24f1",
+    "source_id": "building_street_house_001",
+    "geometry_sha256": "sha256:eacb568de7a346d99c0d2a502e2906351138f5ba8ac910f34e4c2a09181d48ec",
+    "status": "failed",
+    "reason": "stalled_at_street",
+    "grounded_frames": 846,
+    "stair_supported_frames": 0,
+    "side_collision_frames": 842,
+    "duration_seconds": 7.21389102935791,
+    "final_position": {
+        "x": 8.5,
+        "y": 1.940000057220459,
+        "z": 0.7100000381469727
+    },
+    "checkpoints": [
+        {
+            "name": "",
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "elapsed_seconds": 0.0
+        },
+        {
+            "name": "",
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "elapsed_seconds": 0.0
+        },
+        {
+            "name": "",
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "elapsed_seconds": 0.0
+        },
+        {
+            "name": "",
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "elapsed_seconds": 0.0
+        },
+        {
+            "name": "",
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "elapsed_seconds": 0.0
+        },
+        {
+            "name": "",
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "elapsed_seconds": 0.0
+        }
+    ]
+}

@@ -1,0 +1,73 @@
+{
+    "unity_version": "6000.3.24f1",
+    "source_id": "building_street_house_001",
+    "geometry_sha256": "sha256:feaace6e5af87e8d1d54a1265a2ff04e4dd9306193fa1b33afa6b3a6338627a6",
+    "status": "pass",
+    "reason": "continuous_entry_stair_upper_room_route",
+    "grounded_frames": 1161,
+    "stair_supported_frames": 326,
+    "side_collision_frames": 0,
+    "first_side_collider": "street_house_part_024 bounds=Center: (13.50, 1.25, 6.50), Extents: (0.50, 0.25, 0.50)",
+    "duration_seconds": 9.875489234924317,
+    "final_position": {
+        "x": 10.68075180053711,
+        "y": 5.940000057220459,
+        "z": 8.60844898223877
+    },
+    "checkpoints": [
+        {
+            "name": "street",
+            "position": {
+                "x": 8.5,
+                "y": 1.9399999380111695,
+                "z": 1.2927182912826539
+            },
+            "elapsed_seconds": 0.4255533814430237
+        },
+        {
+            "name": "south_entry",
+            "position": {
+                "x": 8.5,
+                "y": 1.9399998188018799,
+                "z": 4.285218238830566
+            },
+            "elapsed_seconds": 2.008885383605957
+        },
+        {
+            "name": "shop",
+            "position": {
+                "x": 8.5,
+                "y": 1.940000057220459,
+                "z": 6.280218124389648
+            },
+            "elapsed_seconds": 3.067232847213745
+        },
+        {
+            "name": "stair_foot",
+            "position": {
+                "x": 13.287068367004395,
+                "y": 1.9399998188018799,
+                "z": 5.533226490020752
+            },
+            "elapsed_seconds": 5.625553607940674
+        },
+        {
+            "name": "upper_landing",
+            "position": {
+                "x": 13.49119758605957,
+                "y": 5.940000057220459,
+                "z": 10.294686317443848
+            },
+            "elapsed_seconds": 8.142182350158692
+        },
+        {
+            "name": "upper_room",
+            "position": {
+                "x": 10.68075180053711,
+                "y": 5.940000057220459,
+                "z": 8.60844898223877
+            },
+            "elapsed_seconds": 9.875489234924317
+        }
+    ]
+}

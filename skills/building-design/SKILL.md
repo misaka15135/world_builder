@@ -1,49 +1,39 @@
 ---
 name: building-design
-description: How to design a single building that reads as a real one in Minecraft - massing, proportion, facade depth, roof and palette, entrance, vertical circulation and interiors - expressed in this project's design schema. Use when stage E designs, extends or reviews a building (templates in settings/*/designs.json, plans in planning/designer.py, or judging a rendered result).
+description: Research, design, or review a stage E building for the world builder. Choose a historical or contemporary architectural precedent, turn its spatial logic into a buildable Minecraft and WIR concept, and check appearance and access without imposing one style on every type.
 metadata:
-  short-description: Design rules for stage E buildings
+  short-description: Evidence-based building design for stage E
 ---
 
-# 单栋建筑的设计规则（阶段 E）
+# 阶段 E：建筑设计
 
-用途：E 阶段产出或审视一栋建筑时，用它判断"这栋好不好、哪里不对、下一步改什么"。规则尽量给**可核对的数字**，并指出在 `settings/<id>/designs.json` 与 `planning/designer.py` 里怎么表达。
+适用：设计或评审 `settings/*/designs.json` 模板、`planning/designer.py` 的单栋方案、导出后的建筑观感。**先选功能、时代、地区、气候和场地，再选风格。** 不把“城堡”“中式”“现代”当成单一外观包，也不把视觉参考当成可施工的真实工程图。
 
-## 1. 产物必须包含什么
+## 按需要阅读
 
-外形（各层轮廓与退台）→ 层数与层高 → 每层房间与用途 → **每层可达的竖向交通** → 入口（门宽/门高/门垛/朝向）→ 屋顶原型 → 材质 → 家具。任何一项缺失都算没做完，而不是"以后再说"。
+- 历史及地方建筑：读 [历史与地方风格卡](references/historic-and-vernacular.md)。覆盖中国院落、日本合掌造和城堡、欧洲木构/哥特/乔治时代建筑、西南亚与北非院落、印度寺庙、西非土构、普韦布洛土坯建筑。
+- 近现代与基础设施：读 [近现代与工业风格卡](references/modern-and-industrial.md)。覆盖包豪斯、现代主义住宅、装饰艺术、高层、矿业厂区、铁路车站及当代 Minecraft 建造法。
+- 具体功能与验收：读 [建筑类型与建造流程](references/programmes-and-workflow.md)。覆盖住宅、商铺、旅店、学校、医院、市政建筑、宗教建筑、城堡、车站、工坊/工厂等。
 
-## 2. 十条规则
+每张风格卡包含**可观察特征 → 可操作建造步骤 → 当前项目能力边界 → 一手来源**。来源描述的是特定地点或案例；把它转成项目模板属于**设计推断**。不能把某一案例扩展成整个文化的统一样式。
 
-1. **体量（massing）**：一栋建筑由 2—4 个体量组成，而不是一个盒子——主体 + 至少一个附属体量（塔楼、侧翼、门廊、外楼梯、烟囱）。附属体量的高度与进深要和主体**不同**（相差 ≥ 2 m 或 ≥ 20%），否则读起来还是同一个盒子。表达方式：`design_compound` 的多体量，或主体上的退台 + 屋顶原型组合。
-2. **比例**：开间 : 进深取 1.0—1.6；层高 ≥ 3.0 m（目标适配器把门洞量化成 2 格，地坪占第 0 行，首层低于 3.0 m 会被拒收）；门窗高度 ≤ 层高的 60%，否则墙面读起来像玻璃棚。
-3. **立面要有深度**：外墙至少两处凹凸或线脚。当前适配器可用的手段：**腰线**（每层一道 1 格的木/玻璃带）、**出檐 ≥ 0.6 m**、**勒脚**（首层用更暗更粗糙的材质）、**角柱**（转角 1 格竖线）、门窗内凹 0.3 m。全部都是盒体，做不出的凹凸就不要写在文档里当已实现能力。
-4. **屋顶**：古代风格双坡 1.2—1.6 m 或尖塔 2.4—3.0 m，现代平顶 0.4—0.5 m 加女儿墙；**檐口必须出挑**（≥0.6 m），否则檐口线消失、立面变成一张纸；屋顶高度不计入层高，但要计入包络。
-5. **材质 3—4 种**：主材（墙体）+ 辅材（勒脚/角柱）+ 装饰（腰线/窗框）+ 屋顶。区分靠**明度**而不是色相；同一栋楼不要超过 4 种，超过就读成杂乱。
-6. **入口**：门宽 2.0 m、高 2.4 m、门垛 ≥ 1.0 m、离墙角 ≥ 0.3 m（目标适配器硬规则，短墙面必须改挂最长的一面）；入口要有台阶或门廊，不能平贴在地面上。
-7. **竖向交通**：**每一层都要有可达的楼梯**，楼梯落点与楼板开口对齐，井不出外墙。当前 `design_open_space`/`design_building` 只产一部到达二层的楼梯——这是必须补的缺陷，不是可接受现状。
-8. **室内**：每层 ≥ 2 间有用途的房间 + 一条通道；家具放在房间里且不挡门、不占通道；房间用途与建筑功能一致（旅店要有客房、公会要有任务板）。
-9. **采光**：沿外墙每 6—8 m 一扇窗；室内拐角留光源位；不要靠"整面墙都是玻璃"解决采光。
-10. **与环境的关系**：贴街的一侧做门面（入口、窗、腰线都在这一侧），背面可以简化；地块窄就做长条 + 山墙，宽就做围合院落；建筑高度与相邻建筑相差 ≤ 1 层，避免突兀。
+## 设计顺序
 
-## 3. 校验清单
+1. **定一句话主旨**：例如“沿街店面＋后院工坊的欧洲木构建筑”或“围绕庭院组织、朝内采光的北非住宅”；同时注明参考建筑、时代和来源。
+2. **定场地与动线**：标注道路、入口、地形、水、邻栋、公共/私密边界。先画一层平面、庭院及竖向交通，再决定立面。大厅、厂房、车站等可用一个主要大空间；不要机械要求“每层两间房”。
+3. **定可识别轮廓**：从街道高度和俯瞰两个距离看，屋顶线、塔楼/门楼、前后院或大跨屋架应能表达所选类型。体量个数由功能和先例决定；单体量也可优秀，例如合掌造的巨大坡屋顶、包豪斯的互锁方体。
+4. **定立面节奏**：先定结构开间、入口和实墙/开口的重复关系，再补基座、檐口、窗框、扶壁、阳台等细节。装饰必须服务所选风格，避免把所有元素堆在一面墙上。
+5. **定材质与光**：先试主材、结构材、屋面及一处强调色；近看检查纹理，远看检查明暗和主次。材质数量随建筑规模而变，不设“最多四种”的硬上限。[Minecraft 官方建造建议](https://www.minecraft.net/en-us/article/make-your-houses-better)强调立面深度、近色纹理和景观；[官方建造者访谈](https://www.minecraft.net/en-us/article/raeyzeus-top-5-building-tips)也区分小塔与大型建筑的调色规模。
+6. **定可走通的空间**：画出从外部道路经门、通道、楼梯/坡道到每层主要用途空间的路径；房间用途、家具、采光与入口关系一致。多层楼的每一层都要有路径，不得只做通往二层的一段楼梯。
+7. **做两次审视**：灰模先看比例、屋顶和负空间；落材后看街景和俯瞰，并实测入口与逐层通行。允许回到平面改动，不靠加随机装饰补救错误体量。
 
-设计产出后逐条核对（括号内是本项目已有的机器校验规则）：
+## 项目约束与证据口径
 
-- 轮廓与体积不出包络、不超高（`design.outline`、`design.volumes_inside`、`design.height`）
-- 入口在合法墙面上（`target.building_entry`，源端对应 `design.entry`）
-- 楼梯井在壳体内部、梯段装得下（`design.stair_void`、`design.stair_fits_void`、`target.interior_void`）
-- 房间在楼层内且不重叠（`design.rooms_inside`、`design.partition`）
-- 家具在房间里（`design.furniture`）
-- 多体量互不重叠、角色齐备（`design.volumes_clear`、`design.parts`）
+- 尺寸均以 **m** 表示；在 Minecraft 投影中会栅格化为方块。`BuildingDesign` 的轮廓、楼层、入口、房间、楼梯井、屋顶和场地包络是实际契约；设计时遵守 `docs/contracts/building-design-v0.1.md`。入口约 2.0 × 2.4 m、门垛约 1.0 m、墙角余量 0.3 m 是当前适配器的**具体目标约束**，不是古今建筑通用美学比例。3.0 m 层高、0.6 m 出檐、6—8 m 窗距可作为试画起点，不能跨风格强制；适配器已有低于 3.0 m 首层的门槛开洞策略。
+- 当前可核对的源端规则包括 `design.outline`、`design.height`、`design.rooms_inside`、`design.stair_void`、`design.stair_fits_void`、`design.furniture`、`design.volumes_clear` 和 `target.building_entry`。这些只证明几何/放置条件，不证明建筑“好看”或真实可达。
+- 现行几何以**轴对齐盒体、逐层退台、flat/gable/spire 屋顶和 compound 多体量**为主。城堡圆环由多边形墙段近似；没有通用圆柱、穹顶、真实曲面、拱、连续坡道、复杂悬挑、窗户或上述风格卡中的专用构件生成器。风格卡中的这些步骤是**待实现设计目标**，不能在工单里记作已实现。
+- 在能力不够时保留建筑的**平面组织与轮廓特征**，并登记所需新几何词汇；不能只换方块颜色就宣称做出了某种地域风格。不得把历史建筑的示意做法用于真实施工或规范审查。
 
-## 4. 当前能力边界（不要写成已实现）
+## 交付一栋设计时记录
 
-适配器只支持**轴对齐盒体 + 逐层退台 + flat/gable/spire 三种屋顶**。圆柱（储罐）、自由曲面（船体）、下沉开挖（干船坞）、悬挑与斜撑都**还没有**。所以现在要"好看"，只能靠：体量组合、立面深度（腰线/出檐/勒脚/角柱）、材质对比、屋顶原型、以及与环境的关系。任何依赖新几何词汇的想法，先写进工单再实现。
-
-## 5. 来源
-
-- Minecraft Wiki《Tutorial:Construction》：<https://minecraft.wiki/w/Tutorial:Construction>，2026-09-27 通过阅读代理取到（直连被 Cloudflare 403）。**适用边界**：该页面向生存建造（地洞、简易小屋、围墙、城堡），材质与结构词汇可用，但**不提供美学比例规则**。
-- 未能取得的来源（如实记录）：`Tutorial:Building tips`、`Tutorial:Roofing`、`Tutorial:Decoration`、`Tutorial:Landscaping` 在 minecraft.wiki 上不存在或取不到；DuckDuckGo 搜索返回人机验证，**按规则不去破解**，因此没有引用社区教程。
-- 项目内证据（已实测）：出檐 0.6 m 与逐层腰线（适配器 `0.1.0-city.4`）、三种屋顶原型、入口面与门垛硬规则（`target.building_entry`，2026-09-27 两次实测中断）、楼梯井与梯段校验（`design.stair_fits_void`）、道路"外接盒折叠"缺陷（工单 020）。见 `work_order/006`、`009`、`017`、`020`。
-- **设计判断**（不属于上述来源）：第 2 节里"开间:进深 1.0—1.6""每 6—8 m 一扇窗""高度差 ≤ 1 层""材质 ≤ 4 种"这几条是依据项目经验给出的经验值，尚未逐条做对照实验。
+`类型 / 时代与地区 / 先例链接 / 主旨 / 平面与逐层动线 / 轮廓与屋顶 / 街面节奏 / 材质与场地关系 / 已实现字段 / 缺失能力 / 灰模及目标截图 / 验证结果`。将**来源事实、设计判断、实际目标测试**分开写；感官评价可用同视角对照和明确的“轮廓/节奏/比例/细部”理由支持，不能填成自动校验通过。

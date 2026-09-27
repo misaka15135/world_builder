@@ -1,0 +1,39 @@
+{
+  "version": "street-house-study-0.5",
+  "source_id": "building_street_house_001",
+  "geometry_sha256": "sha256:feaace6e5af87e8d1d54a1265a2ff04e4dd9306193fa1b33afa6b3a6338627a6",
+  "target": "Minecraft Java 1.21.11, Fabric Loader 0.19.5, WorldEdit 7.3.19",
+  "world": "WB Verify Flat",
+  "paste_origin_block_xyz": [3000, -61, 3000],
+  "clipboard": "street_house_study_v5.schem",
+  "expected_non_air_blocks": 1571,
+  "reported_blocks_affected": 1571,
+  "load": "pass",
+  "paste_count": "pass",
+  "walk": {
+    "status": "pass",
+    "mode": "survival",
+    "input": "English keyboard movement keys; no teleport or jump between starting point and upper room",
+    "positions_source": "Minecraft F3 overlay, visually read at route checkpoints",
+    "position_unit": "blocks",
+    "checkpoints_xyz": [
+      {"name": "street_start", "xyz": [3008.5, -60.0, 3019.5]},
+      {"name": "inside_south_entry", "xyz": [3008.5, -60.0, 3013.683]},
+      {"name": "shop", "xyz": [3008.5, -60.0, 3012.422]},
+      {"name": "stair_foot", "xyz": [3013.761, -60.0, 3012.422]},
+      {"name": "on_stairs", "xyz": [3013.761, -58.5, 3010.875]},
+      {"name": "upper_landing", "xyz": [3013.761, -56.0, 3007.933]},
+      {"name": "upper_room", "xyz": [3011.024, -56.0, 3009.824]}
+    ]
+  },
+  "evidence": {
+    "paste_log": "minecraft-paste-evidence.txt",
+    "oblique_exterior": "minecraft-oblique-view.png",
+    "upper_room_with_f3": "minecraft-upper-room-checkpoint.png",
+    "upper_room_with_night_vision": "minecraft-upper-room-night-vision.png"
+  },
+  "visual_limits": [
+    "No built-in interior luminaires; the upper room is dark without night vision.",
+    "The roof, timber frame and furnishings remain block-scale approximations."
+  ]
+}

@@ -1,0 +1,4 @@
+[22:53:06] [WorldEdit Task Executor - 0/INFO]: <player> loaded <game_dir>\config\worldedit\schematics\street_house_study_v5.schem
+[22:53:06] [Render thread/INFO]: [System] [CHAT] street_house_study_v5 loaded. Paste it with //paste
+[22:53:43] [Render thread/INFO]: [System] [CHAT] The clipboard has been pasted at (3000, -61, 3000)
+[22:53:43] [Render thread/INFO]: [System] [CHAT] 1571 blocks affected

@@ -1,0 +1,13 @@
+{
+    "unity_version": "6000.3.24f1",
+    "version": "street-house-study-0.3",
+    "source_id": "building_street_house_001",
+    "geometry_sha256": "sha256:eacb568de7a346d99c0d2a502e2906351138f5ba8ac910f34e4c2a09181d48ec",
+    "expected_pieces": 143,
+    "mapped_pieces": 143,
+    "mesh_colliders": 143,
+    "scene_path": "Assets/WorldBuilderStreetHouse/StreetHouse.unity",
+    "target_load": "pass",
+    "collision": "pass",
+    "error": ""
+}

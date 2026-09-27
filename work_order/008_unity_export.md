@@ -133,6 +133,8 @@
 | 2026-09-25 | root | 独立复测室内 Agent 运动 | `v2-interior-agent-validation-repeat.json` 为 `status=pass`、`PathComplete`、9.29 秒、总位移 18.61 m、东门 Link 3.02 m、梯级支撑 9.88 m，终点仍为 `storey_000_1`、0 帧离开 NavMesh，进程退出码 0。两次空间距离指标一致；无图形模式单帧最大位移不同，不据此推断运行性能 | 固定两份结构化证据、场景与说明，文档检查后本地提交 |
 | 2026-09-25 | root | 核对整理后的独立 Agent 场景 | 清理新 Unity 场景序列化的尾部空格后，另一无图形 Play Mode 进程再次 `status=pass`、`PathComplete`、梯级支撑约 9.83 m、退出码 0；此次临时复核 JSON/日志在系统临时目录，不覆盖两份交付证据。`python tools/check_project_docs.py` 检查 34 Markdown/40 链接/5 JSON/13 工单零错误。阶段外的 `v3-agent-walk-validation.json` 未提交变化仍保留 | 暂存区检查后只提交本阶段文件，008 继续 in_progress |
 
+| 2026-09-27 | root | 风格建筑样件 v5 Unity 目标落地 | 独立木构街屋导入与另进程重开均为 143/143 构件来源 ID、MeshCollider 通过；`artifacts/building-style-study/v5/unity-walk-validation.json` 的 1.8 m CharacterController 连续走通门、商铺、楼梯、二层房间，6/6 检查点、326 帧楼梯支撑、0 帧侧向阻挡；斜向目标截图已取得。v3/v4 的入口受阻失败证据保留在各自目录，修复和任务边界见 021；此结果仅限手工街屋样件 | 继续通用 E 设计器与场景适配器的多层/风格能力 |
+
 ## 交接说明
 
 开始前登记负责人及实际文件范围。完成每个有实际结果的动作后更新记录；通过验收后用 `- [x] ~~工作描述~~` 划掉完成事项，并由协调者同步索引和总规划。
