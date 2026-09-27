@@ -137,6 +137,32 @@ def test_design_fits_a_tight_envelope() -> None:
     assert len(design.storeys) == 2, "the storeys are squeezed, not dropped, when the catalogue wants two"
 
 
+def test_open_space_design_paves_and_furnishes_without_storeys() -> None:
+    """Stage E class 2 (work order 017): a plaza is a ground plan, not a box.
+
+    The design carries paving and a path, lays fixtures by rule inside the
+    footprint, and validates against the height the catalogue gives plazas
+    (0-1 m) — no storeys, rooms or stair are invented for it.
+    """
+    from world_builder.planning import Site
+    from world_builder.planning.designer import DesignTemplate, design_open_space, validate_open_space
+    site = Site(id="site_plaza", type="plaza", role="civic", design_state="planned", block_id="block_000",
+                domain_id="castle", x0=10.0, y0=20.0, x1=52.0, y1=48.0, max_height_m=1.0, max_storeys=1,
+                needs=(), adjacency=())
+    template = DesignTemplate(type="plaza", kind="open_space", paving="stone", path_token="path",
+                              fixtures=("lamp", "bench", "tree"))
+    design = design_open_space(site, template, entry_side="south")
+    report = validate_open_space(design, site)
+    assert report["state"] == "pass", [check for check in report["checks"] if check["state"] != "pass"]
+    assert design.height_m <= 1.0
+    assert design.path[1] == site.y0 and design.path[3] == site.y1, "the path crosses from the street side"
+    assert design.fixtures, "a plaza with no fixtures is a car park"
+    assert all(site.x0 <= item["x0"] and item["x1"] <= site.x1
+               and site.y0 <= item["y0"] and item["y1"] <= site.y1 for item in design.fixtures)
+    assert design_open_space(site, template, entry_side="south").to_dict() == design.to_dict(), \
+        "the same input gives the same ground plan"
+
+
 def test_broken_design_templates_are_rejected(tmp_path: Path) -> None:
     source = DEFAULT_SETTINGS_ROOT / "arcane_medieval" / "designs.json"
     good = json.loads(source.read_text(encoding="utf-8"))

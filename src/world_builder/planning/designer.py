@@ -80,14 +80,61 @@ ROOM_USES = tuple(FURNITURE)
 @dataclass(frozen=True)
 class DesignTemplate:
     type: str
-    storeys: tuple[int, int]
-    storey_height_m: float
-    roof: str
-    roof_height_m: float
-    setback_m: float
-    stair: str
-    room_uses: tuple[tuple[str, ...], ...]
-    aspect: float
+    kind: str = "building"
+    storeys: tuple[int, int] | None = None
+    storey_height_m: float | None = None
+    roof: str | None = None
+    roof_height_m: float | None = None
+    setback_m: float | None = None
+    stair: str | None = None
+    room_uses: tuple[tuple[str, ...], ...] | None = None
+    aspect: float | None = None
+    # `kind: "open_space"` (work order 017 class 2): a plaza or a park is a
+    # surface, not a building — paving, one path across it, and fixed furniture.
+    paving: str | None = None
+    path_token: str | None = None
+    fixtures: tuple[str, ...] = ()
+
+
+OPEN_SPACE_PAVING = ("stone", "path", "gravel")
+OPEN_SPACE_FIXTURES = ("lamp", "bench", "tree", "planter")
+
+
+@dataclass(frozen=True)
+class OpenSpaceDesign:
+    """A ground plan: paving, a path and fixtures, with no storeys at all."""
+
+    id: str
+    type: str
+    role: str
+    design_state: str
+    site_id: str
+    x0: float
+    y0: float
+    x1: float
+    y1: float
+    entry_side: str
+    paving: str
+    path_token: str
+    path: tuple[float, float, float, float]
+    fixtures: tuple[dict, ...]
+    height_m: float = 1.0
+
+    @property
+    def area_m2(self) -> float:
+        return (self.x1 - self.x0) * (self.y1 - self.y0)
+
+    def to_dict(self) -> dict:
+        return {
+            "design_version": DESIGN_VERSION,
+            "id": self.id, "type": self.type, "role": self.role, "design_state": self.design_state,
+            "site_id": self.site_id, "kind": "open_space",
+            "outline": [round(self.x0, 3), round(self.y0, 3), round(self.x1, 3), round(self.y1, 3)],
+            "height_m": round(self.height_m, 3), "paving": self.paving,
+            "path": {"token": self.path_token,
+                     "rect": [round(value, 3) for value in self.path]},
+            "fixtures": [dict(item) for item in self.fixtures],
+        }
 
 
 def parse_designs(payload: dict, setting: str) -> dict:
@@ -103,6 +150,20 @@ def parse_designs(payload: dict, setting: str) -> dict:
         raise SceneError(code, "templates must be a nonempty mapping")
     parsed = {}
     for type_name, raw in templates.items():
+        if isinstance(raw, dict) and raw.get("kind") == "open_space":
+            keys = {"kind", "paving", "path", "fixtures"}
+            if set(raw) != keys:
+                raise SceneError(code, f"{type_name} must contain exactly {', '.join(sorted(keys))}")
+            if raw["paving"] not in OPEN_SPACE_PAVING or raw["path"] not in OPEN_SPACE_PAVING:
+                raise SceneError(code, f"{type_name}: paving and path must be one of "
+                                       f"{', '.join(OPEN_SPACE_PAVING)}")
+            fixtures = raw["fixtures"]
+            if not isinstance(fixtures, list) or any(item not in OPEN_SPACE_FIXTURES for item in fixtures):
+                raise SceneError(code, f"{type_name}.fixtures must list "
+                                       f"{', '.join(OPEN_SPACE_FIXTURES)}")
+            parsed[type_name] = DesignTemplate(type=type_name, kind="open_space", paving=raw["paving"],
+                                               path_token=raw["path"], fixtures=tuple(fixtures))
+            continue
         keys = {"storeys", "storey_height_m", "roof", "roof_height_m", "setback_m", "stair",
                 "room_uses", "aspect"}
         if not isinstance(raw, dict) or set(raw) != keys:
@@ -390,6 +451,106 @@ def design_building(site: Site, entry, pack: SettingPack, template: DesignTempla
                            entry_width_m=ENTRY_DOOR_M,
                            entry_height_m=ENTRY_HEIGHT_M, stair=stair, furniture=tuple(furniture),
                            materials=dict(pack.materials), height_m=round(height, 3))
+
+
+def _even_spans(low: float, high: float, step: float) -> list[float]:
+    """Evenly spaced fixture positions strictly inside [low, high]."""
+    if high - low < 1.0:
+        return []
+    count = max(1, int((high - low) // step))
+    return [round(low + (high - low) * index / max(count, 1), 3) for index in range(count + 1)
+            if low + (high - low) * index / max(count, 1) <= high]
+
+
+def _fixture(fixture_id: str, use: str, x: float, y: float) -> dict:
+    """One 1 m fixture footprint, anchored on its centre."""
+    return {"id": fixture_id, "use": use, "x0": round(x - 0.5, 3), "y0": round(y - 0.5, 3),
+            "x1": round(x + 0.5, 3), "y1": round(y + 0.5, 3), "height_m": 1.0}
+
+
+def design_open_space(site: Site, template: DesignTemplate, *, entry_side: str = "south",
+                      fixture_cap: int = 24) -> OpenSpaceDesign:
+    """A plaza or a park: paving, one path from the street, fixed furniture.
+
+    The source declares surfaces, not blocks: the paving and path tokens name a
+    material family and the target picks the block. Fixtures are laid by rule —
+    lamps on the perimeter, benches one row inboard of the street side and trees
+    on a grid — so two runs of the same input give the same plan.
+    """
+    if entry_side not in ENTRY_SIDES:
+        raise SceneError("design.entry_side", f"unknown entry side {entry_side!r}")
+    if template.kind != "open_space":
+        raise SceneError("design.kind", f"{template.type} is not an open space template")
+    x0, y0, x1, y1 = site.x0, site.y0, site.x1, site.y1
+    if entry_side in {"north", "south"}:
+        centre = (x0 + x1) / 2
+        path = (centre - 1.0, y0, centre + 1.0, y1)
+    else:
+        centre = (y0 + y1) / 2
+        path = (x0, centre - 1.0, x1, centre + 1.0)
+    fixtures: list[dict] = []
+    if "lamp" in template.fixtures:
+        for index, x in enumerate(_even_spans(x0 + 1.5, x1 - 1.5, 8.0)):
+            fixtures.append(_fixture(f"{site.id}_lamp_s{index}", "lamp", x, y0 + 1.5))
+            fixtures.append(_fixture(f"{site.id}_lamp_n{index}", "lamp", x, y1 - 1.5))
+        for index, y in enumerate(_even_spans(y0 + 1.5, y1 - 1.5, 8.0)):
+            fixtures.append(_fixture(f"{site.id}_lamp_w{index}", "lamp", x0 + 1.5, y))
+            fixtures.append(_fixture(f"{site.id}_lamp_e{index}", "lamp", x1 - 1.5, y))
+    if "bench" in template.fixtures:
+        for index, x in enumerate(_even_spans(x0 + 3.0, x1 - 3.0, 6.0)):
+            fixtures.append(_fixture(f"{site.id}_bench{index}", "bench", x, y0 + 3.5))
+    if "tree" in template.fixtures:
+        for row, y in enumerate(_even_spans(y0 + 4.0, y1 - 4.0, 6.0)):
+            for col, x in enumerate(_even_spans(x0 + 4.0, x1 - 4.0, 6.0)):
+                if len(fixtures) >= fixture_cap:
+                    break
+                fixtures.append(_fixture(f"{site.id}_tree{row}_{col}", "tree", x, y))
+    return OpenSpaceDesign(id=f"design_{site.id}", type=template.type, role=site.role,
+                           design_state=site.design_state, site_id=site.id,
+                           x0=round(x0, 3), y0=round(y0, 3), x1=round(x1, 3), y1=round(y1, 3),
+                           entry_side=entry_side, paving=template.paving,
+                           path_token=template.path_token,
+                           path=tuple(round(value, 3) for value in path),
+                           fixtures=tuple(fixtures[:fixture_cap]))
+
+
+def validate_open_space(design: OpenSpaceDesign, site: Site) -> dict:
+    """Independent checks on a ground plan: inside the site, low, reachable."""
+    results: list[dict] = []
+
+    def check(rule: str, passed: bool, message: str) -> None:
+        results.append({"rule": rule, "state": "pass" if passed else "fail", "message": message})
+
+    check("design.outline", site.x0 - 1e-6 <= design.x0 and design.x1 <= site.x1 + 1e-6
+          and site.y0 - 1e-6 <= design.y0 and design.y1 <= site.y1 + 1e-6,
+          f"paving {round(design.area_m2)} m² inside the site")
+    check("design.height", design.height_m <= site.max_height_m + 2e-3,
+          f"{design.height_m} m against the envelope {site.max_height_m} m")
+    check("design.fixtures_inside",
+          all(design.x0 - 1e-6 <= item["x0"] and item["x1"] <= design.x1 + 1e-6
+              and design.y0 - 1e-6 <= item["y0"] and item["y1"] <= design.y1 + 1e-6
+              for item in design.fixtures),
+          f"{len(design.fixtures)} fixture(s) inside the paving")
+    px0, py0, px1, py1 = design.path
+    touches = (abs(py0 - design.y0) < 1e-6 and design.entry_side == "south"
+               or abs(py1 - design.y1) < 1e-6 and design.entry_side == "north"
+               or abs(px0 - design.x0) < 1e-6 and design.entry_side == "west"
+               or abs(px1 - design.x1) < 1e-6 and design.entry_side == "east")
+    check("design.path_reaches_street", touches,
+          f"the path starts on the {design.entry_side} edge")
+    check("design.tokens", design.paving in OPEN_SPACE_PAVING and design.path_token in OPEN_SPACE_PAVING,
+          f"paving {design.paving!r}, path {design.path_token!r}")
+    return {"design_id": design.id, "type": design.type, "kind": "open_space",
+            "state": "pass" if all(item["state"] == "pass" for item in results) else "fail",
+            "checks": results}
+
+
+def design(site: Site, entry, pack: SettingPack, template: DesignTemplate, *,
+           entry_side: str = "east", seed: int = 1):
+    """Stage E entry point: a building design or a ground plan, by template kind."""
+    if template.kind == "open_space":
+        return design_open_space(site, template, entry_side=entry_side)
+    return design_building(site, entry, pack, template, entry_side=entry_side, seed=seed)
 
 
 def validate_design(design: BuildingDesign, site: Site, entry) -> dict:
