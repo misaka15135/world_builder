@@ -1,0 +1,5 @@
+editor-walk-build.log: WorldBuilder open space walk scene saved: Assets/WorldBuilderOpenSpace/OpenSpacePlazaWalk.unity
+editor-walk-build.log: Exiting batchmode successfully now!
+editor-walk-build.log: Exiting without the bug reporter. Application will terminate with return code 0
+editor-walk-run.log: WorldBuilder open space walk: pass (continuous_character_controller_path)
+editor-walk-run process: WaitForExit exit code 0; result in walk-validation.json

@@ -41,6 +41,39 @@ public static class WorldBuilderOpenSpaceBuilder
 
     private const string Base = "Assets/WorldBuilderOpenSpace/";
 
+    [MenuItem("World Builder/Build Open Space Walk")]
+    public static void BuildWalk()
+    {
+        EditorSceneManager.OpenScene(Base + "OpenSpacePlaza.unity", OpenSceneMode.Single);
+        var manifest = JsonUtility.FromJson<Manifest>(File.ReadAllText(
+            Path.Combine(Application.dataPath, "WorldBuilderOpenSpace", "manifest.json")));
+        if (manifest == null || manifest.source_id != "open_space_site_001")
+            throw new InvalidOperationException("walk scene source manifest mismatch");
+        var path = GameObject.Find(manifest.source_id + "_path");
+        if (path == null || path.GetComponentInChildren<MeshCollider>() == null)
+            throw new InvalidOperationException("walk path source collider missing");
+        var player = new GameObject("Open space path walker");
+        player.transform.position = new Vector3(308.811f, 1.3f, 207.5f);
+        var controller = player.AddComponent<CharacterController>();
+        controller.height = 1.8f;
+        controller.radius = 0.25f;
+        controller.skinWidth = 0.04f;
+        var validator = player.AddComponent<WorldBuilderOpenSpaceWalkValidator>();
+        validator.sourceWorldId = manifest.source_world_id;
+        validator.sourceRevisionId = manifest.source_revision_id;
+        validator.sourceId = manifest.source_id;
+        var scenePath = Base + "OpenSpacePlazaWalk.unity";
+        EditorSceneManager.SaveScene(SceneManager.GetActiveScene(), scenePath);
+        Debug.Log("WorldBuilder open space walk scene saved: " + scenePath);
+    }
+
+    [MenuItem("World Builder/Run Open Space Walk")]
+    public static void RunWalk()
+    {
+        EditorSceneManager.OpenScene(Base + "OpenSpacePlazaWalk.unity", OpenSceneMode.Single);
+        EditorApplication.isPlaying = true;
+    }
+
     [MenuItem("World Builder/Validate Saved Open Space Sample")]
     public static void ValidateSaved()
     {

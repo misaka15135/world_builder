@@ -1,0 +1,49 @@
+{
+    "unity_version": "6000.3.24f1",
+    "source_world_id": "world_fc3383ea0483264d",
+    "source_revision_id": "revision_6e0278367b0b90212b809b",
+    "source_id": "open_space_site_001",
+    "scene": "OpenSpacePlazaWalk",
+    "status": "pass",
+    "reason": "continuous_character_controller_path",
+    "grounded_frames": 1444,
+    "path_surface_frames": 1459,
+    "side_collision_frames": 0,
+    "max_lateral_error_m": 0.0,
+    "simulated_duration_seconds": 12.261940002441407,
+    "final_position": {
+        "x": 308.8110046386719,
+        "y": 1.3399999141693116,
+        "z": 236.868896484375
+    },
+    "last_support_collider": "open_space_site_001_path",
+    "checkpoints": [
+        {
+            "name": "south_path",
+            "position": {
+                "x": 308.8110046386719,
+                "y": 1.3399999141693116,
+                "z": 209.868896484375
+            },
+            "elapsed_seconds": 0.995373010635376
+        },
+        {
+            "name": "middle_path",
+            "position": {
+                "x": 308.8110046386719,
+                "y": 1.3399999141693116,
+                "z": 222.868896484375
+            },
+            "elapsed_seconds": 6.4203619956970219
+        },
+        {
+            "name": "north_path",
+            "position": {
+                "x": 308.8110046386719,
+                "y": 1.3399999141693116,
+                "z": 236.868896484375
+            },
+            "elapsed_seconds": 12.261940002441407
+        }
+    ]
+}

@@ -1,0 +1,42 @@
+{
+    "unity_version": "6000.3.24f1",
+    "source_world_id": "world_fc3383ea0483264d",
+    "source_revision_id": "revision_6e0278367b0b90212b809b",
+    "source_id": "open_space_site_001",
+    "scene": "OpenSpacePlazaWalk",
+    "status": "failed",
+    "reason": "stalled_at_south_path",
+    "grounded_frames": 113033,
+    "path_surface_frames": 0,
+    "side_collision_frames": 0,
+    "max_lateral_error_m": 0.0,
+    "checkpoints": [
+        {
+            "name": "",
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "elapsed_seconds": 0.0
+        },
+        {
+            "name": "",
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "elapsed_seconds": 0.0
+        },
+        {
+            "name": "",
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "elapsed_seconds": 0.0
+        }
+    ]
+}

@@ -1,6 +1,7 @@
 # 008 Unity 场景导出与加载验证
 
 - 状态：in_progress
+- 修改范围：2026-09-27 root 在已保存的 `OpenSpacePlaza.unity` 上新增独立 Play Mode 步道通行夹具与结果，不改既有 GLB/清单；验证 CharacterController 沿源 `open_space_site_001_path` 连续运动、接地与碰撞来源。修改 Unity Editor/运行组件、独立目标证据、说明及 008/000/索引，仅本地提交。
 - 修改范围：2026-09-27 root 接入场景驱动 WIR 的 Unity 静态导出，并在已安装的 Unity 6000.3.24f1 中加载一个含开放空间的代表场景；新增独立产物与目标证据，不覆盖 city.7/v1—v3 历史场景。
 - 创建日期：2026-09-21
 - 执行者：root
@@ -59,6 +60,7 @@
 
 - [x] ~~从场景流水线的 WIR 修订导出一个广场的铺装、步道和 32 个设施，保留源 ID、版本、单位及限制。~~
 - [x] ~~在 Unity 6000.3.24f1 导入并保存场景，独立进程重开复核 34/34 源 ID 和 MeshCollider。~~
+- [x] ~~从已保存场景派生独立 Play Mode 步道夹具，验证控制器沿源步道连续通过三个检查点、接地及碰撞来源。~~
 - [ ] 将同修订的其余地形、道路、建筑及室内接入 Unity，生成完整对象级损失报告，并完成图形/Play Mode 与 007 联调。
 
 证据：`artifacts/unity-scene-open-space-plaza/manifest.json`、`target-validation.json`、`target-reopen-validation.json` 和 `docs/contracts/unity-scene-open-space-v0.1.md`。本子阶段仅是一个开放空间的静态样件，不把它计为完整城邦验收。
@@ -74,6 +76,7 @@
 
 | 日期 | 执行者 | 动作 | 结果与证据 | 下一步 |
 |---|---|---|---|---|
+| 2026-09-27 | root | 广场步道 Play Mode 连续通行 | 首次无图形批处理因每帧步进低于移动阈值停滞，`walk-first-failure.json` 留证；修正仿真步长后 `walk-validation.json` 为 3/3 检查点、1,444 接地帧、1,459 源步道碰撞命中帧、0 侧面碰撞、12.26 秒仿真时间，场景构建/运行进程均退出码 0 | 完整场景、图形观察、其它道路/接缝及 007 同修订联调；008 保持 in_progress |
 | 2026-09-27 | root | 场景流水线 WIR 的广场导出 Unity 静态样件，并在目标编辑器导入、独立进程重开 | 修订 `revision_6e0278367b0b90212b809b`；34/34 节点源 ID 与 MeshCollider，两个目标验证 JSON 均 pass；定向测试 2 passed、完整回归 156 passed、文档检查零错误；能力边界见 `docs/contracts/unity-scene-open-space-v0.1.md` | 接入其余场景实体、对象级损失报告、图形/运行时与 007 联调；008 保持 in_progress |
 | 2026-09-21 | root | 根据正式方案创建后续工单 | 本文件；尚无实现或测试结果 | 依赖满足后认领，执行前重新阅读索引、总规划和本工单 |
 | 2026-09-21 | root | 根据独立审查校准规划 | 与正式方案的状态合同、小样先行或需求确认边界保持一致；工单仍为 planned | 对应实施阶段再执行与验证 |

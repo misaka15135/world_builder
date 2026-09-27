@@ -1,0 +1,16 @@
+{
+  "target": "Minecraft Java 1.21.11 + WorldEdit 7.3.19",
+  "world": "WB Verify Flat",
+  "source_revision_id": "revision_6e0278367b0b90212b809b",
+  "source_id": "open_space_site_001",
+  "mode": "adventure",
+  "teleport": [308.8, -57.0, 2858.5],
+  "settled_player_feet": [308.8, -59.0, 2858.5],
+  "support_block_position": [308, -60, 2858],
+  "support_block": "minecraft:smooth_stone",
+  "support_probe_message": "plaza_standing_path_ok",
+  "support_result": "pass",
+  "walkthrough": "not_verified",
+  "walkthrough_reason": "Brief automated W and Space key presses produced no observable movement in the F3 position; no sustained key hold was available through the current input tool.",
+  "screenshot": "plaza-adventure-standing.png"
+}
