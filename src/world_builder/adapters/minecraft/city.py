@@ -62,14 +62,27 @@ PALETTE = {
 
 
 def _shell_materials(style: str) -> tuple[str, str]:
-    """Wall and slab blocks for a style; the modern profile rereads as a CBD."""
+    """Wall and slab blocks for a style, one profile per background.
+
+    A works estate is brick with concrete slabs, a harbour is pale stone with
+    smooth-stone aprons, the CBD is concrete and glass, and the arcane town is
+    stone with timber floors. Four backgrounds, four vocabularies.
+    """
+    if style == "industrial_works":
+        return "minecraft:bricks", "minecraft:gray_concrete"
+    if style == "harbour_works":
+        return "minecraft:chiseled_quartz_block", "minecraft:smooth_stone"
     if style == "modern_grid":
         return "minecraft:light_gray_concrete", "minecraft:smooth_stone"
     return "minecraft:smooth_stone", "minecraft:oak_planks"
 
 
 def _street_block(style: str) -> str:
-    """Modern streets read as asphalt; the arcane profile keeps stone setts."""
+    """Asphalt in the CBD, brick-toned setts for works, quay stone at the port."""
+    if style == "industrial_works":
+        return "minecraft:gray_concrete"
+    if style == "harbour_works":
+        return "minecraft:stone_bricks"
     return "minecraft:gray_concrete" if style == "modern_grid" else "minecraft:stone_bricks"
 
 
@@ -83,6 +96,10 @@ def _facade_blocks(style: str) -> tuple[str, str]:
     """
     if style == "modern_grid":
         return "minecraft:gray_concrete", "minecraft:light_gray_concrete"
+    if style == "industrial_works":
+        return "minecraft:stone_bricks", "minecraft:light_gray_concrete"
+    if style == "harbour_works":
+        return "minecraft:gray_concrete", "minecraft:stone_bricks"
     return "minecraft:stone_bricks", "minecraft:dark_oak_planks"
 
 
@@ -422,7 +439,7 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool,
     # as an attribute still get their real silhouette instead of a flat slab.
     roof_style = g.get("roof_style") or building["attributes"].get("roof_style", "flat")
     parts.extend(_roof_boxes(name, tx0, tx1, tn0, tn1, z1, roof, roof_style, plank))
-    band_block = "minecraft:glass" if style == "modern_grid" else "minecraft:dark_oak_planks"
+    band_block = "minecraft:dark_oak_planks" if style == "arcane_medieval" else "minecraft:glass"
     parts.extend(_storey_bands(name, outlines, z0, wall, wall_top, storey_h, band_block))
     # Facade relief (building skill rule 3): a plinth along the ground storey
     # and corner posts on every storey edge. The entrance side keeps its plinth

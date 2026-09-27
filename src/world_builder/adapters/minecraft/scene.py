@@ -21,8 +21,11 @@ import copy
 from world_builder.adapters.minecraft.city import CORRIDOR_SPACING, corridor_boxes
 
 BOX_KINDS = {"road", "rail", "wall", "pier", "quay", "work"}
+# One profile per background: the style vocabulary has to follow the setting, or
+# an industrial estate and a container port come out looking like the CBD
+# (building-skill reference cards: modern-and-industrial).
 SETTING_STYLES = {"arcane_medieval": "arcane_medieval", "modern_metropolis": "modern_grid",
-                  "industrial_park": "modern_grid", "harbour": "modern_grid"}
+                  "industrial_park": "industrial_works", "harbour": "harbour_works"}
 
 
 def project_for_minecraft(package: dict) -> dict:
