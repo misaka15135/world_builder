@@ -1,6 +1,6 @@
 # 020 场景道路走廊栅格化与地面填充顺序
 
-- 状态：in_progress
+- 状态：done
 - 创建日期：2026-09-27
 - 执行者：root
 - 依赖：018（场景装配与目标导出）、016（区块与路网）
@@ -36,13 +36,21 @@
 - [x] ~~调整场景分支填充顺序或加"街面不得覆盖建筑足迹"的规则，使一层楼板材质与 WIR 一致。~~
 - [x] ~~扩充 `tests/test_scene_projection.py`：断言单盒长边上限、走廊面积占比上限、斜段不再产生外接大盒。~~
 - [x] ~~重导 512 m 魔法城邦（`tools/assemble_scene.py --export-minecraft`），跑完整回归与文档检查，版本升到 `0.1.0-city.5`。~~
-- [ ] 重贴目标世界并复验：地面草地区块比例、`building_site_032`/`building_site_026` 一层材质、街面探针，截图存档到 `artifacts/minecraft-scene-arcane-interiors-5/target-<日期>/`。
+- [x] ~~重贴目标世界并复验：地面草地区块比例、`building_site_032`/`building_site_026` 一层材质、街面探针，截图存档到 `artifacts/minecraft-scene-arcane-interiors-4/target-20260927/`。~~
 
 ## 执行记录
 
 | 日期 | 执行者 | 动作 | 结果与证据 | 下一步 |
 |---|---|---|---|---|
 | 2026-09-27 | root | 走廊栅格化与填充顺序修复 | 见下节；定向回归 26 passed（`tests/test_scene_projection.py`、`tests/test_assembler.py`、`tests/test_minecraft_city.py`），离线重导 36 分块 / 3,535 盒 / 626,181 方块、`validation: pass` | 目标世界重贴与方块复验 |
+| 2026-09-27 | root | interiors-4 重贴目标世界并复验 | 36 个分块拷入游戏目录，SHA-256 与 manifest 逐项一致（旧一套备份在游戏目录 `pre-interiors4-20260927/`）。逐列清空 y=−61 以上后按基线 `(chunk_x×128, −61, chunk_z×128+1024)` 重贴，日志核对**36/36** 文件名 → 粘贴点 → `blocks affected` 与清单一致。方块探针（玩家就近驻留以避免区块未加载）：`building_site_032` 一层 (258,−60,888) → **`oak_planks`**、`building_site_026` 一层 (321,−60,618) → **`oak_planks`**、斜向大道 (365,−60,849) → `stone_bricks`、走廊外草地 (4,−60,516) → **`grass_block`**；两点均非水。截图 `aerial-city-20260927.jpg`（街道网格 + 放射斜街 + 河网 + 草地）、`street-and-building-20260927.jpg`（草地上的街道与木构建筑）存 `artifacts/minecraft-scene-arcane-interiors-4/target-20260927/` | 020 完成；后续增量回到 017 设计模板与端到端批次 |
+
+### 两次探针坐标勘误（如实记录）
+
+首轮目标探针有两处坐标错误，已在第二轮修正，错误本身保留在此：
+
+1. `building_site_026` 的一层楼板点在 world z 上写成了 619，正确值是 618（场景 z −406 + 1024）；619 那格是空气。
+2. "空地"抽样点 scene (60,−123) 落在**河道**上（离线模型当时按 `y0 ≤ 0.1 < y1` 判层，漏掉了水面盒 y −0.05—0.05 经 `_cell_range` 同时占 −1/0 两行的事实），因此游戏回报 `water` 才是正确答案；改用与 `_cell_range` 一致的判层模型后重新抽样，得到草地/街面比例 65.6% / 24.7%（与 PNG 统计 72.6% / 25.1% 同量级）。
 
 ### 本次落地（2026-09-27）
 
