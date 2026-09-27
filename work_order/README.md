@@ -36,6 +36,8 @@
 
 **2026-09-27 更新（城堡幕墙改圆形）**：模板加 `"ring": "circle"`（默认仍 `rectangle`）——幕墙沿**多边形圆环**铺（16—32 段弦盒），临街弧段跳过留城门；四座塔跨在墙环上，大厅改放环内正对城门并按半径收缩；校验放宽为"墙段同属一条墙线可相接，其它结构两两必须留空"。实测：城堡 38 件（32 段墙 + 4 塔 + 主楼 + 大厅）、全部校验 pass，导出 36 分块 / 2,853 盒 / 665,884 方块 / `validation: pass`。布局图 `artifacts/scene-open-space/castle-ring-20260927.png`。
 
+**2026-09-27 更新（城堡场景重贴目标世界）**：带圆形城堡与广场的最新魔法城邦已替换掉旧 dense3：36/36 分块的文件名 → 粘贴点 → `blocks affected` 与清单一致（665,884 方块）。探针 (153,−50,920)=`air` 确认**主楼内部空心**；三条"墙/屋顶在哪"的估算探针未命中，说明还**没有逐格核对壳体**，如实记录在 009。截图 `castle-aerial-20260927.jpg` 等存 `artifacts/minecraft-scene-arcane-castle/target-20260927/`。两次被"窗口内有用户输入"中断，均按规则重新观察后继续，未做世界改动以外的操作。
+
 **2026-09-27 更新（class 2 补齐堆场）**：固定块词汇加 `crate`（→ barrel）与 `stack`（→ gray_concrete），堆场按 5/6 m 网格成排堆放；工业园加 `freight_yard`、港口加 `container_yard` 两个 open_space 模板。seed 4 实测：工业园 16 个设计、缺失清单 `freight_yard, silo_tank` → **`silo_tank`**；港口 36 分块通过、缺失清单 `container_yard, dry_dock` → **`dry_dock`**，但港口设计数仍 13——堆场在港口选址里 demand 1 / placed 0（016 已记录），模板就位而场址缺席。
 
 **2026-09-27 更新（open_space 全线接通）**：`kind: open_space` 从设计端接到 WIR 与 Minecraft 适配器——装配器产出 `open_space_<site>` 实体（`ground_plan` 几何：铺装/步道 token + 局部坐标固定块表），`validate_scene` 增加 `scene.open_spaces` 并只对建筑设计检查楼层链；适配器按 token 落块（`stone→stone_bricks`、`path→smooth_stone`、`gravel→gray_concrete`、`lamp→glass`、`bench→oak_slab`、`tree→oak_fence`、`planter→grass_block`）；魔法城邦加 `plaza`、现代都市加 `park` 模板。**实测 seed 4**：魔法城邦 72 个设计（71 建筑 + 1 广场），`no template yet` 只剩 `castle`；现代都市 32 个设计、**缺失类型清单为空**；两者都导出 36/34 分块且 `validation: pass`，清单里出现 `open_space_*`、`*_path` 与 `*_lamp/bench/tree` 盒。**两个真实约束**：地表景观的目录高度只有 0—1 m，选址给的包络可能低到 0.62 m（古代广场）甚至 **0.2 m**（现代 `green` 街区 `height_factor 0.2`）——固定块高度随包络收缩、包络 < 0.4 m 时只铺装；"green 街区高度因子过狠"已记为 016 的工作项。
