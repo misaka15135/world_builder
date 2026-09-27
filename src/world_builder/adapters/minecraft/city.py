@@ -466,6 +466,30 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool,
             _box(f"{name}{suffix}_post_nw", sx0, sx0 + wall, sn1 - wall, sn1, bottom, top, post_block),
             _box(f"{name}{suffix}_post_ne", sx1 - wall, sx1, sn1 - wall, sn1, bottom, top, post_block),
         ])
+    # Entrance articulation (building-skill rule 6): a step bridging the ground
+    # and the slab, plus a porch slab over the doorway. Both stand outside the
+    # wall on purpose. Applied to scene-pipeline buildings only: the frozen
+    # city.7 reference keeps exactly the geometry its evidence was taken from,
+    # and its tests require every part to sit inside the building envelope.
+    if g.get("assignment") == "scene_pipeline_stage_e":
+        porch_block = ("minecraft:dark_oak_planks" if style == "arcane_medieval"
+                       else "minecraft:smooth_stone")
+        head = z0 + floor + float(entry["height_m"])
+        depth = 1.0
+        if horizontal:
+            s0, s1 = (gn0 - depth, gn0) if side == "south" else (gn1, gn1 + depth)
+            parts.append(_box(f"{name}_entry_step", door_a0, door_a1, s0, s1, z0, z0 + floor,
+                              porch_block))
+            p0, p1 = (s0 - 0.6, gn0 + 0.6) if side == "south" else (gn1 - 0.6, s1 + 0.6)
+            parts.append(_box(f"{name}_porch", door_a0 - 1.0, door_a1 + 1.0, p0, p1, head, head + 0.4,
+                              porch_block))
+        else:
+            s0, s1 = (gx0 - depth, gx0) if side == "west" else (gx1, gx1 + depth)
+            parts.append(_box(f"{name}_entry_step", s0, s1, door_a0, door_a1, z0, z0 + floor,
+                              porch_block))
+            p0, p1 = (s0 - 0.6, gx0 + 0.6) if side == "west" else (gx1 - 0.6, s1 + 0.6)
+            parts.append(_box(f"{name}_porch", p0, p1, door_a0 - 1.0, door_a1 + 1.0, head, head + 0.4,
+                              porch_block))
     if not with_interior:
         return parts
     children = [r for r in entities.values() if r["parent_id"] == building["id"]]

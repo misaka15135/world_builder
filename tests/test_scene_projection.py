@@ -83,6 +83,11 @@ def test_projected_scene_exports_boxes(scene_package) -> None:
     castle = [box for box in boxes if box["source_id"].startswith("compound_")]
     assert castle, "the scene's castle is exported as a compound"
     assert any("tower" in box["source_id"] for box in castle), "the castle keeps its towers"
+    # Entrance articulation (building-skill rule 6) is a scene-only addition: a
+    # step at ground level and a porch slab at the door head, both outside the
+    # wall. The frozen city.7 path keeps its own geometry.
+    assert any(box["source_id"].endswith("_entry_step") for box in boxes), "entrance step"
+    assert any(box["source_id"].endswith("_porch") for box in boxes), "porch slab"
 
 
 def test_scene_water_cannot_overwrite_building_floors(scene_package) -> None:
