@@ -27,6 +27,17 @@ from .siting import Site
 DESIGN_VERSION = "0.1.0"
 ROOF_STYLES = ("flat", "gable", "spire")
 ENTRY_SIDES = ("north", "south", "east", "west")
+# Entrance geometry the design hands to the target adapters: a 2.0 m door in a
+# 2.4 m opening. `DOOR_SPAN_MIN_M` is the shortest face that can hold it (1.0 m
+# jamb + 2.0 m door + a 0.3 m corner margin); a face that cannot hold it hands
+# the entrance to the longest face instead.
+ENTRY_DOOR_M = 2.0
+ENTRY_HEIGHT_M = 2.4
+DOOR_SPAN_MIN_M = 3.31
+# 2.8 m stays the squeeze floor: a 2.4 m door plus the floor slab needs 2.7 m,
+# and the test suite pins "squeeze the storeys, do not drop them" for a tight
+# envelope. A storey that cannot carry the door is caught by the span rule.
+MIN_STOREY_M = 2.8
 # Furniture per room use: a small vocabulary with sizes in metres. Stage E
 # places it; stage F and the target adapters only read it.
 FURNITURE = {
@@ -254,8 +265,15 @@ def design_building(site: Site, entry, pack: SettingPack, template: DesignTempla
         entry_side = "east"
     elif entry_side in {"east", "west"} and depth_span < 6.0 and width_span >= 6.0:
         entry_side = "south"
-    along_span = width_span if entry_side in {"north", "south"} else depth_span
-    entry_offset = max(2.0, min(0.3 * along_span, along_span - 4.0))
+    spans = {"north": width_span, "south": width_span, "east": depth_span, "west": depth_span}
+    # A 2.0 m door needs a 1.0 m jamb, the 2.0 m opening and a 0.3 m corner
+    # margin: a face shorter than 3.3 m cannot carry it, and the target adapter
+    # rejects such a shell outright. Denser plots reached that case on
+    # 2026-09-27 (site_063), so the entrance moves to the longest face.
+    if spans[entry_side] < DOOR_SPAN_MIN_M:
+        entry_side = max(spans, key=lambda side: spans[side])
+    along_span = spans[entry_side]
+    entry_offset = max(1.0, min(0.3 * along_span, along_span - ENTRY_DOOR_M - 0.31))
     fingerprint = f"{site.id}:{entry.type}:{seed}:{DESIGN_VERSION}".encode("utf-8")
     rng = random.Random(int.from_bytes(hashlib.sha256(fingerprint).digest()[:8], "big"))
     width = site.x1 - site.x0
@@ -289,10 +307,11 @@ def design_building(site: Site, entry, pack: SettingPack, template: DesignTempla
         # preferred to dropping a storey, because the catalogue's height range
         # is a contract and a squashed two-storey house is still a house.
         squeezed = (site.max_height_m - template.roof_height_m) / chosen
-        # 2.8 m is the floor, not 2.6: a 2.4 m door plus the floor slab needs
-        # 2.7 m, and a squeezed storey below that has no room for its own
-        # entrance (one town hall was rejected by the adapter exactly so).
-        if chosen >= fewest and squeezed >= 2.8:
+        # MIN_STOREY_M is the floor, not 2.6: a 2.4 m door plus the floor slab
+        # needs 2.7 m before quantisation, and the adapter's block-quantised
+        # lintel needs 3.0 m, so a squeezed storey below that has no room for its
+        # own entrance (one town hall was rejected by the adapter exactly so).
+        if chosen >= fewest and squeezed >= MIN_STOREY_M:
             # Round the ceiling *down* to the millimetre: rounding to nearest
             # pushed one tower 2 mm past its envelope, and the envelope is hard.
             storey_height = math.floor(squeezed * 1000) / 1000
@@ -300,7 +319,7 @@ def design_building(site: Site, entry, pack: SettingPack, template: DesignTempla
             while chosen > 1 and chosen * storey_height + template.roof_height_m > site.max_height_m:
                 chosen -= 1
             squeezed = (site.max_height_m - template.roof_height_m) / chosen
-            storey_height = math.floor(max(2.8, min(storey_height, squeezed)) * 1000) / 1000
+            storey_height = math.floor(max(MIN_STOREY_M, min(storey_height, squeezed)) * 1000) / 1000
         height = chosen * storey_height + template.roof_height_m
     insets = _insets(width, depth, chosen, template.setback_m)
     stair_void = 3.0
@@ -359,8 +378,8 @@ def design_building(site: Site, entry, pack: SettingPack, template: DesignTempla
                            storeys=tuple(storeys_out), storey_height_m=round(storey_height, 3),
                            roof=template.roof, roof_height_m=template.roof_height_m,
                            entry_side=entry_side, entry_offset_m=round(entry_offset, 3),
-                           entry_width_m=2.0,
-                           entry_height_m=2.4, stair=stair, furniture=tuple(furniture),
+                           entry_width_m=ENTRY_DOOR_M,
+                           entry_height_m=ENTRY_HEIGHT_M, stair=stair, furniture=tuple(furniture),
                            materials=dict(pack.materials), height_m=round(height, 3))
 
 

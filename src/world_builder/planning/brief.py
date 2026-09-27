@@ -88,9 +88,17 @@ class SceneBrief:
         higher priority and the larger count win; the brief cannot lower what
         the background already requires.
         """
+        # The catalogue's counts are written for the background's default region.
+        # A brief that shrinks or grows the map scales them with it, so a 256 m
+        # town is not asked to hold the same number of houses as a 512 m city
+        # (the brief's own building budget scales the same way, and the two have
+        # to stay comparable or `validate_brief` rejects the pair).
+        factor = self.region_m / pack.default_scale["region_m"]
         merged: dict[str, Landmark] = {}
         for entry in pack.required_entries:
-            merged[entry.type] = Landmark(type=entry.type, count=entry.count_range[0], priority="must")
+            merged[entry.type] = Landmark(type=entry.type,
+                                          count=max(1, round(entry.count_range[0] * factor)),
+                                          priority="must")
         for landmark in self.required_landmarks:
             existing = merged.get(landmark.type)
             if existing is None:

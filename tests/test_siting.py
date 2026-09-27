@@ -201,3 +201,21 @@ def test_district_tool_prints_a_map_and_passes(planned, tmp_path: Path, capsys) 
     assert payload["setting"] == "harbour" and payload["blocks"] and payload["sites"]
     assert payload["stats"]["blocks"] == len(payload["blocks"])
     assert math.isclose(sum(block["area_m2"] for block in payload["blocks"]), 512 * 512, rel_tol=0.01)
+
+
+def test_arcane_paving_and_housing_stay_in_ratio(planned) -> None:
+    """Pin the 2026-09-27 density pass (work order 016).
+
+    Before it the arcane network was 19.4 km of street — about 97,000 m² of
+    carriageway for 35 sites — and the pasted world read as a stone plaza; the
+    city.7 reference scene, which reads as a town, paved 24,336 m² for 80
+    buildings. The bounds below sit between the two and fail loudly if the
+    connectors go back to reaching across the map.
+    """
+    _pack, _brief, _terrain, plan, _report = planned["arcane_medieval"]
+    streets = [road for road in plan.roads if road.kind in {"arterial", "local", "quay"}]
+    carriageway = sum(road.length_m * road.width_m for road in streets)
+    assert len(plan.sites) >= 70, len(plan.sites)
+    assert sum(1 for site in plan.sites if site.role == "housing") >= 50
+    assert sum(road.length_m for road in streets) <= 14_000
+    assert carriageway <= 60_000, carriageway

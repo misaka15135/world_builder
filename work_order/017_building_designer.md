@@ -67,6 +67,7 @@
 |---|---|---|---|---|
 | 2026-09-26 | root | 根据用户对流水线的重构要求创建本工单 | 本文件与 [docs/04_scene_pipeline.md](../docs/04_scene_pipeline.md)；尚无实现或测试结果 | 先搬 006 的形状规则作为参考实现，再做"平面随包络变化" |
 | 2026-09-26 | root | 实现阶段 E：设计 Schema、模板、逐栋设计与校验 | 新增 `src/world_builder/planning/designer.py`、`settings/*/designs.json`、`tools/design_buildings.py`、`tests/test_designer.py`（9 passed）与合同 [docs/contracts/building-design-v0.1.md](../docs/contracts/building-design-v0.1.md)。四个背景 seed 4 全部 `failures=0`：魔法城邦 33 栋（跳过城堡/广场）、现代都市 25（跳过公园）、工业园 10（跳过货场/储罐）、港口 11（跳过堆场/干船坞）；最高 61.6 m 的摩天楼 17 层成功排出，厂房/仓库为单层大空间且净高对齐目录 | 018 把设计写进 WIR 并对接 Minecraft/Unity 适配器 |
+| 2026-09-27 | root | 修入口面选择，配合 016 提高密度 | **实际缺陷**：魔法城邦加密后导出在 `target.building_entry: building_site_063` 中断——门是 2.0 m 宽，目标适配器要求门洞离墙角至少 0.3 m、门垛至少 1.0 m（即墙面 ≥ 3.31 m），而设计器直接把入口挂在声明的面上。现在短于此值的墙面会把入口改到**最长的一面**，并让门垛取 `max(1.0, min(0.3×墙长, 墙长 − 门宽 − 0.31))`。原先考虑的"把层高下限从 2.8 提到 3.0"**已撤回**：它会破坏 `test_design_fits_a_tight_envelope` 钉住的"压层高而不是砍层"口径，而短墙面才是真正的失败原因（两者不叠加）。定向测试 `tests/test_designer.py tests/test_scene_brief.py` 25 passed | 继续按 017 分类做 class 1 其余项与 class 2 的 `open_space` |
 
 ## 交接说明
 

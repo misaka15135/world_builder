@@ -541,7 +541,7 @@ def plan_siting(brief: SceneBrief, pack: SettingPack, terrain: TerrainPlan,
 
     sites = _place_sites(brief, pack, terrain, spec, blocks, domains,
                          [road for road in roads if road.kind.startswith("rail")])
-    roads.extend(_service_roads(blocks, sites, roads[0],
+    roads.extend(_service_roads(blocks, sites, roads,
                                 next((road for road in roads if road.kind == "rail"), None)))
     works = _place_works(brief, pack, terrain, blocks, domains, roads)
     stats = {
@@ -695,34 +695,59 @@ def _footprint_is_dry(terrain: TerrainPlan, rect: tuple[float, float, float, flo
                for ix in range(nx + 1) for iy in range(ny + 1))
 
 
-def _service_roads(blocks, sites, arterial: Road, rail: Road | None = None) -> list[Road]:
+def _service_roads(blocks, sites, network: list[Road], rail: Road | None = None) -> list[Road]:
     """Service lanes between plot rows, plus a connector from each block.
 
     Without them a plot in the middle of a large block has no street at all,
     and the blocks would not connect to the arterial network.
+
+    Each block joins the **nearest point of the network built so far** instead
+    of the nearest point of the arterial. Connecting every block to one distant
+    line threw forty long diagonals across the city: measured on the 512 m
+    arcane scene (2026-09-27) the network was 19.4 km of street, four to five
+    times the reference city's paving, and it read as a grey fan over the map.
+    Blocks are ordered by distance so each one attaches to a neighbour, which
+    keeps `siting.network_connected` true while the connectors stay local.
+
+    The per-block lane at `y0 + 2` was dropped here as well: the block already
+    carries its street along `y0` (`road_<block>`), and two 4 m lanes two metres
+    apart paint one wide strip for no gain.
     """
+    arterial = next(road for road in network if road.kind == "arterial")
+    connected = list(_sample(arterial, step=16.0))
     roads: list[Road] = []
     rows: dict[tuple[str, float], list] = {}
     for site in sites:
         rows.setdefault((site.block_id, round(site.y0, 1)), []).append(site)
     by_id = {block.id: block for block in blocks}
+    service: dict[str, list[Road]] = {}
     for (block_id, y0), group in sorted(rows.items()):
         block = by_id[block_id]
         y = round(y0 - 3.0, 2)
         if y <= block.y0:
             y = round(y0 + max(site.y1 for site in group) / 2, 2)
-        roads.append(Road(id=f"service_{block_id}_{int(y0)}", kind="local",
-                          points=((block.x0, y), (block.x1, y)), width_m=4.0))
-    arterial_points = _sample(arterial, step=16.0)
-    for block in blocks:
+        # Tenths of a metre in the id: two plot rows in one block can round to
+        # the same whole metre, and duplicate ids are rejected downstream.
+        service.setdefault(block_id, []).append(Road(id=f"service_{block_id}_{int(round(y0 * 10))}",
+                                                     kind="local",
+                                                     points=((block.x0, y), (block.x1, y)), width_m=3.5))
+    order = sorted(blocks, key=lambda block: min(math.dist(block.centre, point) for point in connected))
+    for block in order:
+        new_roads: list[Road] = []
+        # The block's own frontage street is already in the network; sampling it
+        # is what lets the next block attach to this one instead of to the
+        # arterial across town.
+        sample_roads = [road for road in network if road.id == f"road_{block.id}"]
         # A spine down the block ties the frontage, the row lanes and the
         # connector together; without it a plot in the block interior is an
         # island in the graph as well as on the ground.
         centre_x = (block.x0 + block.x1) / 2
-        roads.append(Road(id=f"spine_{block.id}", kind="local",
-                          points=((centre_x, block.y0), (centre_x, block.y1)), width_m=4.0))
-        roads.append(Road(id=f"front_{block.id}", kind="local",
-                          points=((block.x0, block.y0 + 2.0), (block.x1, block.y0 + 2.0)), width_m=4.0))
+        spine = Road(id=f"spine_{block.id}", kind="local",
+                     points=((centre_x, block.y0), (centre_x, block.y1)), width_m=3.5)
+        new_roads.append(spine)
+        sample_roads.append(spine)
+        new_roads.extend(service.get(block.id, []))
+        sample_roads.extend(service.get(block.id, []))
         if block.use == "industrial":
             # A siding through the yard, joined to the running line: plots reach
             # the rail without crossing half the estate, and the rail network
@@ -732,10 +757,18 @@ def _service_roads(blocks, sites, arterial: Road, rail: Road | None = None) -> l
             if rail is not None:
                 nearest = min(_sample(rail, step=8.0), key=lambda point: math.dist(point, block.centre))
                 points.append(nearest)
-            roads.append(Road(id=f"siding_{block.id}", kind="rail_spur", points=tuple(points), width_m=4.0))
-        nearest = min(arterial_points, key=lambda point: math.dist(point, block.centre))
-        roads.append(Road(id=f"connector_{block.id}", kind="local",
-                          points=(block.centre, nearest), width_m=5.0))
+            siding = Road(id=f"siding_{block.id}", kind="rail_spur", points=tuple(points), width_m=4.0)
+            new_roads.append(siding)
+            sample_roads.append(siding)
+        nearest = min(connected, key=lambda point: math.dist(point, block.centre))
+        if math.dist(block.centre, nearest) > 12.0:
+            connector = Road(id=f"connector_{block.id}", kind="local",
+                             points=(block.centre, nearest), width_m=5.0)
+            new_roads.append(connector)
+            sample_roads.append(connector)
+        roads.extend(new_roads)
+        for road in sample_roads:
+            connected.extend(_sample(road, step=16.0))
     return roads
 
 
