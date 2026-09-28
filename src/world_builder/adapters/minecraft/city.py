@@ -568,6 +568,110 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool,
     return parts
 
 
+def _compound_boxes(record: dict, ox: float, on: float) -> list[dict]:
+    """One castle: hollow volumes, a gatehouse, and the keep's interior.
+
+    Work order 017 main line. Each volume is a hollow shell capped by its own
+    roof. A `gate` part is a gatehouse: two piers beside the opening and a
+    lintel spanning it, the lintel starting in mid-air above the walkable
+    gateway. A `ramp` part is a solid tread or the gate platform itself —
+    hollowing a 0.25 m step out would leave nothing to stand on. The keep
+    carries the castle's interior: a slab at every declared level, each split
+    around the stair well, and one straight flight per level so the rooms above
+    the ground can be reached. A `door` on a volume cuts an opening in that
+    face instead of walling it off.
+    """
+    geometry = record["geometry"]
+    shell_wall, floor_thickness = 0.3, 0.3
+    boxes: list[dict] = []
+    for volume in geometry["volumes"]:
+        vx0, vy0 = ox + volume["x0"], on + volume["y0"]
+        vx1, vy1 = ox + volume["x1"], on + volume["y1"]
+        base, top = float(volume.get("base_m", 0.0)), float(volume["height_m"])
+        role = volume["role"]
+        block = "minecraft:oak_planks" if role == "hall" else "minecraft:smooth_stone"
+        name = f"{record['id']}_{volume['id']}"
+        if role == "ramp":
+            boxes.append(_box(name, vx0, vx1, vy0, vy1, base, top, "minecraft:smooth_stone"))
+            continue
+        if top - base <= 2 * shell_wall:
+            boxes.append(_box(name, vx0, vx1, vy0, vy1, base, top, block))
+            continue
+        door = volume.get("door")
+        faces = (("south", vx0 + shell_wall, vx1 - shell_wall, vy0, vy0 + shell_wall, "x"),
+                 ("north", vx0 + shell_wall, vx1 - shell_wall, vy1 - shell_wall, vy1, "x"),
+                 ("west", vx0, vx0 + shell_wall, vy0 + shell_wall, vy1 - shell_wall, "y"),
+                 ("east", vx1 - shell_wall, vx1, vy0 + shell_wall, vy1 - shell_wall, "y"))
+        for face, f0, f1, n0, n1, axis in faces:
+            if door is None or face != door["side"]:
+                boxes.append(_box(f"{name}_{face}", f0, f1, n0, n1, base, top, block))
+                continue
+            span = (f1 - f0) if axis == "x" else (n1 - n0)
+            width = min(float(door["width_m"]), max(1.0, span * 0.6))
+            mid = ((f0 + f1) / 2) if axis == "x" else ((n0 + n1) / 2)
+            opening = (mid - width / 2, mid + width / 2)
+            lintel_low = base + max(2.0, float(door["height_m"]))
+            if axis == "x":
+                boxes.append(_box(f"{name}_{face}_west", f0, opening[0], n0, n1, base, top, block))
+                boxes.append(_box(f"{name}_{face}_east", opening[1], f1, n0, n1, base, top, block))
+                if lintel_low < top:
+                    boxes.append(_box(f"{name}_{face}_door_lintel", opening[0], opening[1],
+                                      n0, n1, lintel_low, top, block))
+            else:
+                boxes.append(_box(f"{name}_{face}_south", f0, f1, n0, opening[0], base, top, block))
+                boxes.append(_box(f"{name}_{face}_north", f0, f1, opening[1], n1, base, top, block))
+                if lintel_low < top:
+                    boxes.append(_box(f"{name}_{face}_door_lintel", f0, f1,
+                                      opening[0], opening[1], lintel_low, top, block))
+        roof_height = 0.4 if volume["roof"] == "flat" else \
+            min(2.4, max(0.6, min(vx1 - vx0, vy1 - vy0) * 0.15))
+        boxes.extend(_roof_boxes(name, vx0, vx1, vy0, vy1, top,
+                                 roof_height, volume["roof"], "minecraft:oak_planks"))
+        levels = [float(level) for level in volume.get("levels_m", ())]
+        if not levels:
+            continue
+        stair = volume.get("stair")
+        well = None
+        if stair:
+            well = (min(ox + stair["x0"], ox + stair["x1"]), min(on + stair["y0"], on + stair["y1"]),
+                    max(ox + stair["x0"], ox + stair["x1"]), max(on + stair["y0"], on + stair["y1"]))
+        for level in levels:
+            if well is None:
+                boxes.append(_box(f"{name}_floor_{level:g}", vx0, vx1, vy0, vy1,
+                                  level, level + floor_thickness, "minecraft:dark_oak_planks"))
+                continue
+            wx0, wy0, wx1, wy1 = well
+            slab = "minecraft:dark_oak_planks"
+            boxes.extend([
+                _box(f"{name}_floor_{level:g}_west", vx0, wx0, vy0, vy1, level, level + floor_thickness, slab),
+                _box(f"{name}_floor_{level:g}_east", wx1, vx1, vy0, vy1, level, level + floor_thickness, slab),
+                _box(f"{name}_floor_{level:g}_south", wx0, wx1, vy0, wy0, level, level + floor_thickness, slab),
+                _box(f"{name}_floor_{level:g}_north", wx0, wx1, wy1, vy1, level, level + floor_thickness, slab),
+            ])
+        if well is None or not stair:
+            continue
+        # One flight per level, climbing the well from the slab below to the
+        # slab above. Treads stay under 0.6 m of rise so every step is a walk,
+        # not a jump.
+        wx0, wy0, wx1, wy1 = well
+        along = "x" if stair.get("run", "x") == "x" else "y"
+        run = (wx1 - wx0) if along == "x" else (wy1 - wy0)
+        walk = [0.0] + [level + floor_thickness for level in levels]
+        for index in range(len(walk) - 1):
+            low, high = walk[index], walk[index + 1]
+            steps = max(2, math.ceil((high - low) / 0.5))
+            tread = run / steps
+            for step in range(steps):
+                rise = low + (step + 1) * (high - low) / steps
+                if along == "x":
+                    rect = (wx0 + step * tread, wy0, wx0 + (step + 1) * tread, wy1)
+                else:
+                    rect = (wx0, wy0 + step * tread, wx1, wy0 + (step + 1) * tread)
+                boxes.append(_box(f"{name}_stair{index + 1}_tread_{step + 1:02}",
+                                  rect[0], rect[2], rect[1], rect[3], low, rise, slab))
+    return boxes
+
+
 def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
     validate_package(package)
     specs = [r for r in package["records"] if r["record_type"] == "world_spec"]
@@ -652,25 +756,7 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
             if record["kind"] != "compound":
                 continue
             (ox, on, _), (_, _, _) = record["bounds"]["min"], record["bounds"]["max"]
-            shell_wall = 0.3
-            for volume in record["geometry"]["volumes"]:
-                vx0, vy0 = ox + volume["x0"], on + volume["y0"]
-                vx1, vy1 = ox + volume["x1"], on + volume["y1"]
-                top = volume["height_m"]
-                block = "minecraft:oak_planks" if volume["role"] == "hall" else "minecraft:smooth_stone"
-                name = f"{record['id']}_{volume['id']}"
-                surface_boxes.append(_box(f"{name}_west", vx0, vx0 + shell_wall, vy0, vy1,
-                                          0.0, top, block))
-                surface_boxes.append(_box(f"{name}_east", vx1 - shell_wall, vx1, vy0, vy1,
-                                          0.0, top, block))
-                surface_boxes.append(_box(f"{name}_south", vx0 + shell_wall, vx1 - shell_wall,
-                                          vy0, vy0 + shell_wall, 0.0, top, block))
-                surface_boxes.append(_box(f"{name}_north", vx0 + shell_wall, vx1 - shell_wall,
-                                          vy1 - shell_wall, vy1, 0.0, top, block))
-                roof_height = 0.4 if volume["roof"] == "flat" else \
-                    min(2.4, max(0.6, min(vx1 - vx0, vy1 - vy0) * 0.15))
-                surface_boxes.extend(_roof_boxes(name, vx0, vx1, vy0, vy1, top,
-                                                 roof_height, volume["roof"], "minecraft:oak_planks"))
+            surface_boxes.extend(_compound_boxes(record, ox, on))
         # The source forbids wet building footprints. Keep the target robust as
         # well: flat water proxies must not replace a quantised floor or road.
         # Ground and water first, then the street network, and the building

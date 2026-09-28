@@ -219,6 +219,53 @@ def test_compound_design_lays_a_castle_without_overlaps() -> None:
     assert tight_report["state"] == "pass", [c for c in tight_report["checks"] if c["state"] != "pass"]
 
 
+def test_castle_gatehouse_and_keep_interior_reach_the_plan() -> None:
+    """Stage E main line (work order 017): the gate is a gatehouse, the keep has rooms.
+
+    The gatehouse is two piers either side of the opening plus one lintel over
+    it; the threshold sits on a platform reached by a stepped ramp on each side,
+    and those ramps are the only part of a castle allowed past the site edge.
+    The keep carries floor levels with a stair that stays inside it, and both
+    the keep and the hall keep a doorway rather than four solid walls.
+    """
+    from world_builder.planning import Site
+    from world_builder.planning.designer import DesignTemplate, design_compound, validate_compound
+    pack = load_setting_pack("arcane_medieval")
+    site = Site(id="site_castle", type="castle", role="civic", design_state="planned",
+                block_id="block_000", domain_id="castle", x0=40.0, y0=60.0, x1=118.0, y1=132.0,
+                max_height_m=24.0, max_storeys=6, needs=(), adjacency=())
+    template = DesignTemplate(type="castle", kind="compound", ring="circle",
+                              compound=(("wall", 8.0, "flat"), ("tower", 22.0, "spire"),
+                                        ("keep", 18.0, "gable"), ("hall", 10.0, "gable"),
+                                        ("gate", 12.0, "flat")),
+                              compound_storeys=(("wall", 1), ("tower", 1), ("keep", 3),
+                                                ("hall", 1), ("gate", 1)))
+    design = design_compound(site, pack, template, entry_side="south")
+    report = validate_compound(design, site)
+    assert report["state"] == "pass", [c for c in report["checks"] if c["state"] != "pass"]
+    gate = [v for v in design.volumes if v["role"] == "gate"]
+    lintels = [v for v in gate if v["base_m"] > 0.0]
+    assert len(gate) == 3 and len(lintels) == 1, "two piers and one lintel"
+    assert lintels[0]["base_m"] >= 3.0, "the gateway is walkable"
+    ramps = [v for v in design.volumes if v["role"] == "ramp"]
+    assert len(ramps) == 5, "a platform and two treads on each side"
+    assert sorted(round(v["height_m"], 3) for v in ramps) == [0.25, 0.25, 0.5, 0.5, 0.75]
+    outside = [v for v in design.volumes if v["y0"] < site.y0 - 2e-3 or v["y1"] > site.y1 + 2e-3]
+    assert outside and all(v["role"] == "ramp" for v in outside), outside
+    keep = next(v for v in design.volumes if v["role"] == "keep")
+    assert keep["levels_m"] == sorted(keep["levels_m"]) and len(keep["levels_m"]) == 2
+    assert keep["stair"]["x0"] >= keep["x0"] - 2e-3 and keep["stair"]["y1"] <= keep["y1"] + 2e-3
+    assert keep["door"]["side"] == "south" and keep["door"]["width_m"] > 0.0
+    assert any(v["role"] == "hall" and v["door"]["width_m"] > 0.0 for v in design.volumes)
+    # A template without a gate keeps the earlier plan: no gatehouse, no ramp.
+    plain = DesignTemplate(type="castle", kind="compound",
+                           compound=(("wall", 8.0, "flat"), ("tower", 22.0, "spire"),
+                                     ("keep", 18.0, "gable"), ("hall", 10.0, "gable")))
+    plain_design = design_compound(site, pack, plain, entry_side="south")
+    assert not [v for v in plain_design.volumes if v["role"] in ("gate", "ramp")]
+    assert validate_compound(plain_design, site)["state"] == "pass"
+
+
 def test_broken_design_templates_are_rejected(tmp_path: Path) -> None:
     source = DEFAULT_SETTINGS_ROOT / "arcane_medieval" / "designs.json"
     good = json.loads(source.read_text(encoding="utf-8"))

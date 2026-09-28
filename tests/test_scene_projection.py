@@ -83,6 +83,16 @@ def test_projected_scene_exports_boxes(scene_package) -> None:
     castle = [box for box in boxes if box["source_id"].startswith("compound_")]
     assert castle, "the scene's castle is exported as a compound"
     assert any("tower" in box["source_id"] for box in castle), "the castle keeps its towers"
+    # Work order 017 main line: the gate is a gatehouse and the keep has an
+    # interior. Ramps are solid treads rather than hollow shells, the keep
+    # carries a slab at every declared level plus one flight per level, and the
+    # keep and hall each keep a doorway under its own lintel.
+    assert any("_ramp" in box["source_id"] for box in castle), "the gate has a stepped approach"
+    assert {box["block"] for box in castle if "_ramp" in box["source_id"]} == \
+        {"minecraft:smooth_stone"}, "ramp treads are solid stone, not hollow shells"
+    assert sum(1 for box in castle if "_door_lintel" in box["source_id"]) >= 2, "keep and hall doors"
+    assert any("_floor_" in box["source_id"] for box in castle), "the keep has upper floors"
+    assert any("_stair" in box["source_id"] for box in castle), "the keep has a stair up"
     # Entrance articulation (building-skill rule 6) is a scene-only addition: a
     # step at ground level and a porch slab at the door head, both outside the
     # wall. The frozen city.7 path keeps its own geometry.

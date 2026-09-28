@@ -97,6 +97,9 @@ class DesignTemplate:
     # `kind: "compound"` (work order 017 class 3): a castle is several volumes —
     # a keep, corner towers, a hall and a curtain wall — not one box.
     compound: tuple[tuple[str, float, str], ...] = ()
+    # How many interior compartments a compound part needs. Only the keep has
+    # any today: a tower is a solid landmark and a great hall is one tall room.
+    compound_storeys: tuple[tuple[str, int], ...] = ()
     # Curtain-wall layout: a rectangle of runs, or a polygonal ring for the
     # "circular wall around the castle" the brief asks for.
     ring: str = "rectangle"
@@ -108,8 +111,20 @@ OPEN_SPACE_PAVING = ("stone", "path", "gravel")
 OPEN_SPACE_FIXTURES = ("lamp", "bench", "tree", "planter", "crate", "stack")
 # Compound volumes: role, height in metres, roof style. The layout rule derives
 # footprints from the site, so a template only states how tall each part is.
-COMPOUND_ROLES = ("wall", "tower", "keep", "hall")
+# `gate` is the gatehouse over the curtain-wall opening (work order 017 main
+# line): two piers beside the gap and a lintel above it. `ramp` is not a
+# template part at all — the layout rule emits it as the stepped approach onto
+# the raised gate platform, which is why it is accepted but never declared.
+COMPOUND_ROLES = ("wall", "tower", "keep", "hall", "gate")
+COMPOUND_RAMP_ROLES = ("ramp",)
 COMPOUND_RINGS = ("rectangle", "circle")
+# A gate platform sits above the bailey floor, so its approach treads step
+# outward past the site edge and onto the street that the gate faces. The
+# validator allows exactly that, and only on the entry side.
+GATE_PLATFORM_M = 0.75
+GATE_TREAD_M = 0.8
+RAMP_EXCURSION_M = 4.0
+GATE_OPENING_H_M = 4.0
 
 
 @dataclass(frozen=True)
@@ -224,17 +239,25 @@ def parse_designs(payload: dict, setting: str) -> dict:
             if not isinstance(parts, list) or not parts:
                 raise SceneError(code, f"{type_name}.parts must list the volumes")
             declared = []
+            interior = []
             for item in parts:
-                if not isinstance(item, dict) or set(item) != {"role", "height_m", "roof"}:
-                    raise SceneError(code, f"{type_name}.parts entries need role, height_m and roof")
+                if not isinstance(item, dict) or set(item) not in (
+                        {"role", "height_m", "roof"}, {"role", "height_m", "roof", "storeys"}):
+                    raise SceneError(code, f"{type_name}.parts entries need role, height_m, roof "
+                                           f"and an optional storeys")
                 if item["role"] not in COMPOUND_ROLES or item["roof"] not in ROOF_STYLES:
                     raise SceneError(code, f"{type_name}: unknown role {item['role']!r} "
                                            f"or roof {item['roof']!r}")
                 if not 3.0 <= float(item["height_m"]) <= 90.0:
                     raise SceneError(code, f"{type_name}.{item['role']}.height_m must be 3—90 m")
+                count = item.get("storeys", 1)
+                if type(count) is not int or not 1 <= count <= 6:
+                    raise SceneError(code, f"{type_name}.{item['role']}.storeys must be 1—6")
                 declared.append((item["role"], float(item["height_m"]), item["roof"]))
+                interior.append((item["role"], count))
             parsed[type_name] = DesignTemplate(type=type_name, kind="compound",
-                                               compound=tuple(declared), ring=ring)
+                                               compound=tuple(declared),
+                                               compound_storeys=tuple(interior), ring=ring)
             continue
         keys = {"storeys", "storey_height_m", "roof", "roof_height_m", "setback_m", "stair",
                 "room_uses", "aspect"}
@@ -667,6 +690,37 @@ def _overlaps(a: tuple[float, float, float, float], b: tuple[float, float, float
     return min(a[2], b[2]) - max(a[0], b[0]) > 1e-6 and min(a[3], b[3]) - max(a[1], b[1]) > 1e-6
 
 
+def _compound_side_span(rect: tuple[float, float, float, float], side: str) -> float:
+    return (rect[2] - rect[0]) if side in {"north", "south"} else (rect[3] - rect[1])
+
+
+def _compound_interior(rect: tuple[float, float, float, float], height_m: float,
+                       compartments: int) -> tuple[list[float], dict | None]:
+    """Floor levels and a corner stair for one compound volume (017 main line).
+
+    A keep is the one part of a castle with rooms above the ground: its height
+    is split into compartments no taller than the storey range the rest of the
+    pipeline uses, and one straight flight runs up a side so every level can be
+    reached. A great hall is a single tall room and a tower is a landmark, so
+    both stay one space — this returns nothing for them.
+    """
+    count = max(1, min(int(compartments), max(1, int(math.floor(height_m / 3.2)))))
+    if count < 2:
+        return [], None
+    levels = [round(height_m * index / count, 3) for index in range(1, count)]
+    span_x, span_y = rect[2] - rect[0], rect[3] - rect[1]
+    run = max(2.0, min(span_x, span_y) - 1.6)
+    if span_x >= span_y:
+        stair = {"x0": round(rect[0] + 0.6, 3), "y0": round(rect[1] + 0.6, 3),
+                 "x1": round(rect[0] + 0.6 + run, 3), "y1": round(rect[1] + 1.7, 3),
+                 "run": "x"}
+    else:
+        stair = {"x0": round(rect[0] + 0.6, 3), "y0": round(rect[1] + 0.6, 3),
+                 "x1": round(rect[0] + 1.7, 3), "y1": round(rect[1] + 0.6 + run, 3),
+                 "run": "y"}
+    return levels, stair
+
+
 def design_compound(site: Site, pack: SettingPack, template: DesignTemplate, *,
                     entry_side: str = "south") -> CompoundDesign:
     """Lay a castle on its site: curtain wall with a gate, towers, keep, hall.
@@ -681,6 +735,7 @@ def design_compound(site: Site, pack: SettingPack, template: DesignTemplate, *,
     if template.kind != "compound" or not template.compound:
         raise SceneError("design.kind", f"{template.type} is not a compound template")
     declared = {role: (height, roof) for role, height, roof in template.compound}
+    compartments = {role: count for role, count in template.compound_storeys}
     ceiling = float(site.max_height_m)
     # The template states absolute heights; when the envelope cannot hold the
     # tallest part, every part is scaled by the same factor so the castle keeps
@@ -689,19 +744,26 @@ def design_compound(site: Site, pack: SettingPack, template: DesignTemplate, *,
     tallest = max(height for height, _ in declared.values())
     scale = min(1.0, ceiling / tallest) if tallest > 0 else 1.0
 
-    def part(role: str, rect: tuple[float, float, float, float], fallback: float = 10.0) -> dict:
-        height, roof = declared.get(role, (fallback, "flat"))
+    def part(role: str, rect: tuple[float, float, float, float], fallback: float = 10.0, *,
+             base_m: float = 0.0, top_m: float | None = None, roof: str | None = None) -> dict:
+        height, declared_roof = declared.get(role, (fallback, "flat"))
+        if top_m is None:
+            top = max(base_m + 3.0, min(height * scale, ceiling))
+        else:
+            # Ramps and lintels state their own top: a gate platform is not a
+            # scaled version of a curtain wall, and a lintel starts in mid-air.
+            top = min(top_m, ceiling)
         return {"id": f"{site.id}_{role}{len(volumes)}", "role": role,
                 "x0": round(rect[0], 3), "y0": round(rect[1], 3),
                 "x1": round(rect[2], 3), "y1": round(rect[3], 3),
-                "height_m": round(max(3.0, min(height * scale, ceiling)), 3), "roof": roof}
+                "base_m": round(base_m, 3), "height_m": round(top, 3),
+                "roof": declared_roof if roof is None else roof}
 
     x0, y0, x1, y1 = site.x0, site.y0, site.x1, site.y1
     width, depth = x1 - x0, y1 - y0
     wall = 1.0
     gate = max(3.0, min(4.0, (width if entry_side in {"north", "south"} else depth) * 0.2))
     volumes: list[dict] = []
-    roof_height = {role: roof for role, _, roof in template.compound}
     # Curtain wall: four runs, with the street side split around its gate.
     runs = [("south", (x0, y0, x1, y0 + wall)),
             ("north", (x0, y1 - wall, x1, y1)),
@@ -743,6 +805,55 @@ def design_compound(site: Site, pack: SettingPack, template: DesignTemplate, *,
                 volumes.append(part("wall", (rect[0], centre + gate / 2, rect[2], rect[3])))
     # Corner towers, then the keep, then the hall along the far side from the gate.
     tower = max(6.0, min(10.0, min(width, depth) * 0.18))
+    # 门楼 (work order 017 main line): the opening in the curtain wall gets a
+    # gatehouse — two piers either side of the gap and a lintel spanning it — so
+    # the gate reads as a building rather than a hole in a wall. Its threshold
+    # sits on a stone platform reached by stepped ramps on both sides, which is
+    # what a gate does when the ground outside lies below the bailey floor.
+    mid_x, mid_y = (x0 + x1) / 2, (y0 + y1) / 2
+    if "gate" in declared and declared["gate"][0] * scale - GATE_OPENING_H_M >= 1.0:
+        along_x = entry_side in {"north", "south"}
+        if ring_circle:
+            approach = {"south": -math.pi / 2, "north": math.pi / 2,
+                        "west": math.pi, "east": 0.0}[entry_side]
+            gx = mid_x + radius * math.cos(approach)
+            gy = mid_y + radius * math.sin(approach)
+            outward = {"south": -1.0, "north": 1.0, "west": -1.0, "east": 1.0}[entry_side]
+        else:
+            outside_x = x0 + wall / 2 if entry_side == "west" else x1 - wall / 2
+            outside_y = y0 + wall / 2 if entry_side == "south" else y1 - wall / 2
+            gx = mid_x if along_x else outside_x
+            gy = outside_y if along_x else mid_y
+            outward = {"south": -1.0, "north": 1.0, "west": -1.0, "east": 1.0}[entry_side]
+        band = wall
+        pier = max(1.2, min(2.5, min(width, depth) * 0.05))
+        gate_top = declared["gate"][0] * scale
+        if along_x:
+            throat = (gx - gate / 2, gy - band / 2, gx + gate / 2, gy + band / 2)
+            piers = [(gx - gate / 2 - pier, gy - band / 2, gx - gate / 2, gy + band / 2),
+                     (gx + gate / 2, gy - band / 2, gx + gate / 2 + pier, gy + band / 2)]
+        else:
+            throat = (gx - band / 2, gy - gate / 2, gx + band / 2, gy + gate / 2)
+            piers = [(gx - band / 2, gy - gate / 2 - pier, gx + band / 2, gy - gate / 2),
+                     (gx - band / 2, gy + gate / 2, gx + band / 2, gy + gate / 2 + pier)]
+        for rect in piers:
+            volumes.append(part("gate", rect, 14.0))
+        volumes.append(part("gate", throat, 14.0, base_m=GATE_OPENING_H_M, top_m=gate_top))
+        volumes.append(part("ramp", throat, top_m=GATE_PLATFORM_M))
+        for index in (1, 2):
+            tread_top = round(GATE_PLATFORM_M - index * GATE_PLATFORM_M / 3.0, 3)
+            for sign in (outward, -outward):
+                if along_x:
+                    near = gy - band / 2 if sign < 0 else gy + band / 2
+                    rect = (gx - gate / 2, near + sign * (index - 1) * GATE_TREAD_M,
+                            gx + gate / 2, near + sign * index * GATE_TREAD_M)
+                else:
+                    near = gx - band / 2 if sign < 0 else gx + band / 2
+                    rect = (near + sign * (index - 1) * GATE_TREAD_M, gy - gate / 2,
+                            near + sign * index * GATE_TREAD_M, gy + gate / 2)
+                volumes.append(part("ramp", (min(rect[0], rect[2]), min(rect[1], rect[3]),
+                                              max(rect[0], rect[2]), max(rect[1], rect[3])),
+                                    top_m=tread_top))
     # Towers sit inside the curtain wall, so they touch its inner face rather
     # than overlapping the runs at the corners.
     if ring_circle:
@@ -767,7 +878,21 @@ def design_compound(site: Site, pack: SettingPack, template: DesignTemplate, *,
     keep_side = max(6.0, min(min(width, depth) * 0.42, min(width, depth) - 2 * (wall + tower + 1.5)))
     keep = ((x0 + x1) / 2 - keep_side / 2, (y0 + y1) / 2 - keep_side / 2,
             (x0 + x1) / 2 + keep_side / 2, (y0 + y1) / 2 + keep_side / 2)
-    volumes.append(part("keep", keep, 16.0))
+    keep_volume = part("keep", keep, 16.0)
+    # 城堡室内 (work order 017 main line): the keep is the one part with floors
+    # inside. A straight flight up one side connects every level, so the rooms
+    # above the ground can actually be reached, and the face towards the gate
+    # keeps a doorway.
+    keep_levels, keep_stair = _compound_interior(keep, keep_volume["height_m"],
+                                                compartments.get("keep", 3))
+    if keep_levels:
+        keep_volume["levels_m"] = keep_levels
+    if keep_stair is not None:
+        keep_volume["stair"] = keep_stair
+    keep_volume["door"] = {"side": entry_side,
+                           "width_m": round(min(2.2, _compound_side_span(keep, entry_side) * 0.4), 3),
+                           "height_m": 3.0}
+    volumes.append(keep_volume)
     hall_depth = max(6.0, depth * 0.22)
     hall_width = max(8.0, width * 0.5)
     if ring_circle:
@@ -791,7 +916,14 @@ def design_compound(site: Site, pack: SettingPack, template: DesignTemplate, *,
     if hall_rect[2] - hall_rect[0] > 4.0 and hall_rect[3] - hall_rect[1] > 4.0:
         if not any(_overlaps(hall_rect, (v["x0"], v["y0"], v["x1"], v["y1"]))
                    for v in volumes if v["role"] == "keep"):
-            volumes.append(part("hall", hall_rect, 10.0))
+            hall_volume = part("hall", hall_rect, 10.0)
+            # The great hall is one tall room, but it still needs a way in from
+            # the bailey rather than four solid walls.
+            hall_volume["door"] = {
+                "side": entry_side,
+                "width_m": round(min(2.2, _compound_side_span(hall_rect, entry_side) * 0.4), 3),
+                "height_m": 3.0}
+            volumes.append(hall_volume)
     height = max(v["height_m"] for v in volumes)
     return CompoundDesign(id=f"design_{site.id}", type=template.type, role=site.role,
                           design_state=site.design_state, site_id=site.id,
@@ -811,23 +943,71 @@ def validate_compound(design: CompoundDesign, site: Site) -> dict:
     check("design.outline", site.x0 - 2e-3 <= design.x0 and design.x1 <= site.x1 + 2e-3
           and site.y0 - 2e-3 <= design.y0 and design.y1 <= site.y1 + 2e-3,
           f"bailey {round(design.area_m2)} m² inside the site")
+
+    def ramp_reach_ok(volume: dict) -> bool:
+        """A gate ramp may leave the site, but only towards its own street."""
+        low = [site.x0 - 2e-3, site.y0 - 2e-3]
+        high = [site.x1 + 2e-3, site.y1 + 2e-3]
+        axis = 1 if design.entry_side in {"north", "south"} else 0
+        if design.entry_side in {"south", "west"}:
+            low[axis] -= RAMP_EXCURSION_M
+        else:
+            high[axis] += RAMP_EXCURSION_M
+        return (low[0] <= volume["x0"] and volume["x1"] <= high[0]
+                and low[1] <= volume["y0"] and volume["y1"] <= high[1])
+
     check("design.volumes_inside",
-          all(site.x0 - 2e-3 <= v["x0"] and v["x1"] <= site.x1 + 2e-3
-              and site.y0 - 2e-3 <= v["y0"] and v["y1"] <= site.y1 + 2e-3 for v in design.volumes),
-          f"{len(design.volumes)} volume(s) inside the site")
+          all(ramp_reach_ok(v) if v["role"] in COMPOUND_RAMP_ROLES else
+              (site.x0 - 2e-3 <= v["x0"] and v["x1"] <= site.x1 + 2e-3
+               and site.y0 - 2e-3 <= v["y0"] and v["y1"] <= site.y1 + 2e-3)
+              for v in design.volumes),
+          f"{len(design.volumes)} volume(s) inside the site "
+          f"(gate ramps may reach {RAMP_EXCURSION_M} m out on the entry side)")
     check("design.height", design.height_m <= site.max_height_m + 2e-3,
           f"{design.height_m} m against the envelope {site.max_height_m} m")
     check("design.parts", {"wall", "tower", "keep"} <= set(roles),
           f"a castle needs a wall, towers and a keep: {sorted(set(roles))}")
+    check("design.interior_levels",
+          all(0.0 < level < v["height_m"]
+              for v in design.volumes for level in v.get("levels_m", ())),
+          "every interior floor sits inside its own volume")
+    check("design.interior_stair",
+          all(v["x0"] - 2e-3 <= v["stair"]["x0"] and v["stair"]["x1"] <= v["x1"] + 2e-3
+              and v["y0"] - 2e-3 <= v["stair"]["y0"] and v["stair"]["y1"] <= v["y1"] + 2e-3
+              for v in design.volumes if "stair" in v),
+          "the keep stair stays inside the keep")
+    check("design.doors",
+          all(v["door"]["width_m"] > 0.0 and v["door"]["height_m"] > 0.0
+              for v in design.volumes if "door" in v),
+          "every declared doorway has a positive size")
+    gate_parts = [v for v in design.volumes if v["role"] == "gate"]
+    lintels = [v for v in gate_parts if v["base_m"] >= GATE_OPENING_H_M - 1e-6]
+    check("design.gatehouse",
+          not gate_parts or (len(lintels) == 1 and len(gate_parts) == 3),
+          f"gatehouse parts: {len(gate_parts)} gate volume(s), {len(lintels)} lintel(s)")
+    check("design.gate_opening",
+          all(v["base_m"] >= 3.0 for v in lintels),
+          "the gateway clears three metres")
     # Wall segments are one continuous run — a polygonal ring's chords overlap at
     # the corners by construction — so only the distinct structures (towers,
     # keep, hall) have to stay clear of everything.
-    rects = [(v["role"], v["x0"], v["y0"], v["x1"], v["y1"]) for v in design.volumes]
-    overlap = any(_overlaps(rects[i][1:], rects[j][1:])
-                  for i in range(len(rects)) for j in range(i + 1, len(rects))
-                  if "wall" not in (rects[i][0], rects[j][0]))
+    # A gate lintel and its own threshold platform share a footprint but not a
+    # height, and that is exactly how a gateway works, so the clash test is
+    # three-dimensional: same plan *and* overlapping elevation.
+    rects = [(v["role"], v["x0"], v["y0"], v["x1"], v["y1"], v["base_m"], v["height_m"])
+             for v in design.volumes]
+
+    def clash(a: tuple, b: tuple) -> bool:
+        if "wall" in (a[0], b[0]):
+            return False
+        return (_overlaps(a[1:5], b[1:5])
+                and min(a[6], b[6]) - max(a[5], b[5]) > 2e-3)
+
+    overlap = any(clash(rects[i], rects[j])
+                  for i in range(len(rects)) for j in range(i + 1, len(rects)))
     check("design.volumes_clear", not overlap,
-          "no two structures overlap (wall segments may overlap in their run)")
+          "no two structures overlap in plan and elevation "
+          "(wall segments may overlap in their run)")
     return {"design_id": design.id, "type": design.type, "kind": "compound",
             "state": "pass" if all(item["state"] == "pass" for item in results) else "fail",
             "checks": results}

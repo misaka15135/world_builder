@@ -198,12 +198,24 @@ def assemble_scene(brief: SceneBrief, pack: SettingPack, terrain: TerrainPlan, s
                               programme=design.type, design_state=design.design_state,
                               volume_count=len(design.volumes), entry_side=design.entry_side)
             compound["semantic_completeness"] = "component"
+            # Volumes state their own base elevation (a gate lintel starts in
+            # mid-air) and the keep carries an interior: floor levels and the
+            # corner stair that reaches them. The stair rectangle is in scene
+            # coordinates, so it is rebased with the volume footprint.
+            def _local_stair(volume: dict) -> dict:
+                stair = volume["stair"]
+                return {**stair, "x0": round(stair["x0"] - design.x0, 3),
+                        "x1": round(stair["x1"] - design.x0, 3),
+                        "y0": round(stair["y0"] - design.y0, 3),
+                        "y1": round(stair["y1"] - design.y0, 3)}
+
             compound["geometry"] = {
                 "representation": "compound", "entry_side": design.entry_side,
                 "volumes": [{**volume, "x0": round(volume["x0"] - design.x0, 3),
                              "x1": round(volume["x1"] - design.x0, 3),
                              "y0": round(volume["y0"] - design.y0, 3),
-                             "y1": round(volume["y1"] - design.y0, 3)}
+                             "y1": round(volume["y1"] - design.y0, 3),
+                             **({"stair": _local_stair(volume)} if "stair" in volume else {})}
                             for volume in design.volumes],
                 "materials": dict(design.materials),
                 "assignment": "scene_pipeline_stage_e",
