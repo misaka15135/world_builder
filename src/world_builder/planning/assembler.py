@@ -30,6 +30,10 @@ from .designer import BuildingDesign, CompoundDesign, CylinderDesign, DockDesign
 from .siting import SitingPlan
 from .terrain import TerrainPlan
 
+# How coarse the height grid carried on the terrain entity is. A target that
+# only has the package can still lay stepped ground; 32 m keeps a 512 m scene to
+# a 17x17 grid of numbers.
+HEIGHT_GRID_SPACING_M = 32.0
 ASSEMBLY_VERSION = "0.1.0"
 DEFAULT_HEIGHTFIELD_SPACING_M = 8
 
@@ -86,8 +90,19 @@ def assemble_scene(brief: SceneBrief, pack: SettingPack, terrain: TerrainPlan, s
     checksum = digest(heightfield_body)
     terrain_entity = entity("terrain_main", "terrain", world_id, [0, 0, 0],
                             [brief.region_m, brief.region_m, 64])
+    # The asset is content-addressed, so a target that only has the package
+    # cannot reach the bytes. A coarse grid travels with the entity: it is small
+    # (289 values for a 512 m scene at 32 m), and it is what lets the Minecraft
+    # adapter lay stepped ground instead of one flat proxy (work order 014's
+    # excavation, 2026-09-28).
+    stride = max(1, int(round(HEIGHT_GRID_SPACING_M / spacing)))
+    grid = [[round(float(terrain.heights[row][column]), 3)
+             for column in range(0, len(terrain.heights[row]), stride)]
+            for row in range(0, len(terrain.heights), stride)]
     terrain_entity["geometry"] = {"representation": "heightfield", "asset_id": "asset_heightfield",
-                                  "spacing_m": spacing, "relief_m": [terrain.stats["min_m"], terrain.stats["max_m"]]}
+                                  "spacing_m": spacing, "relief_m": [terrain.stats["min_m"], terrain.stats["max_m"]],
+                                  "height_grid_m": grid, "height_grid_spacing_m": round(stride * spacing, 3),
+                                  "height_grid_origin_m": [0.0, 0.0]}
     records.append(terrain_entity)
     heightfield_asset = {"record_type": "asset", "id": "asset_heightfield", "content_hash": checksum,
                          "uri": "assets/sha256/" + checksum[7:], "media_type": "application/json",

@@ -31,6 +31,25 @@ def _harbour_package():
     return brief, pack, terrain, siting, tuple(designs)
 
 
+def test_the_terrain_entity_carries_a_sampled_height_grid() -> None:
+    """Work order 014: the heights travel with the package, not only in the store.
+
+    The heightfield asset is content-addressed, so a target holding only the
+    package cannot read its bytes. A coarse grid rides on the terrain entity so
+    an adapter can lay stepped ground — and so the dry dock has something to
+    cut into instead of the two flat layers.
+    """
+    brief, pack, terrain, siting, designs = _harbour_package()
+    package = assemble_scene(brief, pack, terrain, siting, designs)
+    geometry = next(r for r in package["records"] if r.get("kind") == "terrain")["geometry"]
+    grid = geometry["height_grid_m"]
+    assert geometry["height_grid_spacing_m"] >= 32.0
+    assert len(grid) == len(grid[0]) and len(grid) < len(terrain.heights), "the grid is coarse"
+    flat = [value for row in grid for value in row]
+    assert min(flat) >= terrain.stats["min_m"] - 1.0 and max(flat) <= terrain.stats["max_m"] + 1.0
+    assert max(flat) - min(flat) > 0.0, "the sampled ground is not one flat height"
+
+
 def test_a_scene_package_survives_the_worldpkg_round_trip(tmp_path) -> None:
     brief, pack, terrain, siting, designs = _harbour_package()
     repository = Repository(tmp_path / "repo")
