@@ -26,6 +26,8 @@
 
 **2026-09-28 主线 e：失败按作用域回馈**：[018](018_assembler_pipeline.md) 新增 `design_sites()`——逐块设计，失败**只在该块内重试**：先按原包络，再把同一包络内收 10% / 20% 重试，三次都失败才丢弃该块并记录 `{site_id, type, code, attempts, shrink}`，其余地块照常设计，**不重跑整城、不放宽 brief**；两个工具（`assemble_scene.py` / `design_buildings.py`）改用它，后者顺带修掉「只认建筑」的既存缺陷（对 compound/cylinders 会 AttributeError）。四背景 `failures=0`（74 / 32 / 18 / 14）。完整回归 **170 passed**、文档检查零错误。**未做**：街区重划与回到 014；另一处验证缺口——设计器对 1×1 m 或 `max_height_m=1.0` 这类极小包络**不抛错**（事后校验才判 fail），因此「悄悄越界」尚未被作用域回馈覆盖。详见 [018](018_assembler_pipeline.md)。
 
+**2026-09-28 包络底线 + 输入口径统一**：① 设计器补三道**包络底线**并抛 `design.envelope`——平面放不下梯井 + 两间房（6×5 m）、没有任何一面墙放得下 2 m 门洞、层高 + 屋顶超出包络高度。上一轮记录的空洞（1×1 m 也「设计成功」、`max_height_m=1.0` 产出 3.2 m 建筑）**已闭合**；四背景 `design_sites` 仍零失败（74/32/18/14），说明没有地块被误伤。② 修掉 [016](016_district_siting.md) 要求的输入口径不一致：`tools/design_buildings.py` 原本给 `--setting` 自拼「<setting> scene」提示词，导致同背景在它这里 13 个设计、在 `assemble_scene.py` 里 14 个；现在 `--setting` = 该背景登记的 `default_prompt`，四背景两工具数字逐一同为 **74 / 32 / 18 / 14**，且 `--setting` 与 `--prompt <登记文本>` 的产物 JSON 逐字节相同。完整回归 **172 passed**、文档检查零错误。
+
 **2026-09-27 风格建筑双目标样件**：[021](021_style_building_cross_target_sample.md) 已完成；同一木构街屋设计导出 Unity GLB 和 Minecraft Sponge v3。v5 在 Unity 目标导入/重开 143/143 构件通过，1.8 m 控制器连续走通门、商铺、楼梯、二层房间；Minecraft 在 `WB Verify Flat` 实贴 1,571 方块，生存模式同路线从街道连续走到二层居室，两端目标截图与检查点已留证。手工样件尚未接入通用 E 设计器。
 
 **2026-09-27 最新状态**：008/009/016/017/018 保持 `in_progress`。开放空间代表样件已在两目标推进：Minecraft 广场 1 分块、公园 2 分块实贴且路径/灯具探针通过；广场冒险模式落地和脚下方块验证通过，自动输入未能完成连续实走。Unity 同修订广场 34 构件导入与重开通过，新增 Play Mode 控制器沿源步道 3/3 检查点连续通行。完整场景导出/漫游仍未验收；证据见 [008](008_unity_export.md)、[009](009_minecraft_schematic_export.md)、[018](018_assembler_pipeline.md)。此前冻结 20 例复跑 20/20 通过。

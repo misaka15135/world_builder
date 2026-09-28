@@ -225,6 +225,57 @@ def test_compound_design_lays_a_castle_without_overlaps() -> None:
     assert tight_report["state"] == "pass", [c for c in tight_report["checks"] if c["state"] != "pass"]
 
 
+def test_a_plot_that_cannot_hold_the_plan_is_refused() -> None:
+    """Work order 018: the design stage refuses an impossible envelope.
+
+    A 1x1 m plot used to "design" successfully with rooms of negative width, and
+    a plot too flat for the minimum storey plus its roof produced a building
+    taller than its envelope. Neither raised, so the scoped failure feedback had
+    nothing to catch. Both now raise `design.envelope` -- which is what makes the
+    per-plot retry meaningful rather than decorative.
+    """
+    from world_builder.planning import Site
+    from world_builder.planning.designer import design as design_one
+    pack = load_setting_pack("industrial_park")
+    template = load_designs("industrial_park")["workshop"]
+
+    def attempt(width: float, depth: float, height: float):
+        site = Site(id="site_probe", type="workshop", role="works", design_state="planned",
+                    block_id="block_000", domain_id="works", x0=0.0, y0=0.0, x1=width, y1=depth,
+                    max_height_m=height, max_storeys=2, needs=(), adjacency=())
+        return design_one(site, pack.entry("workshop"), pack, template, entry_side="south", seed=4)
+
+    for width, depth in ((1.0, 1.0), (2.0, 2.0), (6.0, 4.0)):
+        with pytest.raises(SceneError) as raised:
+            attempt(width, depth, 12.0)
+        assert raised.value.code == "design.envelope", (width, depth)
+    with pytest.raises(SceneError) as raised:
+        attempt(20.0, 20.0, 1.0)
+    assert raised.value.code == "design.envelope", "a plot too flat for a storey is refused"
+    roomy = attempt(20.0, 20.0, 12.0)
+    assert roomy.storeys and roomy.height_m <= 12.0 + 1e-6
+
+
+def test_design_tool_reads_setting_and_prompt_the_same_way(tmp_path: Path) -> None:
+    """Work order 016: one input convention across the tools.
+
+    `design_buildings.py` used to synthesise a "<setting> scene" prompt for
+    `--setting`, so the same setting designed 13 harbour plots through this tool
+    and 14 through `assemble_scene.py`. `--setting` now means the setting's own
+    registered prompt in both.
+    """
+    spec = importlib.util.spec_from_file_location("design_tool_parity",
+                                                  REPO / "tools" / "design_buildings.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    by_setting, by_prompt = tmp_path / "setting.json", tmp_path / "prompt.json"
+    assert module.main(["--setting", "harbour", "--seed", "4", "--output", str(by_setting)]) == 0
+    assert module.main(["--prompt", PROMPTS["harbour"], "--seed", "4", "--output", str(by_prompt)]) == 0
+    setting_doc = json.loads(by_setting.read_text(encoding="utf-8"))
+    prompt_doc = json.loads(by_prompt.read_text(encoding="utf-8"))
+    assert setting_doc["designs"] and setting_doc["designs"] == prompt_doc["designs"]
+
+
 def test_one_bad_plot_does_not_take_the_scene_down() -> None:
     """Work order 018: failure is scoped to the plot that failed.
 

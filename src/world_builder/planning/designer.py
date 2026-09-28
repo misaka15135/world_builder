@@ -39,6 +39,13 @@ DOOR_SPAN_MIN_M = 3.31
 # envelope. A storey too short for the quantised opening is handled on the
 # target side by carving the doorway through the ground slab (adapter 0.1.0-city.6).
 MIN_STOREY_M = 2.8
+# A two-room plan puts a stair well (3 m) plus a wall either side of it across
+# the short span, and each room needs a metre of depth either side of the
+# middle partition. Below these the plan has no room in it, and the design has
+# to say so instead of emitting a building whose rooms have negative width —
+# which is what a 1x1 m plot used to produce (measured 2026-09-28).
+MIN_PLAN_WIDTH_M = 6.0
+MIN_PLAN_DEPTH_M = 5.0
 # Furniture per room use: a small vocabulary with sizes in metres. Stage E
 # places it; stage F and the target adapters only read it.
 FURNITURE = {
@@ -501,6 +508,13 @@ def design_building(site: Site, entry, pack: SettingPack, template: DesignTempla
         raise SceneError("design.entry_side", f"unknown entry side {entry_side!r}")
     width_span = site.x1 - site.x0
     depth_span = site.y1 - site.y0
+    # An envelope that cannot hold the plan is refused here rather than fitted:
+    # a building whose rooms have negative width is not a design, it is a bug
+    # the scoped failure feedback should have caught (work order 018).
+    if width_span < MIN_PLAN_WIDTH_M - 1e-6 or depth_span < MIN_PLAN_DEPTH_M - 1e-6:
+        raise SceneError("design.envelope",
+                         f"{site.id}: a {round(width_span, 1)}x{round(depth_span, 1)} m plot cannot hold a "
+                         f"stair well and two rooms; {MIN_PLAN_WIDTH_M}x{MIN_PLAN_DEPTH_M} m is the floor")
     # A door needs about six metres of wall. On a narrow plot the entrance moves
     # to the side that can actually take one, instead of being declared on a
     # face too short to hold it (the target adapter rejects the latter, and it
@@ -516,6 +530,10 @@ def design_building(site: Site, entry, pack: SettingPack, template: DesignTempla
     # 2026-09-27 (site_063), so the entrance moves to the longest face.
     if spans[entry_side] < DOOR_SPAN_MIN_M:
         entry_side = max(spans, key=lambda side: spans[side])
+    if spans[entry_side] < DOOR_SPAN_MIN_M - 1e-6:
+        raise SceneError("design.envelope",
+                         f"{site.id}: no face is long enough for a {ENTRY_DOOR_M} m door "
+                         f"({round(spans[entry_side], 2)} m at best, {DOOR_SPAN_MIN_M} m needed)")
     along_span = spans[entry_side]
     entry_offset = max(1.0, min(0.3 * along_span, along_span - ENTRY_DOOR_M - 0.31))
     fingerprint = f"{site.id}:{entry.type}:{seed}:{DESIGN_VERSION}".encode("utf-8")
@@ -565,6 +583,12 @@ def design_building(site: Site, entry, pack: SettingPack, template: DesignTempla
             squeezed = (site.max_height_m - template.roof_height_m) / chosen
             storey_height = math.floor(max(MIN_STOREY_M, min(storey_height, squeezed)) * 1000) / 1000
         height = chosen * storey_height + template.roof_height_m
+    # The envelope is hard: a plot too flat for the minimum storey and its roof
+    # has no design, and saying so is what lets one plot fail alone (018).
+    if height > site.max_height_m + 1e-6:
+        raise SceneError("design.envelope",
+                         f"{site.id}: {round(height, 2)} m of storey and roof does not fit the "
+                         f"{round(site.max_height_m, 2)} m envelope")
     insets = _insets(width, depth, chosen, template.setback_m, fingerprint=site.id)
     stair_void = 3.0
     room_span = max(4.0, width - stair_void - 4.0)
