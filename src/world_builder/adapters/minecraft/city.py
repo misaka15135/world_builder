@@ -1020,6 +1020,11 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
             # solid column multiplies into the whole footprint — 98 % of a band's
             # blocks were underground fill before this (2,305,024 of 2,347,177).
             surface_boxes = []
+            # The riser is the visible edge of the relief, so it takes the
+            # background's own wall material instead of one generic stone: a
+            # timber town, a concrete CBD, a brick estate and a pale harbour
+            # get four different banks (work order 014 / 017 style vocabulary).
+            riser_block = _shell_materials(style)[0]
             tops = [[float(value) + 0.25 for value in row] for row in grid]
             rows_count, columns_count = len(tops), len(tops[0])
             for row_index in range(rows_count):
@@ -1042,12 +1047,12 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
                             edge = gx0 + grid_step
                             surface_boxes.append(_box(
                                 f"terrain_riser_x_{row_index:02}_{column_index:02}", edge - 1.0, edge,
-                                gn0, gn0 + grid_step, low - 1.0, high, "minecraft:stone_bricks"))
+                                gn0, gn0 + grid_step, low - 1.0, high, riser_block))
                         else:
                             edge = gn0 + grid_step
                             surface_boxes.append(_box(
                                 f"terrain_riser_y_{row_index:02}_{column_index:02}", gx0, gx0 + grid_step,
-                                edge - 1.0, edge, low - 1.0, high, "minecraft:stone_bricks"))
+                                edge - 1.0, edge, low - 1.0, high, riser_block))
         else:
             surface_boxes = [_box("terrain_proxy", tlo[0], thi[0], tlo[1], thi[1], -0.2, 0.25,
                                   "minecraft:grass_block")]
