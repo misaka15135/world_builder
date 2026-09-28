@@ -33,7 +33,7 @@ from .terrain import TerrainPlan
 # How coarse the height grid carried on the terrain entity is. A target that
 # only has the package can still lay stepped ground; 32 m keeps a 512 m scene to
 # a 17x17 grid of numbers.
-HEIGHT_GRID_SPACING_M = 32.0
+HEIGHT_GRID_SPACING_M = 16.0
 ASSEMBLY_VERSION = "0.1.0"
 DEFAULT_HEIGHTFIELD_SPACING_M = 8
 
