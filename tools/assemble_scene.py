@@ -29,6 +29,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="write 128 m Sponge schematics here (projected into the adapter's vocabulary)")
     parser.add_argument("--worldpkg", type=Path,
                         help="archive the finished WIR package as a .worldpkg for replay elsewhere")
+    parser.add_argument("--floor-y", type=int, default=-1,
+                        help="lowest schematic layer; lower it for scenes that excavate")
     parser.add_argument("--interiors", action="store_true",
                         help="materialise interiors; the adapter needs stair geometry for that")
     args = parser.parse_args(argv)
@@ -76,7 +78,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.minecraft:
         try:
             export = export_city(project_for_minecraft(package), args.minecraft,
-                                 include_interiors=args.interiors)
+                                 include_interiors=args.interiors, floor_y=args.floor_y)
         except (CityExportError, ValueError) as exc:
             print(json.dumps({"code": getattr(exc, "code", "target.error"), "message": str(exc)},
                              ensure_ascii=False))

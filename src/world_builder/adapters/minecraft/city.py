@@ -1205,13 +1205,17 @@ def schematic_bytes(grid: bytearray, data_version: int, height: int) -> bytes:
 
 
 def export_city(package: dict, output_dir: str | Path, *, include_interiors: bool = False,
+                floor_y: int = -1,
                 data_version: int = DEFAULT_DATA_VERSION) -> dict:
     boxes = city_boxes(package, include_interiors=include_interiors)
     # The region starts just below the city's own ground so the paste base lands
     # on a solid block. Starting at the overworld floor would put the player
     # inside bedrock, which pushes them out of the world instead of anchoring
     # the clipboard there.
-    y0, y1 = -1, 32
+    # The vertical window of the schematic. A scene that excavates — a dry
+    # dock, a moat — needs the window to reach below grade, or the pit has no
+    # floor at all (found 2026-09-29: a 5 m basin against a floor of -1).
+    y0, y1 = floor_y, 32
     chunks = voxelize(boxes, y0, y1)
     entities = sorted((r for r in package["records"] if r["record_type"] == "entity"), key=lambda r: r["id"])
     source_hash = "sha256:" + hashlib.sha256(json.dumps(package, ensure_ascii=False, sort_keys=True,
