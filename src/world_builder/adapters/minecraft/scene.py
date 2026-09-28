@@ -21,6 +21,10 @@ import copy
 from world_builder.adapters.minecraft.city import CORRIDOR_SPACING, corridor_boxes
 
 BOX_KINDS = {"road", "rail", "wall", "pier", "quay", "work"}
+# A vessel is the one polyline that must not be flattened: a corridor box chain
+# would throw away the hull's taper, and the adapter draws a ship from its
+# mooring line and beam instead (work order 017 class 3).
+VESSEL_WORK_TYPES = {"cargo_ship"}
 # One profile per background: the style vocabulary has to follow the setting, or
 # an industrial estate and a container port come out looking like the CBD
 # (building-skill reference cards: modern-and-industrial).
@@ -51,8 +55,10 @@ def project_for_minecraft(package: dict) -> dict:
     flattened = []
     for record in projected["records"]:
         geometry = record.get("geometry") or {}
+        work_type = (record.get("attributes") or {}).get("work_type")
         if (record["record_type"] == "entity" and record["kind"] in BOX_KINDS
-                and geometry.get("representation") == "polyline"):
+                and geometry.get("representation") == "polyline"
+                and work_type not in VESSEL_WORK_TYPES):
             points = geometry.get("points_m") or []
             if len(points) < 2:
                 raise ValueError(f"scene.project_polyline: {record['id']} has fewer than two points")

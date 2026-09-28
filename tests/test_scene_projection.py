@@ -32,6 +32,32 @@ def scene_package():
     return assemble_scene(brief, pack, terrain, siting, tuple(designs)), siting
 
 
+def test_a_vessel_keeps_its_line_through_the_projection(scene_package) -> None:
+    """Main line c (work order 017): a ship is not a corridor.
+
+    Every other polyline is flattened into corridor boxes, which is right for a
+    road or a quay and wrong for a hull: it would throw away the taper. The
+    projection leaves a vessel's mooring line intact so the adapter can draw the
+    hull from it, and the rest of the package is unchanged.
+    """
+    package, _ = scene_package
+    vessel = {"record_type": "entity", "id": "work_900", "kind": "work",
+              "parent_id": package["records"][0]["id"],
+              "attributes": {"work_type": "cargo_ship", "design_state": "planned", "width_m": 12.0},
+              "geometry": {"representation": "polyline", "width_m": 12.0,
+                           "points_m": [[10.0, 10.0], [10.0, 70.0]]},
+              "bounds": {"min": [10.0, 10.0, 0], "max": [11.0, 70.0, 12.0]}}
+    package = {**package, "records": [*package["records"], vessel]}
+    projected = project_for_minecraft(package)
+    surviving = [record for record in projected["records"] if record["id"].startswith("work_900")]
+    assert [record["id"] for record in surviving] == ["work_900"], "the hull line is not flattened"
+    assert surviving[0]["geometry"]["representation"] == "polyline"
+    # A road still goes the other way: it becomes a chain of corridor boxes.
+    road = next(record for record in projected["records"]
+                if record["id"].startswith("arterial_0_seg"))
+    assert road["geometry"]["representation"] == "box"
+
+
 def test_polylines_become_segment_boxes(scene_package) -> None:
     package, siting = scene_package
     projected = project_for_minecraft(package)

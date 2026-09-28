@@ -15,7 +15,7 @@ import pytest
 from world_builder.adapters.minecraft.city import (CityExportError, _building_shell, _partition_boxes,
                                                    _cylinder_boxes, _roof_boxes, _shell_materials,
                                                    _storey_bands, _storey_outlines, _street_block,
-                                                   _window_boxes, export_city)
+                                                   _vessel_boxes, _window_boxes, export_city)
 from world_builder.storage.worldpkg import read_worldpkg
 
 SOURCE = Path(__file__).resolve().parents[1] / "artifacts/benchmark-city-v1/city-first.worldpkg"
@@ -263,6 +263,39 @@ def test_modern_style_gets_asphalt_streets_and_glazing() -> None:
     assert not [band for band in bands if band["source_id"].endswith("_0_east")], "the entrance storey is not glazed"
     timber = _storey_bands("b", outlines, 0.0, 0.2, 9.0, 3.0, "minecraft:dark_oak_planks")
     assert {band["block"] for band in timber} == {"minecraft:dark_oak_planks"}
+
+
+def test_a_cargo_ship_tapers_from_amidships_to_bow_and_stern() -> None:
+    """Main line c (work order 017): a vessel is a stepped, tapered hull.
+
+    The source states a mooring line and a beam. The hull is a run of sections
+    that narrow towards both ends, with a boot-top below the waterline, a deck
+    plate, a stern house and a funnel — before this the ship produced no blocks
+    at all.
+    """
+    record = {"id": "work_002", "kind": "work",
+              "attributes": {"work_type": "cargo_ship", "width_m": 12.0},
+              "geometry": {"representation": "polyline", "width_m": 12.0,
+                           "points_m": [[0.0, 0.0], [0.0, 60.0]]},
+              "bounds": {"min": [0.0, 0.0, 0], "max": [1.0, 60.0, 12.0]}}
+    boxes = _vessel_boxes(record)
+    hull = [box for box in boxes if "_hull_" in box["source_id"] and "_boot_" not in box["source_id"]]
+    assert len(hull) >= 8, "the hull is a run of sections"
+    widths = [box["x1"] - box["x0"] for box in hull]
+    middle = widths[len(widths) // 2]
+    assert middle == max(widths), "the beam is widest amidships"
+    assert widths[0] < middle * 0.5, "the bow tapers to well under the beam"
+    assert widths[-1] < middle * 0.5, "the stern tapers too"
+    assert {box["block"] for box in hull} == {"minecraft:gray_concrete"}
+    boot = [box for box in boxes if "_hull_boot_" in box["source_id"]]
+    assert {box["block"] for box in boot} == {"minecraft:red_concrete"}
+    assert all(box["y1"] <= 1.2 + 1e-6 for box in boot), "the boot-top sits below the waterline"
+    assert all(box["y0"] >= 5.0 - 1e-6 for box in boxes
+               if "_deck_" in box["source_id"]), "the deck rides above the hull"
+    house = next(box for box in boxes if box["source_id"].endswith("_house"))
+    funnel = next(box for box in boxes if box["source_id"].endswith("_funnel"))
+    assert house["y0"] >= 5.0 and funnel["y0"] >= house["y1"] - 1e-6, "the funnel stands on the house"
+    assert house["z0"] < -30.0, "the house is aft, not amidships"
 
 
 def test_a_tank_farm_is_stepped_into_a_round_shell() -> None:

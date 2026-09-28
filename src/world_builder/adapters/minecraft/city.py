@@ -58,6 +58,11 @@ PALETTE = {
     "minecraft:glass": 18,
     "minecraft:gray_concrete": 19,
     "minecraft:dark_oak_planks": 20,
+    # Hull colours (work order 017 class 3): a boot-top below the waterline, a
+    # white house forward of the funnel and a black funnel.
+    "minecraft:red_concrete": 21,
+    "minecraft:white_concrete": 22,
+    "minecraft:black_concrete": 23,
 }
 
 
@@ -649,6 +654,60 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool,
     return parts
 
 
+def _vessel_boxes(record: dict) -> list[dict]:
+    """A cargo ship: a hull that tapers to bow and stern (work order 017 class 3).
+
+    The source states the ship as a mooring line and a beam. The hull is laid as
+    a run of sections along that line, each narrower towards the ends (1.0 of the
+    beam amidships, 0.38 at bow and stern), with a boot-top below the waterline,
+    a deck plate, a stern house and a funnel. Sections are axis-aligned, so a
+    ship lying off-axis is stepped the way the road and river corridors already
+    are — the harbour's own berths run almost exactly north-south, which is the
+    case this renders cleanly.
+    """
+    geometry = record["geometry"]
+    points = geometry["points_m"]
+    if len(points) < 2:
+        raise CityExportError("target.vessel_line", record["id"])
+    (x0, y0), (x1, y1) = points[0], points[-1]
+    beam = float(geometry.get("width_m", 10.0))
+    length = math.hypot(x1 - x0, y1 - y0) or 1.0
+    steps = max(8, int(length / 2.4))
+    step_x, step_y = (x1 - x0) / steps, (y1 - y0) / steps
+    along_x = abs(x1 - x0) >= abs(y1 - y0)
+    deck, boot = 5.0, 1.2
+    name = record["id"]
+    boxes: list[dict] = []
+    for index in range(steps):
+        middle = (index + 0.5) / steps
+        cx, cy = x0 + (x1 - x0) * middle, y0 + (y1 - y0) * middle
+        # Linear taper: full beam amidships, 38 % at the ends.
+        half = beam / 2 * (1.0 - abs(middle - 0.5) * 1.24)
+        if along_x:
+            rect = (cx - abs(step_x) / 2, cx + abs(step_x) / 2, cy - half, cy + half)
+        else:
+            rect = (cx - half, cx + half, cy - abs(step_y) / 2, cy + abs(step_y) / 2)
+        boxes.append(_box(f"{name}_hull_boot_{index:02}", rect[0], rect[1], rect[2], rect[3],
+                          0.0, boot, "minecraft:red_concrete"))
+        boxes.append(_box(f"{name}_hull_{index:02}", rect[0], rect[1], rect[2], rect[3],
+                          boot, deck, "minecraft:gray_concrete"))
+        boxes.append(_box(f"{name}_deck_{index:02}", rect[0], rect[1], rect[2], rect[3],
+                          deck, deck + 0.4, "minecraft:smooth_stone"))
+    # Stern house and funnel: aft of amidships, above the deck.
+    aft = 0.80
+    hx, hy = x0 + (x1 - x0) * aft, y0 + (y1 - y0) * aft
+    half_beam, house_length = beam * 0.30, length * 0.16
+    if along_x:
+        house = (hx - house_length / 2, hx + house_length / 2, hy - half_beam, hy + half_beam)
+    else:
+        house = (hx - half_beam, hx + half_beam, hy - house_length / 2, hy + house_length / 2)
+    boxes.append(_box(f"{name}_house", house[0], house[1], house[2], house[3],
+                      deck + 0.4, deck + 8.4, "minecraft:white_concrete"))
+    boxes.append(_box(f"{name}_funnel", hx - 1.5, hx + 1.5, hy - 1.5, hy + 1.5,
+                      deck + 8.4, deck + 12.0, "minecraft:black_concrete"))
+    return boxes
+
+
 def _disc_rows(name: str, cx: float, cy: float, radius: float, low: float, high: float,
                block: str, tag: str) -> list[dict]:
     """A filled circle at 1 m resolution: one box per row of the disc."""
@@ -903,6 +962,14 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
                 continue
             (ox, on, _), (_, _, _) = record["bounds"]["min"], record["bounds"]["max"]
             surface_boxes.extend(_cylinder_boxes(record, ox, on))
+        # Vessels (work order 017 class 3): a cargo ship is a mooring line plus
+        # a beam in the WIR, and it had no geometry at all until now.
+        for record in entities:
+            if record["kind"] != "work" or record["attributes"].get("work_type") != "cargo_ship":
+                continue
+            if record["geometry"]["representation"] != "polyline":
+                raise CityExportError("target.vessel_geometry", record["id"])
+            surface_boxes.extend(_vessel_boxes(record))
         # The source forbids wet building footprints. Keep the target robust as
         # well: flat water proxies must not replace a quantised floor or road.
         # Ground and water first, then the street network, and the building
