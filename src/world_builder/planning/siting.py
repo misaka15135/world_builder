@@ -555,6 +555,10 @@ def plan_siting(brief: SceneBrief, pack: SettingPack, terrain: TerrainPlan,
         "bridges": len(bridges),
         "sites": len(sites),
         "works": len(works),
+        # What the brief asked for and the terrain could not take (work order 014):
+        # naming the shortfall is the difference between an infeasible brief and a
+        # city that is quietly missing its harbour works.
+        "unplaced": _unplaced_requirements(brief, pack, sites, works),
         "sites_by_state": {state: sum(1 for site in sites if site.design_state == state)
                            for state in sorted({site.design_state for site in sites})},
         "works_by_state": {state: sum(1 for work in works if work.design_state == state)
@@ -567,6 +571,24 @@ def plan_siting(brief: SceneBrief, pack: SettingPack, terrain: TerrainPlan,
     return SitingPlan(setting=pack.id, seed=brief.seed, region_m=brief.region_m, blocks=blocks,
                       domains=tuple(domains), roads=tuple(roads), bridges=tuple(bridges),
                       sites=tuple(sites), works=tuple(works), stats=stats)
+
+
+def _unplaced_requirements(brief, pack, sites, works) -> list[dict]:
+    """Required landmarks the plan could not place, with what was asked for.
+
+    Work order 014: when the terrain cannot take a demanded type the plan has to
+    say so — returning a city that is silently missing a landmark is how a
+    feasibility answer turns into a defect.
+    """
+    def placed(type_name: str) -> int:
+        return (sum(1 for site in sites if site.type == type_name)
+                + sum(1 for work in works if work.type == type_name))
+
+    return sorted(({"type": requirement.type, "wanted": requirement.count,
+                    "placed": placed(requirement.type)}
+                   for requirement in brief.requirements(pack)
+                   if placed(requirement.type) < requirement.count),
+                  key=lambda item: item["type"])
 
 
 def _place_sites(brief: SceneBrief, pack: SettingPack, terrain: TerrainPlan, spec: DistrictSpec,

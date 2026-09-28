@@ -121,6 +121,22 @@ def test_every_demanded_building_has_an_envelope(planned) -> None:
                 assert site.max_storeys >= 1
 
 
+def test_the_plan_names_any_required_landmark_it_could_not_place(planned) -> None:
+    """Work order 014: an infeasible brief reports the shortfall, not a quiet gap.
+
+    All four registered prompts are feasible today, so the list is empty — which is
+    the fact worth pinning: a plan that silently dropped a demanded landmark would
+    fail here instead of shipping a city without it.
+    """
+    for setting, (pack, brief, terrain, plan, _) in planned.items():
+        assert plan.stats["unplaced"] == [], (setting, plan.stats["unplaced"])
+        assert "unplaced" in plan.to_dict()["stats"]
+        for requirement in brief.requirements(pack):
+            placed = (sum(1 for site in plan.sites if site.type == requirement.type)
+                      + sum(1 for work in plan.works if work.type == requirement.type))
+            assert placed >= requirement.count, (setting, requirement.type)
+
+
 def test_surface_landscapes_declare_a_height_that_covers_their_furniture(planned) -> None:
     """Work order 016: an envelope review for every surface plan, not just green.
 
