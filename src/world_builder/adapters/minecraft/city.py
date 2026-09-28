@@ -670,8 +670,17 @@ def _dock_boxes(record: dict) -> list[dict]:
     wall = 1.0
     boxes: list[dict] = [
         # The excavation: everything in the basin above its floor becomes air.
-        _box(f"{record['id']}_basin", x0, x1, n0, n1, -depth, 0.5, "minecraft:air"),
-        _box(f"{record['id']}_floor", x0, x1, n0, n1, -depth - 0.5, -depth, "minecraft:stone_bricks"),
+        # The pit starts one metre above the floor: the floor slab is a metre
+        # thick and quantises to two layers, so an air box down to -depth would
+        # eat its top layer and leave the basin a layer deeper than designed
+        # (measured 2026-09-29: floor at -6, its -5 layer gone).
+        _box(f"{record['id']}_basin", x0, x1, n0, n1, -depth + 1.0, 0.5, "minecraft:air"),
+        # The slab is stated as -depth-0.5..-depth+1.0 on purpose: a box whose
+        # top is exactly -depth quantises to the single cell below it (ceil
+        # takes the -1), so the pit would end up a metre deeper than designed
+        # (measured 2026-09-29). One extra layer keeps the top at -depth.
+        _box(f"{record['id']}_floor", x0, x1, n0, n1, -depth - 0.5, -depth + 1.0,
+             "minecraft:stone_bricks"),
     ]
     gate = geometry.get("gate_side", "south")
     faces = (("south", x0, x1, n0, n0 + wall), ("north", x0, x1, n1 - wall, n1),
