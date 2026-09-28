@@ -25,7 +25,7 @@ from world_builder.wir.validator import validate_package
 
 from .brief import SceneBrief
 from .catalogue import SceneError, SettingPack
-from .designer import BuildingDesign, CompoundDesign, CylinderDesign, OpenSpaceDesign
+from .designer import BuildingDesign, CompoundDesign, CylinderDesign, DockDesign, OpenSpaceDesign
 from .siting import SitingPlan
 from .terrain import TerrainPlan
 
@@ -243,6 +243,24 @@ def assemble_scene(brief: SceneBrief, pack: SettingPack, terrain: TerrainPlan, s
             }
             records.append(farm)
             continue
+        if isinstance(design, DockDesign):
+            # A dry dock (work order 017 class 3): the only design that removes
+            # material. The target excavates the basin, lines it and raises the
+            # gantry over it.
+            dock = entity(f"dock_{design.site_id}", "dock",
+                          f"block_{site_block.get(design.site_id, siting.blocks[0].id)}",
+                          [design.x0, design.y0, -design.depth_m],
+                          [design.x1 - design.x0, design.y1 - design.y0, design.depth_m],
+                          programme=design.type, design_state=design.design_state,
+                          gate_side=design.gate_side, gantry_height_m=design.gantry_height_m)
+            dock["semantic_completeness"] = "component"
+            dock["geometry"] = {
+                "representation": "basin", "depth_m": design.depth_m, "gate_side": design.gate_side,
+                "gantry_height_m": design.gantry_height_m, "materials": dict(design.materials),
+                "assignment": "scene_pipeline_stage_e",
+            }
+            records.append(dock)
+            continue
         building = entity(f"building_{design.site_id}", "building",
                           f"block_{site_block.get(design.site_id, siting.blocks[0].id)}",
                           [design.x0, design.y0, 0],
@@ -415,6 +433,9 @@ def validate_scene(package: dict, terrain: TerrainPlan, siting: SitingPlan,
     farms = [design for design in designs if isinstance(design, CylinderDesign)]
     check("scene.cylinders", kinds.get("cylinders", 0) == len(farms),
           f"{kinds.get('cylinders', 0)} cylinder record(s) for {len(farms)} tank farm(s)")
+    docks = [design for design in designs if isinstance(design, DockDesign)]
+    check("scene.docks", kinds.get("dock", 0) == len(docks),
+          f"{kinds.get('dock', 0)} dock record(s) for {len(docks)} dry dock plan(s)")
     for design in buildings:
         building = entities.get(f"building_{design.site_id}")
         if building is None:

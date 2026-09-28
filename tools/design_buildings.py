@@ -8,9 +8,9 @@ from pathlib import Path
 
 from world_builder.planning import (BuildingDesign, SceneError, compile_brief, load_designs,
                                     load_setting_pack, plan_siting, plan_terrain, validate_design)
-from world_builder.planning.designer import (CompoundDesign, CylinderDesign, OpenSpaceDesign,
+from world_builder.planning.designer import (CompoundDesign, CylinderDesign, DockDesign, OpenSpaceDesign,
                                              design as design_for, validate_compound, validate_cylinder,
-                                             validate_open_space)
+                                             validate_dock, validate_open_space)
 
 
 def render_plan(design, width: int = 56) -> str:
@@ -96,6 +96,8 @@ def main(argv: list[str] | None = None) -> int:
             report = validate_compound(design, site)
         elif isinstance(design, CylinderDesign):
             report = validate_cylinder(design, site)
+        elif isinstance(design, DockDesign):
+            report = validate_dock(design, site)
         else:
             report = validate_design(design, site, pack.entry(site.type))
         if report["state"] != "pass":

@@ -654,6 +654,54 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool,
     return parts
 
 
+def _dock_boxes(record: dict) -> list[dict]:
+    """A dry dock: excavate the basin, line it, and raise the gantry.
+
+    Work order 017 class 3, and the only place this adapter *removes* material:
+    the basin box carries `minecraft:air` and is written after the ground and
+    the water, which cuts the hollow the ground plan asks for. The floor and the
+    walls are ordinary stone boxes; the gate face is left open so the basin
+    reads as connected to the water. The gantry is four legs with a beam across
+    the short axis — the `basin_with_gantry` silhouette, not a crane.
+    """
+    (x0, n0, _), (x1, n1, top) = record["bounds"]["min"], record["bounds"]["max"]
+    geometry = record["geometry"]
+    depth = float(geometry.get("depth_m", 4.0))
+    wall = 1.0
+    boxes: list[dict] = [
+        # The excavation: everything in the basin above its floor becomes air.
+        _box(f"{record['id']}_basin", x0, x1, n0, n1, -depth, 0.5, "minecraft:air"),
+        _box(f"{record['id']}_floor", x0, x1, n0, n1, -depth - 0.5, -depth, "minecraft:stone_bricks"),
+    ]
+    gate = geometry.get("gate_side", "south")
+    faces = (("south", x0, x1, n0, n0 + wall), ("north", x0, x1, n1 - wall, n1),
+             ("west", x0, x0 + wall, n0, n1), ("east", x1 - wall, x1, n0, n1))
+    for face, fx0, fx1, fn0, fn1 in faces:
+        if face == gate:
+            # The gate sill: a low step the vessel crosses, not a wall.
+            boxes.append(_box(f"{record['id']}_gate_sill", fx0, fx1, fn0, fn1,
+                              -depth, -depth + 1.0, "minecraft:smooth_stone"))
+            continue
+        boxes.append(_box(f"{record['id']}_wall_{face}", fx0, fx1, fn0, fn1,
+                          -depth, 0.5, "minecraft:stone_bricks"))
+    # Gantry: two portals either side of the short axis, joined by a beam.
+    gantry = float(geometry.get("gantry_height_m", 12.0))
+    along_x = (x1 - x0) >= (n1 - n0)
+    leg = 1.5
+    if along_x:
+        ends = ((x0, x0 + leg, n0 + leg, n1 - leg), (x1 - leg, x1, n0 + leg, n1 - leg))
+        beam = (x0, x1, n0 + leg, n1 - leg, gantry - 1.5, gantry)
+    else:
+        ends = ((x0 + leg, x1 - leg, n0, n0 + leg), (x0 + leg, x1 - leg, n1 - leg, n1))
+        beam = (x0 + leg, x1 - leg, n0, n1, gantry - 1.5, gantry)
+    for index, (lx0, lx1, ln0, ln1) in enumerate(ends):
+        boxes.append(_box(f"{record['id']}_gantry_leg_{index}", lx0, lx1, ln0, ln1,
+                          -depth, gantry, "minecraft:gray_concrete"))
+    boxes.append(_box(f"{record['id']}_gantry_beam", beam[0], beam[1], beam[2], beam[3],
+                      beam[4], beam[5], "minecraft:gray_concrete"))
+    return boxes
+
+
 def _berth_boxes(record: dict) -> list[dict]:
     """A pier deck or a quay face (work order 017 class 3).
 
@@ -993,6 +1041,12 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
         for record in entities:
             if record["kind"] in {"pier", "quay"}:
                 surface_boxes.extend(_berth_boxes(record))
+        # Dry docks (work order 017 class 3): written last, because the basin is
+        # an air volume and it has to win over the ground and the water.
+        dock_boxes: list[dict] = []
+        for record in entities:
+            if record["kind"] == "dock":
+                dock_boxes.extend(_dock_boxes(record))
         # The source forbids wet building footprints. Keep the target robust as
         # well: flat water proxies must not replace a quantised floor or road.
         # Ground and water first, then the street network, and the building
@@ -1002,7 +1056,9 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
         shell_cells = {index for start, stop in shell_ranges for index in range(start, stop)}
         network = [box for index, box in enumerate(boxes) if index not in shell_cells]
         shells = [box for index, box in enumerate(boxes) if index in shell_cells]
-        return surface_boxes + network + shells
+        # The dock goes after the streets and the shells as well: its basin is
+        # the one volume that has to win over everything already placed.
+        return surface_boxes + network + shells + dock_boxes
     river = next(r for r in entities if r["kind"] == "river")
     rlo, rhi = river["bounds"]["min"], river["bounds"]["max"]
     if not (tlo[0] < rlo[0] < rhi[0] < thi[0] and tlo[1] == rlo[1] and thi[1] == rhi[1]):

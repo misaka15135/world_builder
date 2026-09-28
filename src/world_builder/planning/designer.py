@@ -114,6 +114,10 @@ class DesignTemplate:
     vessel_height_m: float | None = None
     vessel_count: int | None = None
     vessel_roof: str | None = None
+    # `kind: "dock"` (work order 017 class 3): a basin cut below the quay with a
+    # gate on the water side and a gantry over it — the last harbour type.
+    basin_depth_m: float | None = None
+    basin_margin_m: float | None = None
     # Curtain-wall layout: a rectangle of runs, or a polygonal ring for the
     # "circular wall around the castle" the brief asks for.
     ring: str = "rectangle"
@@ -183,6 +187,50 @@ class OpenSpaceDesign:
                      "rect": [round(value, 3) for value in self.path]},
             "fixtures": [dict(item) for item in self.fixtures],
         }
+
+
+@dataclass(frozen=True)
+class DockDesign:
+    """A dry dock: an excavated basin, a gate and a gantry over it.
+
+    Class 3 geometry (work order 017 main line) and the last type the harbour
+    was missing. The basin is cut *below* the quay: the target places an air
+    volume to excavate it, which is the one place this pipeline removes material
+    rather than adding it. The gantry is the silhouette the catalogue asks for
+    (`basin_with_gantry`), and the gate sits on the face that looks at the water.
+    """
+
+    id: str
+    type: str
+    role: str
+    design_state: str
+    site_id: str
+    x0: float
+    y0: float
+    x1: float
+    y1: float
+    depth_m: float
+    gate_side: str
+    gantry_height_m: float
+    materials: dict
+
+    @property
+    def area_m2(self) -> float:
+        return (self.x1 - self.x0) * (self.y1 - self.y0)
+
+    @property
+    def height_m(self) -> float:
+        """What stands above grade: the gantry, which is the reading silhouette."""
+        return self.gantry_height_m
+
+    def to_dict(self) -> dict:
+        return {"design_version": DESIGN_VERSION, "id": self.id, "type": self.type,
+                "role": self.role, "design_state": self.design_state, "site_id": self.site_id,
+                "kind": "dock",
+                "outline": [round(self.x0, 3), round(self.y0, 3), round(self.x1, 3), round(self.y1, 3)],
+                "depth_m": round(self.depth_m, 3), "gate_side": self.gate_side,
+                "gantry_height_m": round(self.gantry_height_m, 3),
+                "materials": dict(self.materials)}
 
 
 @dataclass(frozen=True)
@@ -336,6 +384,18 @@ def parse_designs(payload: dict, setting: str) -> dict:
                                                vessel_diameter_m=float(raw["diameter_m"]),
                                                vessel_height_m=float(raw["height_m"]),
                                                vessel_count=raw["count"], vessel_roof=raw["roof"])
+            continue
+        if isinstance(raw, dict) and raw.get("kind") == "dock":
+            keys = {"kind", "depth_m", "margin_m"}
+            if set(raw) != keys:
+                raise SceneError(code, f"{type_name} must contain exactly {', '.join(sorted(keys))}")
+            if not 2.0 <= float(raw["depth_m"]) <= 12.0:
+                raise SceneError(code, f"{type_name}.depth_m must be 2—12 m")
+            if not 2.0 <= float(raw["margin_m"]):
+                raise SceneError(code, f"{type_name}.margin_m must be at least 2 m")
+            parsed[type_name] = DesignTemplate(type=type_name, kind="dock",
+                                               basin_depth_m=float(raw["depth_m"]),
+                                               basin_margin_m=float(raw["margin_m"]))
             continue
         keys = {"storeys", "storey_height_m", "roof", "roof_height_m", "setback_m", "stair",
                 "room_uses", "aspect"}
@@ -771,6 +831,62 @@ def validate_open_space(design: OpenSpaceDesign, site: Site) -> dict:
             "checks": results}
 
 
+def design_dock(site: Site, pack: SettingPack, template: DesignTemplate, *,
+                entry_side: str = "south") -> DockDesign:
+    """Cut a dry dock into its plot (work order 017 class 3).
+
+    The basin is the plot minus a margin for the quay edge, its floor is the
+    template's depth below grade, and the gate goes on the face that looks at
+    the water — that is the side the vessel enters from, so it is read from the
+    site's own `water` need rather than assumed. A plot too small for a basin
+    with working room around it is refused, which lets the scoped failure
+    feedback drop this one plot (018) instead of cutting a trench through the
+    quay.
+    """
+    if template.kind != "dock" or not template.basin_depth_m:
+        raise SceneError("design.kind", f"{template.type} is not a dock template")
+    if entry_side not in ENTRY_SIDES:
+        raise SceneError("design.entry_side", f"unknown entry side {entry_side!r}")
+    margin = float(template.basin_margin_m or 3.0)
+    width, depth = site.x1 - site.x0, site.y1 - site.y0
+    if width < 2 * margin + MIN_PLAN_WIDTH_M or depth < 2 * margin + MIN_PLAN_WIDTH_M:
+        raise SceneError("design.envelope",
+                         f"{site.id}: a {round(width, 1)}x{round(depth, 1)} m plot cannot hold a basin "
+                         f"with a {margin} m working margin")
+    basin_depth = min(float(template.basin_depth_m), float(site.max_height_m))
+    return DockDesign(id=f"design_{site.id}", type=template.type, role=site.role,
+                      design_state=site.design_state, site_id=site.id,
+                      x0=round(site.x0 + margin, 3), y0=round(site.y0 + margin, 3),
+                      x1=round(site.x1 - margin, 3), y1=round(site.y1 - margin, 3),
+                      depth_m=round(basin_depth, 3), gate_side=entry_side,
+                      # The crane has to clear the vessel and the catalogue's
+                      # height band; it is stated as a height, not a shape.
+                      gantry_height_m=round(max(6.0, min(site.max_height_m, basin_depth + 8.0)), 3),
+                      materials=dict(pack.materials))
+
+
+def validate_dock(design: DockDesign, site: Site) -> dict:
+    """Independent checks on a dry dock: inside the plot and deep enough to float a hull."""
+    results: list[dict] = []
+
+    def check(rule: str, passed: bool, message: str) -> None:
+        results.append({"rule": rule, "state": "pass" if passed else "fail", "message": message})
+
+    check("design.outline", site.x0 - 2e-3 <= design.x0 and design.x1 <= site.x1 + 2e-3
+          and site.y0 - 2e-3 <= design.y0 and design.y1 <= site.y1 + 2e-3,
+          f"basin {round(design.area_m2)} m² inside the plot")
+    check("design.basin_room",
+          design.x1 - design.x0 >= MIN_PLAN_WIDTH_M and design.y1 - design.y0 >= MIN_PLAN_WIDTH_M,
+          f"basin {round(design.x1 - design.x0, 1)}x{round(design.y1 - design.y0, 1)} m takes a hull")
+    check("design.basin_depth", 2.0 - 2e-3 <= design.depth_m <= site.max_height_m + 2e-3,
+          f"{design.depth_m} m of basin against the {site.max_height_m} m envelope")
+    check("design.gate_side", design.gate_side in ENTRY_SIDES,
+          f"gate on the {design.gate_side} face")
+    return {"design_id": design.id, "type": design.type, "kind": "dock",
+            "state": "pass" if all(item["state"] == "pass" for item in results) else "fail",
+            "checks": results}
+
+
 def _shrink_site(site: Site, fraction: float) -> Site:
     """The same plot, pulled in from every edge by a fraction of its short side."""
     if fraction <= 0.0:
@@ -828,6 +944,8 @@ def design(site: Site, entry, pack: SettingPack, template: DesignTemplate, *,
         return design_compound(site, pack, template, entry_side=entry_side)
     if template.kind == "cylinders":
         return design_cylinders(site, pack, template)
+    if template.kind == "dock":
+        return design_dock(site, pack, template, entry_side=entry_side)
     return design_building(site, entry, pack, template, entry_side=entry_side, seed=seed)
 
 

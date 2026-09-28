@@ -4,14 +4,15 @@ from __future__ import annotations
 import copy
 import importlib.util
 import json
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 
-from world_builder.planning import (BuildingDesign, CompoundDesign, CylinderDesign, OpenSpaceDesign,
-                                    SceneError, compile_brief, load_designs, load_setting_pack,
-                                    plan_siting, plan_terrain, validate_compound, validate_cylinder,
-                                    validate_design, validate_open_space)
+from world_builder.planning import (BuildingDesign, CompoundDesign, CylinderDesign, DockDesign,
+                                    OpenSpaceDesign, SceneError, compile_brief, load_designs,
+                                    load_setting_pack, plan_siting, plan_terrain, validate_compound,
+                                    validate_cylinder, validate_design, validate_dock, validate_open_space)
 from world_builder.planning.catalogue import DEFAULT_SETTINGS_ROOT
 from world_builder.planning.designer import (COMPOUND_ROLES, FURNITURE, ROOF_STYLES, design,
                                              design_building)
@@ -48,6 +49,8 @@ def designed():
                 reports.append(validate_compound(plan, site))
             elif isinstance(plan, CylinderDesign):
                 reports.append(validate_cylinder(plan, site))
+            elif isinstance(plan, DockDesign):
+                reports.append(validate_dock(plan, site))
             else:
                 reports.append(validate_design(plan, site, pack.entry(site.type)))
         result[setting] = (pack, siting, designs, reports, skipped)
@@ -70,6 +73,9 @@ def test_design_templates_load_and_are_coherent() -> None:
             if template.kind == "cylinders":
                 assert template.vessel_diameter_m and template.vessel_height_m
                 assert template.vessel_count and template.vessel_roof in ("flat", "dome")
+                continue
+            if template.kind == "dock":
+                assert template.basin_depth_m and template.basin_margin_m
                 continue
             assert template.storeys[0] <= template.storeys[1]
             assert all(use in FURNITURE for row in template.room_uses for use in row)
@@ -223,6 +229,33 @@ def test_compound_design_lays_a_castle_without_overlaps() -> None:
                  max_height_m=18.0, max_storeys=6, needs=(), adjacency=())
     tight_report = validate_compound(design_compound(tight, pack, template, entry_side="south"), tight)
     assert tight_report["state"] == "pass", [c for c in tight_report["checks"] if c["state"] != "pass"]
+
+
+def test_a_dry_dock_cuts_a_basin_inside_its_plot() -> None:
+    """Work order 017 class 3: the harbour's last missing type.
+
+    The basin is the plot minus a working margin, its floor sits `depth_m` below
+    grade, and the gate goes on the face the vessel enters from. A plot with no
+    room around the basin is refused, so the scoped feedback can drop that one
+    plot instead of cutting a trench through the quay.
+    """
+    from world_builder.planning import Site
+    from world_builder.planning.designer import DesignTemplate, design_dock, validate_dock
+    pack = load_setting_pack("harbour")
+    template = DesignTemplate(type="dry_dock", kind="dock", basin_depth_m=5.0, basin_margin_m=6.0)
+    site = Site(id="site_dock", type="dry_dock", role="infrastructure", design_state="planned",
+                block_id="block_000", domain_id="port_authority", x0=100.0, y0=200.0, x1=181.2, y1=267.7,
+                max_height_m=14.4, max_storeys=1, needs=("water",), adjacency=())
+    design = design_dock(site, pack, template, entry_side="north")
+    report = validate_dock(design, site)
+    assert report["state"] == "pass", [c for c in report["checks"] if c["state"] != "pass"]
+    assert (design.x0, design.y0) == (106.0, 206.0) and (design.x1, design.y1) == (175.2, 261.7)
+    assert design.depth_m == 5.0 and design.gate_side == "north"
+    assert design.gantry_height_m >= 6.0
+    tight = replace(site, x1=site.x0 + 14.0, y1=site.y0 + 14.0)
+    with pytest.raises(SceneError) as raised:
+        design_dock(tight, pack, template, entry_side="north")
+    assert raised.value.code == "design.envelope"
 
 
 def test_a_plot_that_cannot_hold_the_plan_is_refused() -> None:
@@ -434,7 +467,10 @@ def test_design_tool_prints_a_plan(designed, capsys) -> None:
     printed = capsys.readouterr().out
     assert "failures=0" in printed and "setting=harbour" in printed
     assert "S" in printed or "#" in printed, "a ground-floor plan should be drawn"
-    assert "no design template yet for" in printed
+    # The harbour used to report `no design template yet for: ['dry_dock']`; the
+    # dry dock now has a design, so every sited type is designed (2026-09-28).
+    assert "no design template yet for" not in printed
+    assert "'dry_dock': 1" in printed, "the dry dock is designed rather than missing"
 
 
 def test_massing_steps_vary_between_buildings(designed) -> None:

@@ -12,10 +12,11 @@ from pathlib import Path
 
 import pytest
 
-from world_builder.adapters.minecraft.city import (CityExportError, _building_shell, _partition_boxes,
-                                                   _berth_boxes, _cylinder_boxes, _roof_boxes,
-                                                   _shell_materials, _storey_bands, _storey_outlines,
-                                                   _street_block, _vessel_boxes, _window_boxes, export_city)
+from world_builder.adapters.minecraft.city import (CityExportError, _berth_boxes, _building_shell,
+                                                   _cylinder_boxes, _dock_boxes, _partition_boxes,
+                                                   _roof_boxes, _shell_materials, _storey_bands,
+                                                   _storey_outlines, _street_block, _vessel_boxes,
+                                                   _window_boxes, export_city)
 from world_builder.storage.worldpkg import read_worldpkg
 
 SOURCE = Path(__file__).resolve().parents[1] / "artifacts/benchmark-city-v1/city-first.worldpkg"
@@ -320,6 +321,33 @@ def test_a_cargo_ship_tapers_from_amidships_to_bow_and_stern() -> None:
     funnel = next(box for box in boxes if box["source_id"].endswith("_funnel"))
     assert house["y0"] >= 5.0 and funnel["y0"] >= house["y1"] - 1e-6, "the funnel stands on the house"
     assert house["z0"] < -30.0, "the house is aft, not amidships"
+
+
+def test_a_dry_dock_excavates_its_basin_and_raises_a_gantry() -> None:
+    """Main line c (work order 017): the one volume that removes material.
+
+    The basin box carries air and is written after everything else, so it cuts
+    the hollow the ground plan asks for; the floor sits under it, three faces
+    are stone, the fourth is the gate sill the vessel crosses, and the gantry is
+    two legs joined by a beam.
+    """
+    record = {"id": "dock_site_001", "kind": "dock",
+              "attributes": {"design_state": "planned", "gate_side": "north", "gantry_height_m": 13.0},
+              "geometry": {"representation": "basin", "depth_m": 5.0, "gate_side": "north",
+                           "gantry_height_m": 13.0},
+              "bounds": {"min": [106.0, 206.0, -5.0], "max": [175.2, 261.7, 5.0]}}
+    boxes = _dock_boxes(record)
+    basin = next(box for box in boxes if box["source_id"].endswith("_basin"))
+    floor = next(box for box in boxes if box["source_id"].endswith("_floor"))
+    assert basin["block"] == "minecraft:air" and floor["block"] == "minecraft:stone_bricks"
+    assert floor["y1"] <= basin["y0"] + 1e-6, "the floor is under the excavation"
+    walls = [box for box in boxes if "_wall_" in box["source_id"]]
+    assert len(walls) == 3, "the gate face is left open"
+    assert not [box for box in walls if box["source_id"].endswith("_wall_north")]
+    assert any("_gate_sill" in box["source_id"] for box in boxes)
+    gantry = [box for box in boxes if "_gantry_" in box["source_id"]]
+    assert len(gantry) == 3, "two legs and a beam"
+    assert max(box["y1"] for box in gantry) == 13.0
 
 
 def test_a_tank_farm_is_stepped_into_a_round_shell() -> None:
