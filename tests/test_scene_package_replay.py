@@ -43,7 +43,10 @@ def test_the_terrain_entity_carries_a_sampled_height_grid() -> None:
     package = assemble_scene(brief, pack, terrain, siting, designs)
     geometry = next(r for r in package["records"] if r.get("kind") == "terrain")["geometry"]
     grid = geometry["height_grid_m"]
-    assert geometry["height_grid_spacing_m"] >= 32.0
+    # Coarser than the plan's own 8 m sampling, fine enough to read as relief:
+    # the spacing was halved on 2026-09-29 (32 -> 16 m) because finer cells mean
+    # shorter risers, so the ground got smoother at slightly fewer blocks.
+    assert 8.0 <= geometry["height_grid_spacing_m"] <= 32.0
     assert len(grid) == len(grid[0]) and len(grid) < len(terrain.heights), "the grid is coarse"
     flat = [value for row in grid for value in row]
     assert min(flat) >= terrain.stats["min_m"] - 1.0 and max(flat) <= terrain.stats["max_m"] + 1.0
