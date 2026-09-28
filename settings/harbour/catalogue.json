@@ -46,7 +46,7 @@
       "required": true,
       "count_range": [1, 4],
       "footprint_m2_range": [3000, 12000],
-      "height_m_range": [3, 10],
+      "height_m_range": [1.0, 2.0],
       "needs": ["coast", "rail"],
       "design_state": "planned",
       "silhouette": "stacked_blocks",

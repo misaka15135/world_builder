@@ -121,6 +121,38 @@ def test_every_demanded_building_has_an_envelope(planned) -> None:
                 assert site.max_storeys >= 1
 
 
+def test_surface_landscapes_declare_a_height_that_covers_their_furniture(planned) -> None:
+    """Work order 016: an envelope review for every surface plan, not just green.
+
+    The park got its `height_factor` raised first; the plaza and the two yards
+    still carried envelopes that had nothing to do with what is built there. The
+    adapter paves an open space and stands fixtures (lamp, bench, tree, crate,
+    stacked container) from 0.25 m to 1.25 m, so an envelope below 1.25 m
+    under-states the plan, and a yard declaring 4—12 m describes a building that
+    is never built on it.
+    """
+    from world_builder.planning import design_sites, load_designs
+    for setting, prompt in PROMPTS.items():
+        pack = load_setting_pack(setting)
+        brief = compile_brief(prompt, seed=4)
+        terrain = plan_terrain(setting, seed=4, region_m=512, spacing_m=8)
+        siting = plan_siting(brief, pack, terrain)
+        templates = load_designs(setting)
+        open_space_types = {name for name, template in templates.items() if template.kind == "open_space"}
+        sites = [site for site in siting.sites if site.type in open_space_types]
+        if not sites:
+            continue
+        assert sites, setting
+        for site in sites:
+            assert site.max_height_m >= 1.25, (setting, site.type, site.max_height_m)
+            assert site.max_height_m <= 3.0, (setting, site.type, site.max_height_m)
+        designs, failures, _ = design_sites(siting, pack, templates, seed=4)
+        assert not failures, setting
+        planned_spaces = [design for design in designs
+                          if type(design).__name__ == "OpenSpaceDesign" and design.fixtures]
+        assert planned_spaces, f"{setting} fits its fixtures inside the envelope"
+
+
 def test_a_ship_is_moored_clear_of_the_berths(planned) -> None:
     """Work order 016/017: a hull must not be parked through a pier.
 

@@ -34,6 +34,8 @@
 
 **2026-09-28 主线 e 第二项：`.worldpkg` 端到端回放**：把场景包提交仓库时直接失败（`resource.missing`），查出**两个既存缺陷**——① 高度场资产的**字节从未写下来**（只记了 hash），场景包因此不自洽、根本无法归档；② 记的 hash 与写的字节**不是同一个对象**（`digest` 漏了 `axes`/`origin`），补上字节也会被 `hash_mismatch` 拒收。修法：装配器新增 `asset_sink` 回调把 `(record, payload)` 交给调用方（不改变返回类型），并让 payload 与 checksum 由同一个资产体产出。**回放结果**：港口包 → `.worldpkg`（`sha256:a09f9a848a6fb69a…`）→ 读回的包与原包完全相等；**回放包再导出 Minecraft 得 36 个分块、`schem_sha256` 与直接导出逐一相同**、非空气方块同为 652,938。`tools/assemble_scene.py` 新增 `--worldpkg`。新增 `tests/test_scene_package_replay.py`；完整回归 **176 passed**、文档检查零错误。详见 [018](018_assembler_pipeline.md)。
 
+**2026-09-28 016 遗留：地表景观包络复核**：把四类开放空间的**声明高度**与适配器**实际画出**的高度逐一对照，发现四处对不上—— plaza 包络只有 **0.62 m**、park **1.0 m**（都低于自己画的 1.25 m 固定块）；freight_yard / container_yard 却写着 **4—12 / 3—10 m**（那是房子的高度，而这两类只铺地堆物、从不盖楼）。按事实改目录：plaza `[0.5, 1.5]`、park `[0.5, 2.0]`、两类堆场 `[1.0, 2.0]`。实测包络变为 **1.25 / 1.25 / 1.72 / 1.80 m**，固定块仍各 32 件，四背景设计数与失败数不变。新增 `test_surface_landscapes_declare_a_height_that_covers_their_furniture`。完整回归 **176 passed**、文档检查零错误。详见 [016](016_district_siting.md)。
+
 **2026-09-27 风格建筑双目标样件**：[021](021_style_building_cross_target_sample.md) 已完成；同一木构街屋设计导出 Unity GLB 和 Minecraft Sponge v3。v5 在 Unity 目标导入/重开 143/143 构件通过，1.8 m 控制器连续走通门、商铺、楼梯、二层房间；Minecraft 在 `WB Verify Flat` 实贴 1,571 方块，生存模式同路线从街道连续走到二层居室，两端目标截图与检查点已留证。手工样件尚未接入通用 E 设计器。
 
 **2026-09-27 最新状态**：008/009/016/017/018 保持 `in_progress`。开放空间代表样件已在两目标推进：Minecraft 广场 1 分块、公园 2 分块实贴且路径/灯具探针通过；广场冒险模式落地和脚下方块验证通过，自动输入未能完成连续实走。Unity 同修订广场 34 构件导入与重开通过，新增 Play Mode 控制器沿源步道 3/3 检查点连续通行。完整场景导出/漫游仍未验收；证据见 [008](008_unity_export.md)、[009](009_minecraft_schematic_export.md)、[018](018_assembler_pipeline.md)。此前冻结 20 例复跑 20/20 通过。

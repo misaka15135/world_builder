@@ -67,7 +67,7 @@
       "required": true,
       "count_range": [1, 3],
       "footprint_m2_range": [2000, 8000],
-      "height_m_range": [4, 12],
+      "height_m_range": [1.0, 2.0],
       "needs": ["rail"],
       "design_state": "planned",
       "silhouette": "open_yard",
