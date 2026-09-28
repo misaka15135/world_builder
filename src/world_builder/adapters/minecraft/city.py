@@ -1016,7 +1016,10 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
         grid_step = float((terrain["geometry"] or {}).get("height_grid_spacing_m", 0.0) or 0.0)
         if grid and grid_step > 0.0:
             surface_boxes = []
-            base = min(min(row) for row in grid) - 4.0
+            # Only half a metre under the lowest sample: the mass has to be solid
+            # (a hollow crust would show voids at every cliff), but every extra metre
+            # multiplies into the whole 512 m footprint. Bare earth, no filler.
+            base = min(min(row) for row in grid) - 0.5
             for row_index, row in enumerate(grid):
                 for column_index, height in enumerate(row):
                     gx0 = tlo[0] + column_index * grid_step
