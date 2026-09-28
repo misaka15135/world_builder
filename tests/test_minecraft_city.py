@@ -13,9 +13,9 @@ from pathlib import Path
 import pytest
 
 from world_builder.adapters.minecraft.city import (CityExportError, _building_shell, _partition_boxes,
-                                                   _roof_boxes, _shell_materials, _storey_bands,
-                                                   _storey_outlines, _street_block, _window_boxes,
-                                                   export_city)
+                                                   _cylinder_boxes, _roof_boxes, _shell_materials,
+                                                   _storey_bands, _storey_outlines, _street_block,
+                                                   _window_boxes, export_city)
 from world_builder.storage.worldpkg import read_worldpkg
 
 SOURCE = Path(__file__).resolve().parents[1] / "artifacts/benchmark-city-v1/city-first.worldpkg"
@@ -263,6 +263,33 @@ def test_modern_style_gets_asphalt_streets_and_glazing() -> None:
     assert not [band for band in bands if band["source_id"].endswith("_0_east")], "the entrance storey is not glazed"
     timber = _storey_bands("b", outlines, 0.0, 0.2, 9.0, 3.0, "minecraft:dark_oak_planks")
     assert {band["block"] for band in timber} == {"minecraft:dark_oak_planks"}
+
+
+def test_a_tank_farm_is_stepped_into_a_round_shell() -> None:
+    """Main line c (work order 017): the first non-box geometry reaches blocks.
+
+    A vessel is a ring of chord boxes (the same polygonal approximation the
+    castle's round wall uses) on a foundation disc, capped by a stepped dome.
+    The inside stays hollow: only the foundation reaches the centre line.
+    """
+    record = {"id": "cyl", "kind": "cylinders",
+              "geometry": {"representation": "cylinders",
+                           "vessels": [{"id": "vessel0", "cx": 8.0, "cy": 8.0, "radius_m": 4.0,
+                                        "height_m": 20.0, "roof": "dome"}]},
+              "bounds": {"min": [0, 0, 0], "max": [16, 16, 20]}}
+    boxes = _cylinder_boxes(record, 100.0, 200.0)
+    shells = [box for box in boxes if "_shell_" in box["source_id"]]
+    assert len(shells) >= 12, "a circle needs a ring of chords"
+    assert {box["block"] for box in shells} == {"minecraft:light_gray_concrete"}
+    assert any("_plinth_" in box["source_id"] for box in boxes), "the vessel stands on a foundation disc"
+    assert any("_dome1" in box["source_id"] for box in boxes), "a dome is stepped, not one slab"
+    assert all(box["y1"] <= 20.0 + 3 * 0.8 + 1e-6 for box in boxes), "the cap stays inside the stated height"
+    centre = [box for box in boxes if box["x0"] <= 108 <= box["x1"] and box["z0"] <= -208 <= box["z1"]]
+    # Only the foundation disc reaches the centre line at the bottom and the
+    # dome closes over it at the top: nothing fills the drum in between.
+    assert centre, "the foundation and the dome both cross the centre"
+    assert not [box for box in centre if box["y0"] > 1.0 and box["y1"] <= 20.0], \
+        "the vessel is a shell, not a filled drum"
 
 
 def test_each_style_gets_its_own_framed_window() -> None:

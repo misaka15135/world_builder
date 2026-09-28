@@ -14,6 +14,8 @@
 
 **2026-09-28 四带换版完成**：港口（band 3）也换成主线 b 版本——36 个分块逐块与 manifest 吻合（合计 612,922 非空气方块）。**至此 `WB Scenes Rebuild` 的 band 0/1/2/3 全部是带框窗 + 门廊立柱的版本**，四带共 140 分块、逐块核对通过，截图分别在 `artifacts/minecraft-scene-mainline-b/<setting>/target-20260928/`。过程记录：本轮探针命令 2 分钟后才入库（服务器滞后，非暂停）。完整回归 **163 passed**、文档检查零错误。主线 b 的目标侧工作收口，下一轮起回主线 c)（class 3 剩余几何）或 e)（018 失败按作用域回馈）。详见 [022](022_scene_reconstruction_new_world.md)。
 
+**2026-09-28 主线 c 第一项：圆柱 `silo_tank`**：[017](017_building_designer.md) 新增第三种设计种类 `kind: "cylinders"`——模板给直径/高度/数量/盖型，规则在场地内按 2 m 服务间距布罐、场地偏窄时**减少数量而不是把罐压成管子**；目标侧第一次出现**非轴对齐盒**的几何：每只罐是**弦盒环 + 基座盘 + 分层穹顶**，壳体保持中空。工业园 seed 4 设计数 16 → **18**，导出 34 分块 / **1,907 盒** / **594,303 方块** / `validation: pass`，且工业园的 **`no template yet` 首次为空**（罐体 116 盒：基座 28 + 壳 48 + 穹顶 40）。完整回归 **165 passed**、文档检查零错误。**未做**：`cargo_ship` 与 `dry_dock`；城堡圆塔仍是盒环；工业园新版本尚未重贴进新存档。详见 [017](017_building_designer.md)、[018](018_assembler_pipeline.md)。
+
 **2026-09-27 风格建筑双目标样件**：[021](021_style_building_cross_target_sample.md) 已完成；同一木构街屋设计导出 Unity GLB 和 Minecraft Sponge v3。v5 在 Unity 目标导入/重开 143/143 构件通过，1.8 m 控制器连续走通门、商铺、楼梯、二层房间；Minecraft 在 `WB Verify Flat` 实贴 1,571 方块，生存模式同路线从街道连续走到二层居室，两端目标截图与检查点已留证。手工样件尚未接入通用 E 设计器。
 
 **2026-09-27 最新状态**：008/009/016/017/018 保持 `in_progress`。开放空间代表样件已在两目标推进：Minecraft 广场 1 分块、公园 2 分块实贴且路径/灯具探针通过；广场冒险模式落地和脚下方块验证通过，自动输入未能完成连续实走。Unity 同修订广场 34 构件导入与重开通过，新增 Play Mode 控制器沿源步道 3/3 检查点连续通行。完整场景导出/漫游仍未验收；证据见 [008](008_unity_export.md)、[009](009_minecraft_schematic_export.md)、[018](018_assembler_pipeline.md)。此前冻结 20 例复跑 20/20 通过。

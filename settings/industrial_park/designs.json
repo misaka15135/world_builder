@@ -8,6 +8,7 @@
     "residence": {"storeys": [2, 4], "storey_height_m": 3.0, "roof": "flat", "roof_height_m": 0.4, "setback_m": 1.0, "stair": "straight", "aspect": 1.1, "room_uses": [["hearth", "kitchen"], ["bed", "bed"], ["bed", "store"], ["bed", "store"]]},
     "shop": {"storeys": [1, 2], "storey_height_m": 3.4, "roof": "flat", "roof_height_m": 0.4, "setback_m": 0.0, "stair": "none", "aspect": 1.4, "room_uses": [["stall", "counter"], ["storage", "office"]]},
     "workshop": {"storeys": [1, 2], "storey_height_m": 3.8, "roof": "flat", "roof_height_m": 0.4, "setback_m": 0.0, "stair": "straight", "aspect": 1.2, "room_uses": [["workbench", "storage"], ["storage", "office"]]},
-    "freight_yard": {"kind": "open_space", "paving": "gravel", "path": "stone", "fixtures": ["crate", "lamp"]}
+    "freight_yard": {"kind": "open_space", "paving": "gravel", "path": "stone", "fixtures": ["crate", "lamp"]},
+    "silo_tank": {"kind": "cylinders", "diameter_m": 10.0, "height_m": 22.0, "count": 4, "roof": "dome"}
   }
 }

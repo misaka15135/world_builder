@@ -25,7 +25,7 @@ from world_builder.wir.validator import validate_package
 
 from .brief import SceneBrief
 from .catalogue import SceneError, SettingPack
-from .designer import BuildingDesign, CompoundDesign, OpenSpaceDesign
+from .designer import BuildingDesign, CompoundDesign, CylinderDesign, OpenSpaceDesign
 from .siting import SitingPlan
 from .terrain import TerrainPlan
 
@@ -222,6 +222,27 @@ def assemble_scene(brief: SceneBrief, pack: SettingPack, terrain: TerrainPlan, s
             }
             records.append(compound)
             continue
+        if isinstance(design, CylinderDesign):
+            # A tank farm (work order 017 class 3): the entity carries the
+            # vessel list — centre, radius, height, cap — in its own frame, and
+            # the target steps each circle into a ring of boxes.
+            farm = entity(f"cylinders_{design.site_id}", "cylinders",
+                          f"block_{site_block.get(design.site_id, siting.blocks[0].id)}",
+                          [design.x0, design.y0, 0],
+                          [design.x1 - design.x0, design.y1 - design.y0, design.height_m],
+                          programme=design.type, design_state=design.design_state,
+                          vessel_count=len(design.barrels))
+            farm["semantic_completeness"] = "component"
+            farm["geometry"] = {
+                "representation": "cylinders",
+                "vessels": [{**barrel, "cx": round(barrel["cx"] - design.x0, 3),
+                             "cy": round(barrel["cy"] - design.y0, 3)}
+                            for barrel in design.barrels],
+                "materials": dict(design.materials),
+                "assignment": "scene_pipeline_stage_e",
+            }
+            records.append(farm)
+            continue
         building = entity(f"building_{design.site_id}", "building",
                           f"block_{site_block.get(design.site_id, siting.blocks[0].id)}",
                           [design.x0, design.y0, 0],
@@ -391,6 +412,9 @@ def validate_scene(package: dict, terrain: TerrainPlan, siting: SitingPlan,
     compounds = [design for design in designs if isinstance(design, CompoundDesign)]
     check("scene.compounds", kinds.get("compound", 0) == len(compounds),
           f"{kinds.get('compound', 0)} compound record(s) for {len(compounds)} castle plan(s)")
+    farms = [design for design in designs if isinstance(design, CylinderDesign)]
+    check("scene.cylinders", kinds.get("cylinders", 0) == len(farms),
+          f"{kinds.get('cylinders', 0)} cylinder record(s) for {len(farms)} tank farm(s)")
     for design in buildings:
         building = entities.get(f"building_{design.site_id}")
         if building is None:

@@ -14,9 +14,9 @@ from .terrain import (TERRAIN_VERSION, TerrainPlan, TerrainSpec, WaterChannel, l
 from .siting import (DISTRICTS_VERSION, Block, Bridge, DistrictSpec, Domain, Road, Site, SitingPlan,
                      load_districts_spec, plan_siting, validate_siting)
 from .designer import (DESIGN_VERSION, BuildingDesign, CompoundDesign, DesignTemplate, Furniture,
-                       OpenSpaceDesign, Room, Storey, design, design_building, design_compound,
-                       design_open_space, load_designs, parse_designs, validate_compound,
-                       validate_design, validate_open_space)
+                       CylinderDesign, OpenSpaceDesign, Room, Storey, design, design_building,
+                       design_compound, design_cylinders, design_open_space, load_designs, parse_designs,
+                       validate_compound, validate_cylinder, validate_design, validate_open_space)
 from .assembler import ASSEMBLY_VERSION, assemble_scene, render_png, render_svg, validate_scene
 
 __all__ = [
@@ -28,7 +28,8 @@ __all__ = [
     "render_preview", "validate_terrain",
     "DISTRICTS_VERSION", "Block", "Bridge", "DistrictSpec", "Domain", "Road", "Site", "SitingPlan",
     "load_districts_spec", "plan_siting", "validate_siting",
-    "DESIGN_VERSION", "BuildingDesign", "DesignTemplate", "Furniture", "Room", "Storey", "design_building",
-    "load_designs", "parse_designs", "validate_design",
+    "DESIGN_VERSION", "BuildingDesign", "CylinderDesign", "DesignTemplate", "Furniture", "Room", "Storey",
+    "design_building", "design_cylinders", "load_designs", "parse_designs", "validate_cylinder",
+    "validate_design",
     "ASSEMBLY_VERSION", "assemble_scene", "render_png", "render_svg", "validate_scene",
 ]

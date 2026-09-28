@@ -100,6 +100,13 @@ class DesignTemplate:
     # How many interior compartments a compound part needs. Only the keep has
     # any today: a tower is a solid landmark and a great hall is one tall room.
     compound_storeys: tuple[tuple[str, int], ...] = ()
+    # `kind: "cylinders"` (work order 017 class 3): a tank farm — one or more
+    # round vessels on one plot. The first geometry the adapter has that is not
+    # a box; the target steps the circle so it survives at block scale.
+    vessel_diameter_m: float | None = None
+    vessel_height_m: float | None = None
+    vessel_count: int | None = None
+    vessel_roof: str | None = None
     # Curtain-wall layout: a rectangle of runs, or a polygonal ring for the
     # "circular wall around the castle" the brief asks for.
     ring: str = "rectangle"
@@ -118,6 +125,13 @@ OPEN_SPACE_FIXTURES = ("lamp", "bench", "tree", "planter", "crate", "stack")
 COMPOUND_ROLES = ("wall", "tower", "keep", "hall", "gate")
 COMPOUND_RAMP_ROLES = ("ramp",)
 COMPOUND_RINGS = ("rectangle", "circle")
+# Class 3 vocabulary (work order 017): until now every volume was an
+# axis-aligned box, so a silo had to be drawn as one. A cylinder design states
+# how many vessels stand on the plot, how fat and how tall each is, and how it
+# is capped; the target steps the circle into a ring of boxes.
+CYLINDER_ROOFS = ("flat", "dome")
+CYLINDER_MIN_RADIUS_M = 2.0
+CYLINDER_GAP_M = 2.0
 # A gate platform sits above the bailey floor, so its approach treads step
 # outward past the site edge and onto the street that the gate faces. The
 # validator allows exactly that, and only on the entry side.
@@ -162,6 +176,46 @@ class OpenSpaceDesign:
                      "rect": [round(value, 3) for value in self.path]},
             "fixtures": [dict(item) for item in self.fixtures],
         }
+
+
+@dataclass(frozen=True)
+class CylinderDesign:
+    """A tank farm: one or more cylindrical vessels on one plot.
+
+    Class 3 geometry (work order 017 main line). Every other plan this module
+    produces is made of axis-aligned boxes; a silo or a storage tank is round,
+    so the design states each vessel as a centre, a radius, a height and a cap
+    and leaves the stepping to the target — a ring of chord boxes per metre,
+    which is the closest a 1 m voxel grid comes to a circle. The vessels stand
+    in a grid with a service gap, and any that would leave the plot are dropped
+    rather than pushed through a neighbour.
+    """
+
+    id: str
+    type: str
+    role: str
+    design_state: str
+    site_id: str
+    x0: float
+    y0: float
+    x1: float
+    y1: float
+    barrels: tuple[dict, ...]
+    height_m: float
+    materials: dict
+
+    @property
+    def area_m2(self) -> float:
+        return (self.x1 - self.x0) * (self.y1 - self.y0)
+
+    def to_dict(self) -> dict:
+        return {"design_version": DESIGN_VERSION, "id": self.id, "type": self.type,
+                "role": self.role, "design_state": self.design_state, "site_id": self.site_id,
+                "kind": "cylinders",
+                "outline": [round(self.x0, 3), round(self.y0, 3), round(self.x1, 3), round(self.y1, 3)],
+                "height_m": round(self.height_m, 3),
+                "barrels": [dict(item) for item in self.barrels],
+                "materials": dict(self.materials)}
 
 
 @dataclass(frozen=True)
@@ -258,6 +312,23 @@ def parse_designs(payload: dict, setting: str) -> dict:
             parsed[type_name] = DesignTemplate(type=type_name, kind="compound",
                                                compound=tuple(declared),
                                                compound_storeys=tuple(interior), ring=ring)
+            continue
+        if isinstance(raw, dict) and raw.get("kind") == "cylinders":
+            keys = {"kind", "diameter_m", "height_m", "count", "roof"}
+            if set(raw) != keys:
+                raise SceneError(code, f"{type_name} must contain exactly {', '.join(sorted(keys))}")
+            if not 4.0 <= float(raw["diameter_m"]) <= 60.0:
+                raise SceneError(code, f"{type_name}.diameter_m must be 4—60 m")
+            if not 3.0 <= float(raw["height_m"]) <= 40.0:
+                raise SceneError(code, f"{type_name}.height_m must be 3—40 m")
+            if type(raw["count"]) is not int or not 1 <= raw["count"] <= 12:
+                raise SceneError(code, f"{type_name}.count must be 1—12 vessels")
+            if raw["roof"] not in CYLINDER_ROOFS:
+                raise SceneError(code, f"{type_name}.roof must be one of {', '.join(CYLINDER_ROOFS)}")
+            parsed[type_name] = DesignTemplate(type=type_name, kind="cylinders",
+                                               vessel_diameter_m=float(raw["diameter_m"]),
+                                               vessel_height_m=float(raw["height_m"]),
+                                               vessel_count=raw["count"], vessel_roof=raw["roof"])
             continue
         keys = {"storeys", "storey_height_m", "roof", "roof_height_m", "setback_m", "stair",
                 "room_uses", "aspect"}
@@ -683,6 +754,8 @@ def design(site: Site, entry, pack: SettingPack, template: DesignTemplate, *,
         return design_open_space(site, template, entry_side=entry_side)
     if template.kind == "compound":
         return design_compound(site, pack, template, entry_side=entry_side)
+    if template.kind == "cylinders":
+        return design_cylinders(site, pack, template)
     return design_building(site, entry, pack, template, entry_side=entry_side, seed=seed)
 
 
@@ -692,6 +765,99 @@ def _overlaps(a: tuple[float, float, float, float], b: tuple[float, float, float
 
 def _compound_side_span(rect: tuple[float, float, float, float], side: str) -> float:
     return (rect[2] - rect[0]) if side in {"north", "south"} else (rect[3] - rect[1])
+
+
+def design_cylinders(site: Site, pack: SettingPack, template: DesignTemplate) -> CylinderDesign:
+    """A bank of round vessels on one plot (work order 017 class 3).
+
+    The template states one vessel; the rule decides how many of them fit. They
+    are laid in a grid with a service gap, centred on the plot, and the radius
+    shrinks until the grid fits rather than the vessels overlapping. Anything
+    that still would not fit is dropped: a tank farm with three tanks is honest,
+    a tank farm with three tanks inside each other is not.
+    """
+    if template.kind != "cylinders" or not template.vessel_diameter_m:
+        raise SceneError("design.kind", f"{template.type} is not a cylinder template")
+    width, depth = site.x1 - site.x0, site.y1 - site.y0
+    count = int(template.vessel_count or 1)
+    margin = 1.0
+    wanted = float(template.vessel_diameter_m) / 2
+
+    def grid_for(number: int) -> tuple[int, int, float]:
+        columns = max(1, math.ceil(math.sqrt(number)))
+        rows = max(1, math.ceil(number / columns))
+        cell = min((width - 2 * margin) / columns, (depth - 2 * margin) / rows)
+        return columns, rows, min(wanted, (cell - CYLINDER_GAP_M) / 2)
+
+    # A narrow plot can hold the requested number of vessels only by shrinking
+    # them into pipes. Fewer, fatter vessels are the honest reading: the rule
+    # steps the count down while the radius stays under 60 % of the template's.
+    chosen = 1
+    for number in range(count, 0, -1):
+        _, _, candidate = grid_for(number)
+        if candidate >= 0.6 * wanted:
+            chosen = number
+            break
+    columns, rows, radius = grid_for(chosen)
+    height = min(float(template.vessel_height_m or 10.0), float(site.max_height_m))
+    barrels: list[dict] = []
+    if radius >= CYLINDER_MIN_RADIUS_M:
+        step_x = (width - 2 * margin) / columns
+        step_y = (depth - 2 * margin) / rows
+        for index in range(chosen):
+            column, row = index % columns, index // columns
+            centre = (site.x0 + margin + step_x * (column + 0.5),
+                      site.y0 + margin + step_y * (row + 0.5))
+            if (site.x0 + radius - 2e-3 <= centre[0] <= site.x1 - radius + 2e-3
+                    and site.y0 + radius - 2e-3 <= centre[1] <= site.y1 - radius + 2e-3):
+                barrels.append({"id": f"vessel{index}", "cx": round(centre[0], 3),
+                                "cy": round(centre[1], 3), "radius_m": round(radius, 3),
+                                "height_m": round(height, 3), "roof": template.vessel_roof})
+    if not barrels:
+        raise SceneError("design.no_fit",
+                         f"{template.type} needs {CYLINDER_MIN_RADIUS_M} m of radius; "
+                         f"the plot is {round(width, 1)}x{round(depth, 1)} m")
+    used_x = [barrel["cx"] - barrel["radius_m"] for barrel in barrels] + \
+             [barrel["cx"] + barrel["radius_m"] for barrel in barrels]
+    used_y = [barrel["cy"] - barrel["radius_m"] for barrel in barrels] + \
+             [barrel["cy"] + barrel["radius_m"] for barrel in barrels]
+    return CylinderDesign(id=f"design_{site.id}", type=template.type, role=site.role,
+                          design_state=site.design_state, site_id=site.id,
+                          x0=round(min(used_x), 3), y0=round(min(used_y), 3),
+                          x1=round(max(used_x), 3), y1=round(max(used_y), 3),
+                          barrels=tuple(barrels), height_m=round(height, 3),
+                          materials=dict(pack.materials))
+
+
+def validate_cylinder(design: CylinderDesign, site: Site) -> dict:
+    """Independent checks on a tank farm: inside the plot, clear of each other."""
+    results: list[dict] = []
+
+    def check(rule: str, passed: bool, message: str) -> None:
+        results.append({"rule": rule, "state": "pass" if passed else "fail", "message": message})
+
+    check("design.outline", site.x0 - 2e-3 <= design.x0 and design.x1 <= site.x1 + 2e-3
+          and site.y0 - 2e-3 <= design.y0 and design.y1 <= site.y1 + 2e-3,
+          f"vessel bank {round(design.area_m2)} m² inside the plot")
+    check("design.height", design.height_m <= site.max_height_m + 2e-3,
+          f"{design.height_m} m against the envelope {site.max_height_m} m")
+    check("design.vessels_inside",
+          all(site.x0 - 2e-3 <= barrel["cx"] - barrel["radius_m"]
+              and barrel["cx"] + barrel["radius_m"] <= site.x1 + 2e-3
+              and site.y0 - 2e-3 <= barrel["cy"] - barrel["radius_m"]
+              and barrel["cy"] + barrel["radius_m"] <= site.y1 + 2e-3
+              for barrel in design.barrels),
+          f"{len(design.barrels)} vessel(s) inside the plot")
+    clear = all(math.hypot(a["cx"] - b["cx"], a["cy"] - b["cy"]) >= a["radius_m"] + b["radius_m"] - 2e-3
+                for index, a in enumerate(design.barrels)
+                for b in design.barrels[index + 1:])
+    check("design.vessels_clear", clear, "no two vessels touch")
+    check("design.vessel_size",
+          all(barrel["radius_m"] >= CYLINDER_MIN_RADIUS_M for barrel in design.barrels),
+          f"every vessel is at least {CYLINDER_MIN_RADIUS_M} m in radius")
+    return {"design_id": design.id, "type": design.type, "kind": "cylinders",
+            "state": "pass" if all(item["state"] == "pass" for item in results) else "fail",
+            "checks": results}
 
 
 def _compound_interior(rect: tuple[float, float, float, float], height_m: float,

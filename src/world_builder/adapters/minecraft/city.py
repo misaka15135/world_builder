@@ -649,6 +649,65 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool,
     return parts
 
 
+def _disc_rows(name: str, cx: float, cy: float, radius: float, low: float, high: float,
+               block: str, tag: str) -> list[dict]:
+    """A filled circle at 1 m resolution: one box per row of the disc."""
+    boxes: list[dict] = []
+    rows = max(1, int(round(2 * radius)))
+    step = 2 * radius / rows
+    for index in range(rows):
+        low_y = cy - radius + index * step
+        middle = low_y + step / 2
+        half = math.sqrt(max(0.0, radius * radius - (middle - cy) ** 2))
+        if half < 0.5:
+            continue
+        boxes.append(_box(f"{name}_{tag}_{index:02}", cx - half, cx + half,
+                          low_y, low_y + step, low, high, block))
+    return boxes
+
+
+def _cylinder_boxes(record: dict, ox: float, on: float) -> list[dict]:
+    """A tank farm: each vessel is a stepped ring with its own cap.
+
+    Work order 017 class 3 — the first geometry in this project that is not an
+    axis-aligned box. The circle is stepped: a ring of chord boxes for the shell
+    (the same polygonal approximation the castle's round curtain wall uses) and
+    row-wise boxes for the cap, so a silo reads as round at block scale instead
+    of as the box it used to have to be.
+    """
+    boxes: list[dict] = []
+    shell, cap, plinth = "minecraft:light_gray_concrete", "minecraft:gray_concrete", \
+        "minecraft:stone_bricks"
+    for vessel in record["geometry"]["vessels"]:
+        cx, cy = ox + vessel["cx"], on + vessel["cy"]
+        radius, top = float(vessel["radius_m"]), float(vessel["height_m"])
+        name = f"{record['id']}_{vessel['id']}"
+        # Foundation ring: a disc half a metre wider than the shell.
+        boxes.extend(_disc_rows(name, cx, cy, radius + 0.5, 0.0, 0.4, plinth, "plinth"))
+        segments = max(12, min(36, int(math.pi * radius / 1.2)))
+        wall = 0.3
+        for index in range(segments):
+            first = 2 * math.pi * index / segments
+            second = 2 * math.pi * (index + 1) / segments
+            ax, ay = cx + radius * math.cos(first), cy + radius * math.sin(first)
+            bx, by = cx + radius * math.cos(second), cy + radius * math.sin(second)
+            boxes.append(_box(f"{name}_shell_{index:02}",
+                              min(ax, bx) - wall / 2, max(ax, bx) + wall / 2,
+                              min(ay, by) - wall / 2, max(ay, by) + wall / 2,
+                              0.0, top, shell))
+        if vessel.get("roof") == "dome":
+            # Three shrinking discs read as a dome once they are stepped.
+            for layer in range(1, 4):
+                inner = radius * (1.0 - layer / 4.0)
+                if inner < 0.5:
+                    break
+                boxes.extend(_disc_rows(name, cx, cy, inner, top + (layer - 1) * 0.8,
+                                        top + layer * 0.8, cap, f"dome{layer}"))
+        else:
+            boxes.extend(_disc_rows(name, cx, cy, radius, top, top + 0.4, cap, "cap"))
+    return boxes
+
+
 def _compound_boxes(record: dict, ox: float, on: float) -> list[dict]:
     """One castle: hollow volumes, a gatehouse, and the keep's interior.
 
@@ -838,6 +897,12 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
                 continue
             (ox, on, _), (_, _, _) = record["bounds"]["min"], record["bounds"]["max"]
             surface_boxes.extend(_compound_boxes(record, ox, on))
+        # Tank farms (work order 017 class 3): round vessels, stepped.
+        for record in entities:
+            if record["kind"] != "cylinders":
+                continue
+            (ox, on, _), (_, _, _) = record["bounds"]["min"], record["bounds"]["max"]
+            surface_boxes.extend(_cylinder_boxes(record, ox, on))
         # The source forbids wet building footprints. Keep the target robust as
         # well: flat water proxies must not replace a quantised floor or road.
         # Ground and water first, then the street network, and the building

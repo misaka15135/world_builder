@@ -8,10 +8,10 @@ from pathlib import Path
 
 import pytest
 
-from world_builder.planning import (BuildingDesign, CompoundDesign, OpenSpaceDesign, SceneError,
-                                    compile_brief, load_designs, load_setting_pack, plan_siting,
-                                    plan_terrain, validate_compound, validate_design,
-                                    validate_open_space)
+from world_builder.planning import (BuildingDesign, CompoundDesign, CylinderDesign, OpenSpaceDesign,
+                                    SceneError, compile_brief, load_designs, load_setting_pack,
+                                    plan_siting, plan_terrain, validate_compound, validate_cylinder,
+                                    validate_design, validate_open_space)
 from world_builder.planning.catalogue import DEFAULT_SETTINGS_ROOT
 from world_builder.planning.designer import (COMPOUND_ROLES, FURNITURE, ROOF_STYLES, design,
                                              design_building)
@@ -46,6 +46,8 @@ def designed():
                 reports.append(validate_open_space(plan, site))
             elif isinstance(plan, CompoundDesign):
                 reports.append(validate_compound(plan, site))
+            elif isinstance(plan, CylinderDesign):
+                reports.append(validate_cylinder(plan, site))
             else:
                 reports.append(validate_design(plan, site, pack.entry(site.type)))
         result[setting] = (pack, siting, designs, reports, skipped)
@@ -64,6 +66,10 @@ def test_design_templates_load_and_are_coherent() -> None:
                 assert template.compound, f"{name} must declare its volumes"
                 assert all(role in COMPOUND_ROLES and roof in ROOF_STYLES
                            for role, _, roof in template.compound)
+                continue
+            if template.kind == "cylinders":
+                assert template.vessel_diameter_m and template.vessel_height_m
+                assert template.vessel_count and template.vessel_roof in ("flat", "dome")
                 continue
             assert template.storeys[0] <= template.storeys[1]
             assert all(use in FURNITURE for row in template.room_uses for use in row)
@@ -217,6 +223,37 @@ def test_compound_design_lays_a_castle_without_overlaps() -> None:
                  max_height_m=18.0, max_storeys=6, needs=(), adjacency=())
     tight_report = validate_compound(design_compound(tight, pack, template, entry_side="south"), tight)
     assert tight_report["state"] == "pass", [c for c in tight_report["checks"] if c["state"] != "pass"]
+
+
+def test_cylinder_design_lays_a_tank_farm_without_overlap() -> None:
+    """Stage E class 3 (work order 017 main line): the first round geometry.
+
+    A tank farm states one vessel; the rule decides how many fit. A roomy plot
+    keeps the template's diameter; a narrow one keeps the vessels round by
+    standing fewer of them rather than squeezing them into pipes.
+    """
+    from world_builder.planning import Site
+    from world_builder.planning.designer import DesignTemplate, design_cylinders, validate_cylinder
+    pack = load_setting_pack("industrial_park")
+    template = DesignTemplate(type="silo_tank", kind="cylinders", vessel_diameter_m=10.0,
+                              vessel_height_m=22.0, vessel_count=4, vessel_roof="dome")
+    site = Site(id="site_tank", type="silo_tank", role="works", design_state="planned",
+                block_id="block_000", domain_id="tank", x0=0.0, y0=0.0, x1=40.0, y1=30.0,
+                max_height_m=24.0, max_storeys=1, needs=(), adjacency=())
+    plan = design_cylinders(site, pack, template)
+    report = validate_cylinder(plan, site)
+    assert report["state"] == "pass", [c for c in report["checks"] if c["state"] != "pass"]
+    assert len(plan.barrels) == 4, "a roomy plot takes every vessel"
+    assert all(abs(barrel["radius_m"] - 5.0) < 1e-6 for barrel in plan.barrels)
+    assert plan.height_m == 22.0 and {b["roof"] for b in plan.barrels} == {"dome"}
+    narrow = Site(id="site_tight", type="silo_tank", role="works", design_state="planned",
+                  block_id="block_000", domain_id="tank", x0=0.0, y0=0.0, x1=14.0, y1=12.0,
+                  max_height_m=20.0, max_storeys=1, needs=(), adjacency=())
+    tight = design_cylinders(narrow, pack, template)
+    assert len(tight.barrels) < 4, "a narrow plot drops vessels instead of fattening pipes"
+    assert all(barrel["radius_m"] >= 2.0 for barrel in tight.barrels)
+    assert validate_cylinder(tight, narrow)["state"] == "pass"
+    assert tight.height_m == 20.0, "the vessel is capped by the plot's envelope"
 
 
 def test_castle_gatehouse_and_keep_interior_reach_the_plan() -> None:
