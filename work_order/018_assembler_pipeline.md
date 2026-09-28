@@ -23,7 +23,10 @@
 ## 工作项
 
 - [x] ~~定义装配契约与修订结构：每个阶段产物作为资源存档（内容哈希 + 提供者 + 版本），可离线回放。~~
-- [ ] 实现作用域回馈：单栋设计失败 → 该栋重试或换包络；某个 site 在包络内无解 → 该街区重划；整城在地形上不可行 → 回到 014。**不得**因为一栋失败重跑整城，也不得静默放宽用户约束。
+- [x] ~~实现作用域回馈：单栋设计失败 → 该栋重试或换包络；某个 site 在包络内无解 → 该街区重划；整城在地形上不可行 → 回到 014。~~
+
+  2026-09-28 落地到「单栋重试 + 同块换包络（内收 0/10%/20%）+ 失败丢弃并记录」这一层（见下表同日行）；**街区重划与回到 014 仍未做**。
+
 - [ ] 把现有 `pipeline.py` 的阶段提交、候选上限、`repair.py` 的有限修复改造成装配器的重试预算机制（**未做**：目前是一遍成型 + 校验，没有作用域回馈的重试）。
 - [x] ~~提供一条命令跑完整条流水线（背景包 → 地形 → 目录 → 区块 → 设计 → 装配 → 导出）。~~
 - [x] ~~端到端预登记批次：4 个背景包各若干输入，登记在运行前冻结，记录成功率、失败原因、耗时与峰值内存；离线零模型调用。~~
@@ -129,3 +132,4 @@
 | 2026-09-28 | root | 圆柱进装配器与 Minecraft 适配器（主线 c 第一项的 018 侧） | 装配器新增 `CylinderDesign` 分支，出 `cylinders` 实体（`representation: cylinders`，每只罐的局部中心/半径/高度/盖型）并在 `validate_scene` 加 `scene.cylinders` 计数；适配器新增 `_disc_rows()`（按行铺满圆盘）与 `_cylinder_boxes()`（弦盒环 + 基座盘 + 分层穹顶），`city_boxes` 的场景分支按 `kind == "cylinders"` 调用。**这是本项目第一次有非轴对齐盒的几何**（仍由盒近似）。实测工业园 seed 4：34 分块 / 1,907 盒 / 594,303 方块 / `validation: pass`，罐体 116 盒（基座 28 + 壳 48 + 穹顶 40）。完整回归 165 passed | 船体与干船坞仍是下一项 |
 | 2026-09-28 | root | 船体接进投影层与 Minecraft 适配器（主线 c 第二项的 018 侧） | `project_for_minecraft` 对 `work_type: cargo_ship` 的折线不再压成走廊盒（其余折线不变），适配器新增 `_vessel_boxes()`（沿系泊线 30 段收分断面 + 水线带 + 甲板 + 艉船楼 + 烟囱），`city_boxes` 场景分支新增 `work`/`cargo_ship` 分支，调色板补红/白/黑三色。实测港口 seed 4：36 分块 / 2,412 盒 / 621,768 方块 / `validation: pass`，船体 184 盒。**同一轮核实：`pier` 2 座与 `quay` 1 段在导出里仍是 0 盒**，码头几何是下一项。完整回归 167 passed | 码头/岸壁几何 |
 | 2026-09-28 | root | 码头与岸壁接进 Minecraft 适配器（主线 c 第三项的 018 侧） | 适配器新增 `_berth_boxes()`（码头＝木梁 + 石甲板、岸壁＝0—3 m 石面），`city_boxes` 场景分支对 `kind in {pier, quay}` 调用。实测港口 seed 4：36 分块 / 2,678 盒 / 648,902 方块 / `validation: pass`（码头 56 盒、岸壁 210 盒、船 184 盒）。**同轮发现**：船的系泊线与码头走廊在码头头部重叠（016 侧的避让缺失），已在 017 记录。完整回归 168 passed | 016 的船/码头避让 |
+| 2026-09-28 | root | **018 待办：失败按作用域回馈（一栋失败只重做一栋）** | 原状：`assemble_scene.py` 与 `design_buildings.py` 都是「一遍成型」——`design()` 抛错就整个场景退出，且**没有**「换包络再试」这一步。本轮实现：① 设计器新增 `design_sites(siting, pack, templates, seed, shrink_steps=(0.0, 0.10, 0.20))`——逐块设计，**失败只在该块内重试**：先按原包络，再把**同一块包络向内收 10% / 20%** 重试（`_shrink_site`，这就是工单里写的「换包络」作用域）；三次都失败才**丢掉这一块**，并记录 `{site_id, type, code, message, attempts, shrink}`；**其余地块照常设计**，不重跑整城、不放宽 brief。② 没有模板的类型仍走 `skipped` 单独统计（与「设计失败」区分）。③ 两个工具都改用它；`assemble_scene.py` 会打印 `plots dropped: N` 与每条的 site/规则/尝试次数/最后内侧量；`design_buildings.py` 也把 `SceneError` 收进 `failures` 而不是崩溃。**顺带修掉两处既存缺口**（本轮被 cylindrical 设计种类暴露）：`design_buildings.py` 原本只认建筑——对 `open_space` 之外的 `CompoundDesign`/`CylinderDesign` 会调 `validate_design` 而 AttributeError；现在按种类分派到 `validate_compound`/`validate_cylinder`，统计段也只对 `BuildingDesign` 取 `storeys/stairs/furniture`。**测试**：新增 `test_one_bad_plot_does_not_take_the_scene_down`（好地块照常出设计、坏地块被丢弃且带 `design.no_fit` 与 3 次尝试/最后 20% 内收、未知类型进 `skipped`）。**四背景实测**（`tools/design_buildings.py --seed 4` 全部 `failures=0`）：魔法城邦 74 设计（城堡 1 + 广场 1 + 建筑 72）、现代都市 32、工业园 18（含 `silo_tank` 2）、港口 14；完整回归 **170 passed**、文档检查零错误 | **顺带发现的验证缺口（记录，未修）**：设计器对极小包络几乎不拒绝——实测 1×1 m 地块仍能「设计成功」，且 `max_height_m=1.0` 时仍产出 3.2 m 高的建筑（`validate_design` 会事后判 fail，但设计阶段不抛错）。因此本轮的作用域回馈主要覆盖**会抛错**的规则（如 `design.no_fit`），对「悄悄越界」的规则还不生效——这是下一项要补的 | 下一轮：给设计阶段加包络下限与越界即抛，或做 `.worldpkg` 端到端回放 |

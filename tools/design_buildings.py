@@ -6,9 +6,11 @@ import json
 import sys
 from pathlib import Path
 
-from world_builder.planning import (SceneError, compile_brief, load_designs, load_setting_pack,
-                                    plan_siting, plan_terrain, validate_design)
-from world_builder.planning.designer import OpenSpaceDesign, design as design_for, validate_open_space
+from world_builder.planning import (BuildingDesign, SceneError, compile_brief, load_designs,
+                                    load_setting_pack, plan_siting, plan_terrain, validate_design)
+from world_builder.planning.designer import (CompoundDesign, CylinderDesign, OpenSpaceDesign,
+                                             design as design_for, validate_compound, validate_cylinder,
+                                             validate_open_space)
 
 
 def render_plan(design, width: int = 56) -> str:
@@ -71,10 +73,26 @@ def main(argv: list[str] | None = None) -> int:
             continue
         block = siting.block(site.block_id)
         entry_side = "south" if abs(block.centre[1] - site.y0) < abs(block.centre[1] - site.y1) else "north"
-        design = design_for(site, pack.entry(site.type), pack, template, entry_side=entry_side,
-                            seed=args.seed)
-        report = (validate_open_space(design, site) if isinstance(design, OpenSpaceDesign)
-                  else validate_design(design, site, pack.entry(site.type)))
+        try:
+            design = design_for(site, pack.entry(site.type), pack, template, entry_side=entry_side,
+                                seed=args.seed)
+        except SceneError as exc:
+            # Scoped failure (work order 018): one plot that cannot be designed is
+            # recorded against that plot and the rest of the city still runs.
+            failures.append({"design": site.id, "type": site.type, "code": exc.code,
+                             "checks": [{"rule": exc.code, "state": "fail", "message": str(exc)}]})
+            continue
+        # Every design kind has its own validator (work orders 017/018): a tank
+        # farm and a castle are not buildings, so they must not be handed to the
+        # building rule.
+        if isinstance(design, OpenSpaceDesign):
+            report = validate_open_space(design, site)
+        elif isinstance(design, CompoundDesign):
+            report = validate_compound(design, site)
+        elif isinstance(design, CylinderDesign):
+            report = validate_cylinder(design, site)
+        else:
+            report = validate_design(design, site, pack.entry(site.type))
         if report["state"] != "pass":
             failures.append({"design": design.id, "type": design.type,
                              "checks": [check for check in report["checks"] if check["state"] != "pass"]})
@@ -96,18 +114,17 @@ def main(argv: list[str] | None = None) -> int:
     by_type: dict[str, int] = {}
     for design, _ in designs:
         by_type[design.type] = by_type.get(design.type, 0) + 1
-    storeys = [len(design.storeys) for design, _ in designs
-               if not isinstance(design, OpenSpaceDesign)]
+    # Only buildings have storeys, stairs and furniture (work orders 017/018).
+    storeys = [len(design.storeys) for design, _ in designs if isinstance(design, BuildingDesign)]
     print(f"setting={pack.id} seed={args.seed} designs={len(designs)} skipped={len(skipped)} "
           f"failures={len(failures)}")
     print(f"  by type: {dict(sorted(by_type.items()))}")
     if storeys:
         print(f"  storeys: min {min(storeys)} max {max(storeys)} mean {round(sum(storeys)/len(storeys), 2)}")
         print(f"  heights: max {max(round(design.height_m, 1) for design, _ in designs)} m")
-        with_stair = sum(1 for design, _ in designs if not isinstance(design, OpenSpaceDesign)
-                         and design.stair)
+        with_stair = sum(1 for design, _ in designs if isinstance(design, BuildingDesign) and design.stair)
         print(f"  with stair: {with_stair}; furniture pieces: "
-              f"{sum(len(design.furniture) for design, _ in designs if not isinstance(design, OpenSpaceDesign))}; "
+              f"{sum(len(design.furniture) for design, _ in designs if isinstance(design, BuildingDesign))}; "
               f"open spaces: {sum(1 for design, _ in designs if isinstance(design, OpenSpaceDesign))}")
     if skipped:
         print(f"  no design template yet for: {sorted(set(skipped))}")

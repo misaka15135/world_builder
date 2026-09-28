@@ -15,8 +15,9 @@ from .siting import (DISTRICTS_VERSION, Block, Bridge, DistrictSpec, Domain, Roa
                      load_districts_spec, plan_siting, validate_siting)
 from .designer import (DESIGN_VERSION, BuildingDesign, CompoundDesign, DesignTemplate, Furniture,
                        CylinderDesign, OpenSpaceDesign, Room, Storey, design, design_building,
-                       design_compound, design_cylinders, design_open_space, load_designs, parse_designs,
-                       validate_compound, validate_cylinder, validate_design, validate_open_space)
+                       design_compound, design_cylinders, design_open_space, design_sites, load_designs,
+                       parse_designs, validate_compound, validate_cylinder, validate_design,
+                       validate_open_space)
 from .assembler import ASSEMBLY_VERSION, assemble_scene, render_png, render_svg, validate_scene
 
 __all__ = [
@@ -29,7 +30,7 @@ __all__ = [
     "DISTRICTS_VERSION", "Block", "Bridge", "DistrictSpec", "Domain", "Road", "Site", "SitingPlan",
     "load_districts_spec", "plan_siting", "validate_siting",
     "DESIGN_VERSION", "BuildingDesign", "CylinderDesign", "DesignTemplate", "Furniture", "Room", "Storey",
-    "design_building", "design_cylinders", "load_designs", "parse_designs", "validate_cylinder",
-    "validate_design",
+    "design_building", "design_cylinders", "design_sites", "load_designs", "parse_designs",
+    "validate_cylinder", "validate_design",
     "ASSEMBLY_VERSION", "assemble_scene", "render_png", "render_svg", "validate_scene",
 ]

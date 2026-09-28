@@ -11,7 +11,7 @@ from world_builder.planning import (SceneError, assemble_scene, compile_brief, l
                                     validate_scene)
 from world_builder.adapters.minecraft.city import CityExportError, export_city
 from world_builder.adapters.minecraft.scene import project_for_minecraft
-from world_builder.planning.designer import design
+from world_builder.planning.designer import design_sites
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -42,17 +42,11 @@ def main(argv: list[str] | None = None) -> int:
     except SceneError as exc:
         print(json.dumps({"code": exc.code, "message": str(exc)}, ensure_ascii=False))
         return 1
-    designs = []
-    skipped = set()
-    for site in siting.sites:
-        template = templates.get(site.type)
-        if template is None:
-            skipped.add(site.type)
-            continue
-        block = siting.block(site.block_id)
-        entry_side = "south" if abs(block.centre[1] - site.y0) < abs(block.centre[1] - site.y1) else "north"
-        designs.append(design(site, pack.entry(site.type), pack, template,
-                                       entry_side=entry_side, seed=args.seed))
+    # One plot's failure costs that plot and nothing else (work order 018): the
+    # scoped retry re-fits the same envelope before giving up, and a plot that
+    # still cannot be designed is dropped with its reason rather than taking the
+    # whole scene down with it.
+    designs, failures, skipped = design_sites(siting, pack, templates, seed=args.seed)
     designs = tuple(designs)
     package = assemble_scene(brief, pack, terrain, siting, designs)
     report = validate_scene(package, terrain, siting, designs)
@@ -76,6 +70,12 @@ def main(argv: list[str] | None = None) -> int:
     print(f"setting={pack.id} seed={args.seed} world={package['manifest']['world_id']}")
     print(f"  records: {report['record_count']} {report['kinds']}")
     print(f"  designs: {len(designs)}; no template yet for: {sorted(skipped)}")
+    if failures:
+        # Scoped failure report: which plot, which rule, how many attempts.
+        print(f"  plots dropped: {len(failures)}")
+        for item in failures:
+            print(f"    {item['site_id']} ({item['type']}): {item['code']} after "
+                  f"{item['attempts']} attempt(s), last inset {item['shrink']} — {item['message']}")
     print(f"  validation: {report['state']}")
     for check in report["checks"]:
         if check["state"] != "pass":

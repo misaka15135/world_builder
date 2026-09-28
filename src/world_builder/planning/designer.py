@@ -18,7 +18,7 @@ import hashlib
 import json
 import math
 import random
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from .catalogue import DEFAULT_SETTINGS_ROOT, SceneError, SettingPack
@@ -745,6 +745,54 @@ def validate_open_space(design: OpenSpaceDesign, site: Site) -> dict:
     return {"design_id": design.id, "type": design.type, "kind": "open_space",
             "state": "pass" if all(item["state"] == "pass" for item in results) else "fail",
             "checks": results}
+
+
+def _shrink_site(site: Site, fraction: float) -> Site:
+    """The same plot, pulled in from every edge by a fraction of its short side."""
+    if fraction <= 0.0:
+        return site
+    inset = min(site.x1 - site.x0, site.y1 - site.y0) * fraction / 2
+    return replace(site, x0=site.x0 + inset, y0=site.y0 + inset,
+                   x1=site.x1 - inset, y1=site.y1 - inset)
+
+
+def design_sites(siting, pack: SettingPack, templates: dict, *, seed: int = 1,
+                 shrink_steps: tuple[float, ...] = (0.0, 0.10, 0.20)) -> tuple[list, list[dict], set[str]]:
+    """Design every sited plot, keeping one plot's failure to that plot.
+
+    Work order 018: a single building that cannot be designed must cost that
+    building and nothing else. The rule is a scoped retry — first on the plot as
+    sited, then on the same plot pulled in from its edges, which is the "re-fit
+    the envelope" step that stays inside one plot. Only when every attempt fails
+    is the plot dropped, and it is dropped **with its reason recorded** rather
+    than by relaxing the brief: the rest of the city assembles unchanged, and
+    the caller can report exactly which plots are missing and why.
+
+    Returns the designs, one failure record per dropped plot, and the set of
+    types that have no template at all.
+    """
+    designs: list = []
+    failures: list[dict] = []
+    skipped: set[str] = set()
+    for site in siting.sites:
+        template = templates.get(site.type)
+        if template is None:
+            skipped.add(site.type)
+            continue
+        block = siting.block(site.block_id)
+        entry_side = "south" if abs(block.centre[1] - site.y0) < abs(block.centre[1] - site.y1) else "north"
+        attempt_record = None
+        for attempt, shrink in enumerate(shrink_steps, start=1):
+            try:
+                designs.append(design(_shrink_site(site, shrink), pack.entry(site.type), pack, template,
+                                      entry_side=entry_side, seed=seed))
+                break
+            except SceneError as error:
+                attempt_record = {"site_id": site.id, "type": site.type, "code": error.code,
+                                  "message": str(error), "attempts": attempt, "shrink": shrink}
+        else:
+            failures.append(attempt_record)
+    return designs, failures, skipped
 
 
 def design(site: Site, entry, pack: SettingPack, template: DesignTemplate, *,

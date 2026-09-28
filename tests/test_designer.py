@@ -225,6 +225,39 @@ def test_compound_design_lays_a_castle_without_overlaps() -> None:
     assert tight_report["state"] == "pass", [c for c in tight_report["checks"] if c["state"] != "pass"]
 
 
+def test_one_bad_plot_does_not_take_the_scene_down() -> None:
+    """Work order 018: failure is scoped to the plot that failed.
+
+    A building that cannot be designed on its envelope is re-fitted on the same
+    envelope first, and only dropped -- with the reason recorded -- if that fails
+    too. The other plots are designed exactly as before, so one bad plot costs
+    one building instead of the whole city.
+    """
+    from types import SimpleNamespace
+    from world_builder.planning import Site, design_sites
+    pack = load_setting_pack("industrial_park")
+    templates = load_designs("industrial_park")
+    block = SimpleNamespace(centre=(0.0, 0.0))
+    good = Site(id="site_ok", type="workshop", role="works", design_state="planned",
+                block_id="block_000", domain_id="works", x0=0.0, y0=0.0, x1=40.0, y1=30.0,
+                max_height_m=12.0, max_storeys=2, needs=(), adjacency=())
+    # A plot too small for the vessels the template demands: the design rule
+    # refuses rather than shrinking a silo into a pipe (design.no_fit).
+    hopeless = Site(id="site_bad", type="silo_tank", role="works", design_state="planned",
+                    block_id="block_000", domain_id="works", x0=100.0, y0=100.0, x1=106.0, y1=106.0,
+                    max_height_m=12.0, max_storeys=2, needs=(), adjacency=())
+    unknown = Site(id="site_unknown", type="no_such_type", role="works", design_state="planned",
+                   block_id="block_000", domain_id="works", x0=200.0, y0=200.0, x1=230.0, y1=220.0,
+                   max_height_m=12.0, max_storeys=2, needs=(), adjacency=())
+    siting = SimpleNamespace(sites=(good, hopeless, unknown), block=lambda _: block)
+    designs, failures, skipped = design_sites(siting, pack, templates, seed=4)
+    assert [design.site_id for design in designs] == ["site_ok"], "the good plot is designed"
+    assert [item["site_id"] for item in failures] == ["site_bad"], "the bad plot is dropped, with its reason"
+    assert failures[0]["code"] == "design.no_fit" and failures[0]["attempts"] == 3
+    assert failures[0]["shrink"] == 0.20, "the scoped retry re-fits the same envelope"
+    assert skipped == {"no_such_type"}, "a missing template is reported separately"
+
+
 def test_cylinder_design_lays_a_tank_farm_without_overlap() -> None:
     """Stage E class 3 (work order 017 main line): the first round geometry.
 
