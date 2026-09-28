@@ -32,6 +32,8 @@
 
 **2026-09-28 band 3 再次换版（干船坞实贴）**：新港口（含干船坞）已重贴进 `WB Scenes Rebuild` band 3——36 分块逐块 `blocks affected` 与 manifest 吻合（**652,938** 方块）。清带助手这轮加了**选区丢失重试**（affected < 100 万即判 `//pos1/pos2` 丢命令并整列重做）。落盘沿用教训：不依赖 `/save-all`，直接用 **Esc → Save and Quit to Title**（band 3 的 9 个区域文件 18:09:55 更新），**重新载入世界后截图**确认基坑与龙门吊来自磁盘。至此 **band 0/1 = 主线 b、band 2/3 = 主线 c**（筒仓、船、码头、岸壁、干船坞齐备）。完整回归 **174 passed**、文档检查零错误。详见 [022](022_scene_reconstruction_new_world.md)。
 
+**2026-09-28 主线 e 第二项：`.worldpkg` 端到端回放**：把场景包提交仓库时直接失败（`resource.missing`），查出**两个既存缺陷**——① 高度场资产的**字节从未写下来**（只记了 hash），场景包因此不自洽、根本无法归档；② 记的 hash 与写的字节**不是同一个对象**（`digest` 漏了 `axes`/`origin`），补上字节也会被 `hash_mismatch` 拒收。修法：装配器新增 `asset_sink` 回调把 `(record, payload)` 交给调用方（不改变返回类型），并让 payload 与 checksum 由同一个资产体产出。**回放结果**：港口包 → `.worldpkg`（`sha256:a09f9a848a6fb69a…`）→ 读回的包与原包完全相等；**回放包再导出 Minecraft 得 36 个分块、`schem_sha256` 与直接导出逐一相同**、非空气方块同为 652,938。`tools/assemble_scene.py` 新增 `--worldpkg`。新增 `tests/test_scene_package_replay.py`；完整回归 **176 passed**、文档检查零错误。详见 [018](018_assembler_pipeline.md)。
+
 **2026-09-27 风格建筑双目标样件**：[021](021_style_building_cross_target_sample.md) 已完成；同一木构街屋设计导出 Unity GLB 和 Minecraft Sponge v3。v5 在 Unity 目标导入/重开 143/143 构件通过，1.8 m 控制器连续走通门、商铺、楼梯、二层房间；Minecraft 在 `WB Verify Flat` 实贴 1,571 方块，生存模式同路线从街道连续走到二层居室，两端目标截图与检查点已留证。手工样件尚未接入通用 E 设计器。
 
 **2026-09-27 最新状态**：008/009/016/017/018 保持 `in_progress`。开放空间代表样件已在两目标推进：Minecraft 广场 1 分块、公园 2 分块实贴且路径/灯具探针通过；广场冒险模式落地和脚下方块验证通过，自动输入未能完成连续实走。Unity 同修订广场 34 构件导入与重开通过，新增 Play Mode 控制器沿源步道 3/3 检查点连续通行。完整场景导出/漫游仍未验收；证据见 [008](008_unity_export.md)、[009](009_minecraft_schematic_export.md)、[018](018_assembler_pipeline.md)。此前冻结 20 例复跑 20/20 通过。

@@ -18,6 +18,7 @@ import hashlib
 import json
 import math
 from pathlib import Path
+from typing import Callable
 
 from world_builder.generation.spec import canonical, digest
 from world_builder.generation.planner import entity, relation
@@ -55,8 +56,16 @@ def _spec_record(brief: SceneBrief, pack: SettingPack, world_id: str) -> dict:
 
 
 def assemble_scene(brief: SceneBrief, pack: SettingPack, terrain: TerrainPlan, siting: SitingPlan,
-                   designs: tuple[BuildingDesign, ...]) -> dict:
-    """Build one WIR package from the stage outputs."""
+                   designs: tuple[BuildingDesign, ...], *,
+                   asset_sink: Callable[[dict, bytes], None] | None = None) -> dict:
+    """Build one WIR package from the stage outputs.
+
+    Assets — today the terrain heightfield — are content-addressed, so a package
+    only carries their hash and uri. `asset_sink` is where the bytes go: a
+    repository `publish` call, which is what makes the package archivable as a
+    `.worldpkg` at all (work order 018). Without it the package records a hash
+    for bytes nobody kept, and a commit fails with `resource.missing`.
+    """
     world_id = "world_" + digest({"brief": brief.to_dict(), "setting": pack.id,
                                   "assembly": ASSEMBLY_VERSION})[7:23]
     spacing = terrain.spacing_m
@@ -66,21 +75,29 @@ def assemble_scene(brief: SceneBrief, pack: SettingPack, terrain: TerrainPlan, s
     records.append(root)
 
     heights = [list(row) for row in terrain.heights]
-    payload = canonical({"version": 1, "unit": "m", "axes": "RH_X_east_Y_north_Z_up", "origin": [0, 0],
-                         "spacing_m": spacing, "heights": [[round(v, 3) for v in row] for row in heights]})
-    checksum = digest({"version": 1, "unit": "m", "spacing_m": spacing,
-                       "heights": [[round(v, 3) for v in row] for row in heights]})
+    # The hash has to describe the bytes that are actually written: the first
+    # version hashed a dict without the axes and the origin while writing a
+    # payload that had them, so every heightfield asset carried a content hash
+    # no repository would accept (found 2026-09-28 while making the package
+    # archivable).
+    heightfield_body = {"version": 1, "unit": "m", "axes": "RH_X_east_Y_north_Z_up", "origin": [0, 0],
+                        "spacing_m": spacing, "heights": [[round(v, 3) for v in row] for row in heights]}
+    payload = canonical(heightfield_body)
+    checksum = digest(heightfield_body)
     terrain_entity = entity("terrain_main", "terrain", world_id, [0, 0, 0],
                             [brief.region_m, brief.region_m, 64])
     terrain_entity["geometry"] = {"representation": "heightfield", "asset_id": "asset_heightfield",
                                   "spacing_m": spacing, "relief_m": [terrain.stats["min_m"], terrain.stats["max_m"]]}
     records.append(terrain_entity)
-    records.append({"record_type": "asset", "id": "asset_heightfield", "content_hash": checksum,
-                    "uri": "assets/sha256/" + checksum[7:], "media_type": "application/json",
-                    "length_unit": "m", "axis": "RH_Z_up",
-                    "license": {"spdx": "LicenseRef-Generated", "source": f"scene.{ASSEMBLY_VERSION}"},
-                    "bounds": terrain_entity["bounds"],
-                    "extensions": {"role": "heightfield", "bytes": len(payload)}})
+    heightfield_asset = {"record_type": "asset", "id": "asset_heightfield", "content_hash": checksum,
+                         "uri": "assets/sha256/" + checksum[7:], "media_type": "application/json",
+                         "length_unit": "m", "axis": "RH_Z_up",
+                         "license": {"spdx": "LicenseRef-Generated", "source": f"scene.{ASSEMBLY_VERSION}"},
+                         "bounds": terrain_entity["bounds"],
+                         "extensions": {"role": "heightfield", "bytes": len(payload)}}
+    records.append(heightfield_asset)
+    if asset_sink is not None:
+        asset_sink(heightfield_asset, payload)
 
     # Water: channels, coastlines and the concrete water level.
     for channel in terrain.channels:

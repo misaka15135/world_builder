@@ -27,6 +27,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--png", type=Path, help="write a raster plan here, for the artifacts record")
     parser.add_argument("--export-minecraft", type=Path, dest="minecraft",
                         help="write 128 m Sponge schematics here (projected into the adapter's vocabulary)")
+    parser.add_argument("--worldpkg", type=Path,
+                        help="archive the finished WIR package as a .worldpkg for replay elsewhere")
     parser.add_argument("--interiors", action="store_true",
                         help="materialise interiors; the adapter needs stair geometry for that")
     args = parser.parse_args(argv)
@@ -48,7 +50,21 @@ def main(argv: list[str] | None = None) -> int:
     # whole scene down with it.
     designs, failures, skipped = design_sites(siting, pack, templates, seed=args.seed)
     designs = tuple(designs)
-    package = assemble_scene(brief, pack, terrain, siting, designs)
+    # The heightfield asset has to be published while the package is built: the
+    # package only carries its hash, so the bytes need a home before a commit or
+    # an archive (work order 018's replay).
+    repository = None
+    asset_sink = None
+    if args.worldpkg:
+        from world_builder.storage.repository import Repository
+        repository = Repository(args.worldpkg.parent / (args.worldpkg.stem + ".repo"))
+        asset_sink = lambda record, payload: repository.publish(payload)  # noqa: E731
+    package = assemble_scene(brief, pack, terrain, siting, designs, asset_sink=asset_sink)
+    if repository is not None:
+        from world_builder.storage.worldpkg import export_worldpkg
+        repository.commit(package, None)
+        checksum = export_worldpkg(repository, package["manifest"]["world_id"], args.worldpkg)
+        print(f"  worldpkg: {checksum} -> {args.worldpkg}")
     report = validate_scene(package, terrain, siting, designs)
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
