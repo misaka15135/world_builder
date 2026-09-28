@@ -1015,18 +1015,39 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
         grid = (terrain["geometry"] or {}).get("height_grid_m")
         grid_step = float((terrain["geometry"] or {}).get("height_grid_spacing_m", 0.0) or 0.0)
         if grid and grid_step > 0.0:
+            # Stepped ground as a crust, not a solid fill (work order 014): one
+            # surface box per grid cell plus a riser on every step, because a
+            # solid column multiplies into the whole footprint — 98 % of a band's
+            # blocks were underground fill before this (2,305,024 of 2,347,177).
             surface_boxes = []
-            # Only half a metre under the lowest sample: the mass has to be solid
-            # (a hollow crust would show voids at every cliff), but every extra metre
-            # multiplies into the whole 512 m footprint. Bare earth, no filler.
-            base = min(min(row) for row in grid) - 0.5
-            for row_index, row in enumerate(grid):
-                for column_index, height in enumerate(row):
+            tops = [[float(value) + 0.25 for value in row] for row in grid]
+            rows_count, columns_count = len(tops), len(tops[0])
+            for row_index in range(rows_count):
+                for column_index in range(columns_count):
+                    top = tops[row_index][column_index]
                     gx0 = tlo[0] + column_index * grid_step
                     gn0 = tlo[1] + row_index * grid_step
                     surface_boxes.append(_box(
                         f"terrain_grid_{row_index:02}_{column_index:02}", gx0, gx0 + grid_step,
-                        gn0, gn0 + grid_step, base, float(height) + 0.25, "minecraft:grass_block"))
+                        gn0, gn0 + grid_step, top - 1.0, top, "minecraft:grass_block"))
+                    for d_row, d_column in ((0, 1), (1, 0)):
+                        other_row, other_column = row_index + d_row, column_index + d_column
+                        if not (other_row < rows_count and other_column < columns_count):
+                            continue
+                        other = tops[other_row][other_column]
+                        if abs(top - other) < 0.01:
+                            continue
+                        high, low = (top, other) if top > other else (other, top)
+                        if d_column:
+                            edge = gx0 + grid_step
+                            surface_boxes.append(_box(
+                                f"terrain_riser_x_{row_index:02}_{column_index:02}", edge - 1.0, edge,
+                                gn0, gn0 + grid_step, low - 1.0, high, "minecraft:stone_bricks"))
+                        else:
+                            edge = gn0 + grid_step
+                            surface_boxes.append(_box(
+                                f"terrain_riser_y_{row_index:02}_{column_index:02}", gx0, gx0 + grid_step,
+                                edge - 1.0, edge, low - 1.0, high, "minecraft:stone_bricks"))
         else:
             surface_boxes = [_box("terrain_proxy", tlo[0], thi[0], tlo[1], thi[1], -0.2, 0.25,
                                   "minecraft:grass_block")]
