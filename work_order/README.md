@@ -10,7 +10,9 @@
 
 **2026-09-28 band 1 换版**：现代都市（band 1）也已换成主线 b 版本——34 个分块按列清空后重贴，逐块 `blocks affected` 与 manifest 吻合（合计 810,765 非空气方块，清单缺的两格跳过）。街面截图可见成排水平带窗（4 m 玻璃 + 浅灰混凝土窗樘/窗楣）。完整回归 **163 passed**、文档检查零错误。**待办**：band 2/3 仍是上一版；本带未走室内。详见 [022](022_scene_reconstruction_new_world.md)。
 
-**2026-09-28 band 2 换版**：工业园（band 2）也已换成主线 b 版本——34 个分块逐块与 manifest 吻合（合计 590,783 非空气方块，缺的两格跳过）。过程失败如实记录：外来窗口抢焦点导致游戏暂停、三条清带命令静默失效；`//pos1` 两次丢失造成选区合并；均靠 `latest.log` 复核发现并重做。另把 `doDaylightCycle` 关掉（存档持久改动，避免截图在夜里）。完整回归 **163 passed**、文档检查零错误。**待办**：band 3 仍是上一版。详见 [022](022_scene_reconstruction_new_world.md)。
+**2026-09-28 band 2 换版**：工业园（band 2）也已换成主线 b 版本——34 个分块逐块与 manifest 吻合（合计 590,783 非空气方块，缺的两格跳过）。过程失败如实记录：外来窗口抢焦点导致游戏暂停、三条清带命令静默失效；`//pos1` 两次丢失造成选区合并；均靠 `latest.log` 复核发现并重做。曾试图用 `/gamerule doDaylightCycle false` 固定白天，**但命令被拒（`Incorrect argument for command`），两次都没生效**——该说法已更正。完整回归 **163 passed**、文档检查零错误。**待办**：band 3 仍是上一版。详见 [022](022_scene_reconstruction_new_world.md)。
+
+**2026-09-28 四带换版完成**：港口（band 3）也换成主线 b 版本——36 个分块逐块与 manifest 吻合（合计 612,922 非空气方块）。**至此 `WB Scenes Rebuild` 的 band 0/1/2/3 全部是带框窗 + 门廊立柱的版本**，四带共 140 分块、逐块核对通过，截图分别在 `artifacts/minecraft-scene-mainline-b/<setting>/target-20260928/`。过程记录：本轮探针命令 2 分钟后才入库（服务器滞后，非暂停）。完整回归 **163 passed**、文档检查零错误。主线 b 的目标侧工作收口，下一轮起回主线 c)（class 3 剩余几何）或 e)（018 失败按作用域回馈）。详见 [022](022_scene_reconstruction_new_world.md)。
 
 **2026-09-27 风格建筑双目标样件**：[021](021_style_building_cross_target_sample.md) 已完成；同一木构街屋设计导出 Unity GLB 和 Minecraft Sponge v3。v5 在 Unity 目标导入/重开 143/143 构件通过，1.8 m 控制器连续走通门、商铺、楼梯、二层房间；Minecraft 在 `WB Verify Flat` 实贴 1,571 方块，生存模式同路线从街道连续走到二层居室，两端目标截图与检查点已留证。手工样件尚未接入通用 E 设计器。
 
