@@ -47,7 +47,9 @@ def test_the_terrain_entity_carries_a_sampled_height_grid() -> None:
     # the spacing was halved on 2026-09-29 (32 -> 16 m) because finer cells mean
     # shorter risers, so the ground got smoother at slightly fewer blocks.
     assert 8.0 <= geometry["height_grid_spacing_m"] <= 32.0
-    assert len(grid) == len(grid[0]) and len(grid) < len(terrain.heights), "the grid is coarse"
+    # The grid may equal the plan's own sampling (8 m is the settled default) but
+    # must never be finer: a target must not invent relief the plan does not have.
+    assert len(grid) == len(grid[0]) and len(grid) <= len(terrain.heights), "at most the plan's sampling"
     flat = [value for row in grid for value in row]
     assert min(flat) >= terrain.stats["min_m"] - 1.0 and max(flat) <= terrain.stats["max_m"] + 1.0
     assert max(flat) - min(flat) > 0.0, "the sampled ground is not one flat height"
