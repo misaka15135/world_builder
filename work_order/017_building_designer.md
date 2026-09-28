@@ -99,3 +99,4 @@
 下一轮的推荐顺序：先做第 1 类里最影响观感的（`transit_hub`、`school`、`hospital`、`government`），再做第 2 类的 `open_space` 分支（一次性解决 plaza/park/yard），第 3 类等词汇扩展。
 
 **2026-09-28 更新**：第 2 类（`open_space`）与 `castle` 多体量已落地；`castle` 又在主线 a 里补了门楼、引道与主楼室内（见上表最后一行）。**第 3 类仍缺**：`silo_tank`（圆柱）、`cargo_ship`（船体）、`dry_dock`（下沉，依赖 014）。第 1 类里 `transit_hub`、`school`、`hospital`、`government` 仍只有可用的通用建筑模板，尚无专属模板。
+| 2026-09-28 | root | 主线 a 的目标侧实贴（详细过程见 022 同日两行） | 带门楼/引道/室内的魔法城邦已重贴进 `WB Scenes Rebuild` band 0：36 分块逐块 `blocks affected` 与 manifest 吻合，合计 669,049 非空气方块；门楼近景截图 `artifacts/minecraft-scene-castle-20260928/target-20260928/castle-gate-20260928.png`（门墩 + 门楣 + 铺装引道可见）。过程中一次整带 `//set air`（21.9M 格）挂起、一次文件名补零错误导致整行贴错，均已记录在 022 并恢复。**未做**：进主楼实走楼梯 | 下一轮：门廊立柱与按风格窗型（主线 b），或主楼室内实走 |
