@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from world_builder.adapters.minecraft.city import (CityExportError, _berth_boxes, _building_shell,
+from world_builder.adapters.minecraft.city import (CityExportError, _berth_boxes, _building_shell, _cell_range,
                                                    _compound_boxes, _cylinder_boxes, _dock_boxes, _partition_boxes,
                                                    _roof_boxes, _shell_materials, _storey_bands,
                                                    _storey_outlines, _street_block, _vessel_boxes,
@@ -321,6 +321,21 @@ def test_a_cargo_ship_tapers_from_amidships_to_bow_and_stern() -> None:
     funnel = next(box for box in boxes if box["source_id"].endswith("_funnel"))
     assert house["y0"] >= 5.0 and funnel["y0"] >= house["y1"] - 1e-6, "the funnel stands on the house"
     assert house["z0"] < -30.0, "the house is aft, not amidships"
+
+
+def test_a_box_top_on_an_integer_elevation_loses_the_layer_it_names() -> None:
+    """The quantisation trap that put the dry dock a metre too deep (2026-09-29).
+
+    Cells are `[floor(low), ceil(high) - 1]`, so a box written `-5.5 .. -5.0`
+    occupies only `-6`: its top sits exactly on the integer and `ceil` takes the
+    layer below. Anything whose top must land on an integer elevation therefore
+    has to state a top above it — which is why the dock floor is `-5.5 .. -4.0`
+    and its basin starts at `-depth + 1`.
+    """
+    assert list(_cell_range(-5.5, -5.0)) == [-6], "an integer top drops the layer it names"
+    assert list(_cell_range(-5.5, -4.0)) == [-6, -5], "stating the metre above keeps it"
+    assert list(_cell_range(0.0, 1.0)) == [0], "a one-metre slab is one layer"
+    assert list(_cell_range(4.909, 5.209)) == [4, 5], "a 0.3 m floor slab is two"
 
 
 def test_a_round_tower_is_a_stepped_ring_not_a_box() -> None:
