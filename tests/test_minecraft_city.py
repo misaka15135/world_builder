@@ -13,9 +13,9 @@ from pathlib import Path
 import pytest
 
 from world_builder.adapters.minecraft.city import (CityExportError, _building_shell, _partition_boxes,
-                                                   _cylinder_boxes, _roof_boxes, _shell_materials,
-                                                   _storey_bands, _storey_outlines, _street_block,
-                                                   _vessel_boxes, _window_boxes, export_city)
+                                                   _berth_boxes, _cylinder_boxes, _roof_boxes,
+                                                   _shell_materials, _storey_bands, _storey_outlines,
+                                                   _street_block, _vessel_boxes, _window_boxes, export_city)
 from world_builder.storage.worldpkg import read_worldpkg
 
 SOURCE = Path(__file__).resolve().parents[1] / "artifacts/benchmark-city-v1/city-first.worldpkg"
@@ -263,6 +263,30 @@ def test_modern_style_gets_asphalt_streets_and_glazing() -> None:
     assert not [band for band in bands if band["source_id"].endswith("_0_east")], "the entrance storey is not glazed"
     timber = _storey_bands("b", outlines, 0.0, 0.2, 9.0, 3.0, "minecraft:dark_oak_planks")
     assert {band["block"] for band in timber} == {"minecraft:dark_oak_planks"}
+
+
+def test_a_berth_is_a_deck_over_the_water_and_a_quay_is_a_face() -> None:
+    """Main line c (work order 017): piers and quays reach the blocks.
+
+    Both are corridors in the WIR and both used to produce nothing, so the
+    harbour had ships with nowhere to lie. A pier is a beam plus a deck above
+    the waterline; a quay is a solid face rising to the quay top.
+    """
+    pier = {"id": "work_000", "kind": "pier", "attributes": {"work_type": "pier", "width_m": 14.0},
+            "geometry": {"representation": "box", "size_m": [12.0, 14.0, 14.0]},
+            "bounds": {"min": [0.0, 321.6, 0], "max": [12.0, 335.6, 14.0]}}
+    boxes = _berth_boxes(pier)
+    assert [box["source_id"] for box in boxes] == ["work_000_beam", "work_000_deck"]
+    beam, deck = boxes
+    assert beam["block"] == "minecraft:oak_planks" and deck["block"] == "minecraft:smooth_stone"
+    assert beam["y1"] <= deck["y0"] + 1e-6, "the deck sits on its beam"
+    assert beam["y0"] >= 1.0, "the pier stands above the waterline"
+    quay = {"id": "work_004", "kind": "quay", "attributes": {"work_type": "quay_wall", "width_m": 9.0},
+            "geometry": {"representation": "box", "size_m": [12.0, 9.0, 3.0]},
+            "bounds": {"min": [0.0, 500.0, 0], "max": [12.0, 509.0, 3.0]}}
+    wall = _berth_boxes(quay)
+    assert len(wall) == 1 and wall[0]["block"] == "minecraft:stone_bricks"
+    assert wall[0]["y0"] == 0.0 and wall[0]["y1"] == 3.0, "the quay rises from the waterline"
 
 
 def test_a_cargo_ship_tapers_from_amidships_to_bow_and_stern() -> None:

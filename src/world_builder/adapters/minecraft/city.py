@@ -654,6 +654,24 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool,
     return parts
 
 
+def _berth_boxes(record: dict) -> list[dict]:
+    """A pier deck or a quay face (work order 017 class 3).
+
+    The WIR states both as corridors, and neither produced a single block until
+    now: the harbour had ships and no berths. A pier is a timber beam carrying a
+    stone deck above the water; a quay is a solid face rising to the quay top.
+    Piles are not modelled one by one — at 1 m resolution a row of piles reads as
+    a solid wall anyway, and the load-bearing beam is what the eye looks for.
+    """
+    low, high = record["bounds"]["min"], record["bounds"]["max"]
+    if record["kind"] == "pier":
+        return [_box(f"{record['id']}_beam", low[0], high[0], low[1], high[1],
+                     1.6, 2.0, "minecraft:oak_planks"),
+                _box(f"{record['id']}_deck", low[0], high[0], low[1], high[1],
+                     2.0, 2.6, "minecraft:smooth_stone")]
+    return [_box(record["id"], low[0], high[0], low[1], high[1], 0.0, 3.0, "minecraft:stone_bricks")]
+
+
 def _vessel_boxes(record: dict) -> list[dict]:
     """A cargo ship: a hull that tapers to bow and stern (work order 017 class 3).
 
@@ -970,6 +988,11 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
             if record["geometry"]["representation"] != "polyline":
                 raise CityExportError("target.vessel_geometry", record["id"])
             surface_boxes.extend(_vessel_boxes(record))
+        # Piers and quays (work order 017 class 3): corridors in the WIR that
+        # produced no blocks at all — the harbour had ships and no berths.
+        for record in entities:
+            if record["kind"] in {"pier", "quay"}:
+                surface_boxes.extend(_berth_boxes(record))
         # The source forbids wet building footprints. Keep the target robust as
         # well: flat water proxies must not replace a quantised floor or road.
         # Ground and water first, then the street network, and the building
