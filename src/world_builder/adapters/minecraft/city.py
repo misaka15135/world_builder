@@ -856,6 +856,39 @@ def _compound_boxes(record: dict, ox: float, on: float) -> list[dict]:
         role = volume["role"]
         block = "minecraft:oak_planks" if role == "hall" else "minecraft:smooth_stone"
         name = f"{record['id']}_{volume['id']}"
+        if volume.get("shape") == "round" and role not in {"ramp", "gate"}:
+            # A round tower (work order 017 class 3): the silhouette the skill
+            # card asks for, built from the same stepped ring as a silo. The
+            # footprint is the square the designer reserved, so the ring is
+            # inscribed in it and the bailey layout does not move.
+            centre = ((vx0 + vx1) / 2, (vy0 + vy1) / 2)
+            # Inscribe the wall, not just its centreline: the ring boxes are a
+            # wall thick, and a tower that pokes 15 cm out of its reserved square
+            # can gain a whole extra block row at the edge.
+            radius = min(vx1 - vx0, vy1 - vy0) / 2 - shell_wall / 2
+            segments = max(12, min(32, int(math.pi * radius / 1.2)))
+            for index in range(segments):
+                first = 2 * math.pi * index / segments
+                second = 2 * math.pi * (index + 1) / segments
+                ax, ay = centre[0] + radius * math.cos(first), centre[1] + radius * math.sin(first)
+                bx, by = centre[0] + radius * math.cos(second), centre[1] + radius * math.sin(second)
+                boxes.append(_box(f"{name}_ring_{index:02}",
+                                  min(ax, bx) - shell_wall / 2, max(ax, bx) + shell_wall / 2,
+                                  min(ay, by) - shell_wall / 2, max(ay, by) + shell_wall / 2,
+                                  base, top, block))
+            if volume["roof"] == "spire":
+                # A cone, stepped: four shrinking rings above the wall head.
+                for layer in range(1, 5):
+                    inner = radius * (1.0 - layer / 5.0)
+                    if inner < 0.5:
+                        break
+                    boxes.extend(_disc_rows(name, centre[0], centre[1], inner,
+                                            top + (layer - 1) * 0.9, top + layer * 0.9,
+                                            "minecraft:oak_planks", f"spire{layer}"))
+            else:
+                boxes.extend(_disc_rows(name, centre[0], centre[1], radius, top, top + 0.4,
+                                        "minecraft:oak_planks", "cap"))
+            continue
         if role == "ramp":
             boxes.append(_box(name, vx0, vx1, vy0, vy1, base, top, "minecraft:smooth_stone"))
             continue

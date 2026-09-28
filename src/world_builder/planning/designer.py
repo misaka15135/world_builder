@@ -107,6 +107,9 @@ class DesignTemplate:
     # How many interior compartments a compound part needs. Only the keep has
     # any today: a tower is a solid landmark and a great hall is one tall room.
     compound_storeys: tuple[tuple[str, int], ...] = ()
+    # A compound part is a box unless it says otherwise; a curtain-wall tower is
+    # round, which the target can now step into a polygon (work order 017).
+    compound_shapes: tuple[tuple[str, str], ...] = ()
     # `kind: "cylinders"` (work order 017 class 3): a tank farm — one or more
     # round vessels on one plot. The first geometry the adapter has that is not
     # a box; the target steps the circle so it survives at block scale.
@@ -143,6 +146,9 @@ COMPOUND_RINGS = ("rectangle", "circle")
 CYLINDER_ROOFS = ("flat", "dome")
 CYLINDER_MIN_RADIUS_M = 2.0
 CYLINDER_GAP_M = 2.0
+# A compound part is a box unless it says otherwise: a curtain-wall tower is
+# round, and the target steps that into a polygon the same way it steps a silo.
+COMPOUND_SHAPES = ("box", "round")
 # A gate platform sits above the bailey floor, so its approach treads step
 # outward past the site edge and onto the street that the gate faces. The
 # validator allows exactly that, and only on the entry side.
@@ -349,11 +355,14 @@ def parse_designs(payload: dict, setting: str) -> dict:
                 raise SceneError(code, f"{type_name}.parts must list the volumes")
             declared = []
             interior = []
+            shapes = []
             for item in parts:
                 if not isinstance(item, dict) or set(item) not in (
-                        {"role", "height_m", "roof"}, {"role", "height_m", "roof", "storeys"}):
+                        {"role", "height_m", "roof"}, {"role", "height_m", "roof", "storeys"},
+                        {"role", "height_m", "roof", "shape"},
+                        {"role", "height_m", "roof", "storeys", "shape"}):
                     raise SceneError(code, f"{type_name}.parts entries need role, height_m, roof "
-                                           f"and an optional storeys")
+                                           f"and optional storeys and shape")
                 if item["role"] not in COMPOUND_ROLES or item["roof"] not in ROOF_STYLES:
                     raise SceneError(code, f"{type_name}: unknown role {item['role']!r} "
                                            f"or roof {item['roof']!r}")
@@ -362,11 +371,17 @@ def parse_designs(payload: dict, setting: str) -> dict:
                 count = item.get("storeys", 1)
                 if type(count) is not int or not 1 <= count <= 6:
                     raise SceneError(code, f"{type_name}.{item['role']}.storeys must be 1—6")
+                shape = item.get("shape", "box")
+                if shape not in COMPOUND_SHAPES:
+                    raise SceneError(code, f"{type_name}.{item['role']}.shape must be one of "
+                                           f"{', '.join(COMPOUND_SHAPES)}")
                 declared.append((item["role"], float(item["height_m"]), item["roof"]))
                 interior.append((item["role"], count))
+                shapes.append((item["role"], shape))
             parsed[type_name] = DesignTemplate(type=type_name, kind="compound",
                                                compound=tuple(declared),
-                                               compound_storeys=tuple(interior), ring=ring)
+                                               compound_storeys=tuple(interior),
+                                               compound_shapes=tuple(shapes), ring=ring)
             continue
         if isinstance(raw, dict) and raw.get("kind") == "cylinders":
             keys = {"kind", "diameter_m", "height_m", "count", "roof"}
@@ -1092,6 +1107,7 @@ def design_compound(site: Site, pack: SettingPack, template: DesignTemplate, *,
         raise SceneError("design.kind", f"{template.type} is not a compound template")
     declared = {role: (height, roof) for role, height, roof in template.compound}
     compartments = {role: count for role, count in template.compound_storeys}
+    shapes = {role: shape for role, shape in template.compound_shapes}
     ceiling = float(site.max_height_m)
     # The template states absolute heights; when the envelope cannot hold the
     # tallest part, every part is scaled by the same factor so the castle keeps
@@ -1113,6 +1129,7 @@ def design_compound(site: Site, pack: SettingPack, template: DesignTemplate, *,
                 "x0": round(rect[0], 3), "y0": round(rect[1], 3),
                 "x1": round(rect[2], 3), "y1": round(rect[3], 3),
                 "base_m": round(base_m, 3), "height_m": round(top, 3),
+                "shape": shapes.get(role, "box"),
                 "roof": declared_roof if roof is None else roof}
 
     x0, y0, x1, y1 = site.x0, site.y0, site.x1, site.y1

@@ -69,6 +69,7 @@ def test_design_templates_load_and_are_coherent() -> None:
                 assert template.compound, f"{name} must declare its volumes"
                 assert all(role in COMPOUND_ROLES and roof in ROOF_STYLES
                            for role, _, roof in template.compound)
+                assert all(shape in ("box", "round") for _, shape in template.compound_shapes)
                 continue
             if template.kind == "cylinders":
                 assert template.vessel_diameter_m and template.vessel_height_m

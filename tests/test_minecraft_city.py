@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 from world_builder.adapters.minecraft.city import (CityExportError, _berth_boxes, _building_shell,
-                                                   _cylinder_boxes, _dock_boxes, _partition_boxes,
+                                                   _compound_boxes, _cylinder_boxes, _dock_boxes, _partition_boxes,
                                                    _roof_boxes, _shell_materials, _storey_bands,
                                                    _storey_outlines, _street_block, _vessel_boxes,
                                                    _window_boxes, export_city)
@@ -321,6 +321,36 @@ def test_a_cargo_ship_tapers_from_amidships_to_bow_and_stern() -> None:
     funnel = next(box for box in boxes if box["source_id"].endswith("_funnel"))
     assert house["y0"] >= 5.0 and funnel["y0"] >= house["y1"] - 1e-6, "the funnel stands on the house"
     assert house["z0"] < -30.0, "the house is aft, not amidships"
+
+
+def test_a_round_tower_is_a_stepped_ring_not_a_box() -> None:
+    """Main line c (work order 017): the curtain-wall towers read as round.
+
+    The castle's towers were the last big silhouette still made of four flat
+    faces. A tower declared `shape: round` is now built from the same stepped
+    ring as a silo, with a stepped spire above the wall head, and the ring is
+    inscribed in the square the designer reserved so the bailey does not move.
+    """
+    record = {"id": "c", "kind": "compound",
+              "geometry": {"representation": "compound", "entry_side": "south", "materials": {},
+                           "volumes": [{"id": "t0", "role": "tower", "x0": 0.0, "y0": 0.0,
+                                        "x1": 8.0, "y1": 8.0, "base_m": 0.0, "height_m": 20.0,
+                                        "roof": "spire", "shape": "round"},
+                                       {"id": "k0", "role": "keep", "x0": 10.0, "y0": 10.0,
+                                        "x1": 26.0, "y1": 26.0, "base_m": 0.0, "height_m": 18.0,
+                                        "roof": "gable", "shape": "box"}]},
+              "bounds": {"min": [0, 0, 0], "max": [30, 30, 25]}}
+    boxes = _compound_boxes(record, 0.0, 0.0)
+    ring = [box for box in boxes if "_t0_ring_" in box["source_id"]]
+    assert len(ring) >= 12, "a circle needs a ring of chords"
+    assert {box["block"] for box in ring} == {"minecraft:smooth_stone"}
+    assert any("_t0_spire1" in box["source_id"] for box in boxes), "the spire is stepped, not one cone"
+    # The ring stays inside the reserved square: no corner of the square is filled.
+    assert all(box["x0"] >= -1e-6 and box["x1"] <= 8.0 + 1e-6 for box in ring)
+    corners = [box for box in ring if box["x0"] < 1.0 and box["z0"] > -1.0]
+    assert not corners, "the square's corner is outside the inscribed circle"
+    keep = [box for box in boxes if "_k0_" in box["source_id"]]
+    assert any(box["source_id"].endswith("_k0_south") for box in keep), "a box volume keeps its faces"
 
 
 def test_a_dry_dock_excavates_its_basin_and_raises_a_gantry() -> None:
