@@ -98,6 +98,18 @@ def test_projected_scene_exports_boxes(scene_package) -> None:
     # wall. The frozen city.7 path keeps its own geometry.
     assert any(box["source_id"].endswith("_entry_step") for box in boxes), "entrance step"
     assert any(box["source_id"].endswith("_porch") for box in boxes), "porch slab"
+    # Main line b (work order 017): the porch has posts under its outer corners
+    # and every window is a framed opening rather than a bare pane of glass.
+    columns = [box for box in boxes if "_porch_column_" in box["source_id"]]
+    assert len(columns) >= 2, "the porch stands on its own posts"
+    # A post runs from the ground to the door head (2.4 m of door plus the slab).
+    assert all(box["y1"] - box["y0"] >= 2.4 for box in columns), "the posts reach the porch head"
+    windows = [box for box in boxes if "_window_" in box["source_id"]]
+    assert any("_jamb_" in box["source_id"] for box in windows), "windows carry jambs"
+    assert any(box["source_id"].endswith("_sill") for box in windows), "windows carry sills"
+    assert any(box["source_id"].endswith("_head") for box in windows), "windows carry heads"
+    assert any(box["block"] == "minecraft:dark_oak_planks"
+               and "_jamb_" in box["source_id"] for box in windows), "the arcane town frames in timber"
 
 
 def test_scene_water_cannot_overwrite_building_floors(scene_package) -> None:
@@ -165,6 +177,7 @@ def test_scene_streets_are_laid_before_the_building_shells(scene_package) -> Non
     streets = [index for index, box in enumerate(boxes)
                if box["block"] == "minecraft:stone_bricks"
                and "_plinth_" not in box["source_id"] and "_post_" not in box["source_id"]
+               and "_window_" not in box["source_id"]
                and not box["source_id"].startswith(("building", "open_space", "compound"))]
     shells = [index for index, box in enumerate(boxes)
               if box["source_id"].startswith("building_site_")]

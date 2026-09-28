@@ -103,6 +103,86 @@ def _facade_blocks(style: str) -> tuple[str, str]:
     return "minecraft:stone_bricks", "minecraft:dark_oak_planks"
 
 
+# Window vocabulary (building-skill rules 4 and 9): "先定立面节奏 … 再补基座、
+# 檐口、窗框", and the reference cards ask for 连续开窗 (ribbon glazing) on the
+# CBD, 高窗 (clerestory) on the works estate and 深窗框 (dark frames) on the
+# timber town. One profile per background, all built from the same axis-aligned
+# boxes as the rest of the adapter. A true arch, tracery or a curved head still
+# needs geometry this adapter does not have and is not claimed here.
+WINDOW_STYLES = {
+    "arcane_medieval": {"pitch_m": 5.0, "width_m": 1.0, "sill_m": 1.0, "height_m": 1.6,
+                        "glass": "minecraft:glass", "frame": "minecraft:dark_oak_planks",
+                        "sill": "minecraft:stone_bricks", "mullion_m": 0.0},
+    "modern_grid": {"pitch_m": 7.0, "width_m": 4.0, "sill_m": 1.2, "height_m": 1.6,
+                    "glass": "minecraft:glass", "frame": "minecraft:light_gray_concrete",
+                    "sill": "minecraft:gray_concrete", "mullion_m": 0.0},
+    "industrial_works": {"pitch_m": 6.5, "width_m": 3.0, "sill_m": 2.0, "height_m": 1.4,
+                         "glass": "minecraft:glass", "frame": "minecraft:gray_concrete",
+                         "sill": "minecraft:stone_bricks", "mullion_m": 1.0},
+    "harbour_works": {"pitch_m": 6.0, "width_m": 2.0, "sill_m": 1.0, "height_m": 1.4,
+                      "glass": "minecraft:glass", "frame": "minecraft:stone_bricks",
+                      "sill": "minecraft:gray_concrete", "mullion_m": 0.0},
+}
+WINDOW_JAMB_M = 1.0
+
+
+def _window_profile(style: str) -> dict:
+    return WINDOW_STYLES.get(style, WINDOW_STYLES["arcane_medieval"])
+
+
+def _window_boxes(name: str, suffix: str, face: str, fixed: float, wall: float,
+                  along0: float, along1: float, floor_z: float, ceiling: float,
+                  style: str) -> list[dict]:
+    """The windows of one face on one storey, each with its own frame.
+
+    The opening is `width_m` wide with a one-metre jamb either side, a sill
+    course under it and a head over it, so the window reads as a framed hole
+    rather than a bare pane of glass. A mullion splits the wide works-estate
+    lights in two, which is the cheapest way this vocabulary has to say
+    "industrial sash" instead of "office glazing".
+    """
+    profile = _window_profile(style)
+    jamb, width = WINDOW_JAMB_M, profile["width_m"]
+    pitch = max(width + 2 * jamb + 1.0, profile["pitch_m"])
+    # A storey has to hold three courses — sill, glazing, head — and the scene's
+    # shortest storeys hold two. Rather than dropping the window, the head gives
+    # way to the storey band above it, which reads as the lintel course anyway.
+    available = ceiling - floor_z
+    sill, head = profile["sill_m"], 1.0
+    opening = min(profile["height_m"], available - sill - head)
+    if opening < 1.0:
+        head = 0.0
+        opening = min(profile["height_m"], available - sill)
+    if opening < 1.0:
+        return []
+    low = floor_z + sill
+    high = low + opening
+    boxes: list[dict] = []
+    position, index = along0 + 1.0, 0
+    while position + 2 * jamb + width <= along1 - 0.5:
+        opening0 = position + jamb
+        opening1 = opening0 + width
+        tag = f"{name}{suffix}_window_{face}_{index:02}"
+        boxes.append(_box(tag, opening0, opening1, fixed, fixed + wall, low, high, profile["glass"]))
+        boxes.append(_box(f"{tag}_jamb_west", position, opening0, fixed, fixed + wall,
+                          low, high, profile["frame"]))
+        boxes.append(_box(f"{tag}_jamb_east", opening1, opening1 + jamb, fixed, fixed + wall,
+                          low, high, profile["frame"]))
+        boxes.append(_box(f"{tag}_sill", position, opening1 + jamb, fixed, fixed + wall,
+                          low - 1.0, low, profile["sill"]))
+        if head > 0.0:
+            boxes.append(_box(f"{tag}_head", position, opening1 + jamb, fixed, fixed + wall,
+                              high, high + head, profile["frame"]))
+        if profile["mullion_m"] > 0.0:
+            middle = (opening0 + opening1) / 2
+            boxes.append(_box(f"{tag}_mullion", middle - profile["mullion_m"] / 2,
+                              middle + profile["mullion_m"] / 2, fixed, fixed + wall,
+                              low, high, profile["frame"]))
+        position += pitch
+        index += 1
+    return boxes
+
+
 def corridor_spacing(width: float, factor: float = CORRIDOR_SPACING) -> float:
     """Centre spacing of the square chain for one corridor (never below 0.5 m)."""
     return max(float(width) * float(factor), 0.5)
@@ -476,29 +556,19 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool,
                        else "minecraft:smooth_stone")
         head = z0 + floor + float(entry["height_m"])
         depth = 1.0
-        # Daylight (building-skill rule 9): a one-metre glazing column every six
-        # metres along the long faces, written after the wall so the glass wins
-        # those cells. The entrance face is left alone so the doorway and its
-        # porch keep their opening.
-        span, width_m = 6.0, 1.0
+        # Daylight (building-skill rule 9): framed windows along the long faces,
+        # written after the wall so the glazing and its frame win those cells.
+        # The entrance face is left alone so the doorway and its porch keep
+        # their opening.
         for level, (sx0, sx1, sn0, sn1) in enumerate(outlines):
-            low = z0 + level * storey_h + floor + 1.0
-            high = low + max(1.0, min(1.5, storey_h - 2.0))
             ceiling = wall_top if level == storey_count - 1 else z0 + (level + 1) * storey_h
-            if high >= ceiling:
-                continue
             suffix = "" if level == 0 else f"_s{level}"
             for face, along0, along1, fixed in (("south", sx0 + wall, sx1 - wall, sn0),
                                                 ("north", sx0 + wall, sx1 - wall, sn1 - wall)):
                 if level == 0 and face == side:
                     continue
-                position, index = along0 + 1.5, 0
-                while position + width_m <= along1 - 0.5:
-                    parts.append(_box(f"{name}{suffix}_window_{face}_{index:02}",
-                                      position, position + width_m, fixed, fixed + wall,
-                                      low, high, "minecraft:glass"))
-                    position += span
-                    index += 1
+                parts.extend(_window_boxes(name, suffix, face, fixed, wall, along0, along1,
+                                           z0 + level * storey_h + floor, ceiling, style))
         if horizontal:
             s0, s1 = (gn0 - depth, gn0) if side == "south" else (gn1, gn1 + depth)
             parts.append(_box(f"{name}_entry_step", door_a0, door_a1, s0, s1, z0, z0 + floor,
@@ -506,6 +576,11 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool,
             p0, p1 = (s0 - 0.6, gn0 + 0.6) if side == "south" else (gn1 - 0.6, s1 + 0.6)
             parts.append(_box(f"{name}_porch", door_a0 - 1.0, door_a1 + 1.0, p0, p1, head, head + 0.4,
                               porch_block))
+            # 门廊立柱 (main line b): two posts under the outer corners of the
+            # slab, standing on the entry step. Without them the porch reads as
+            # a plate floating beside the door.
+            for tag, a0, a1 in (("west", door_a0 - 1.0, door_a0), ("east", door_a1, door_a1 + 1.0)):
+                parts.append(_box(f"{name}_porch_column_{tag}", a0, a1, s0, s1, z0, head, porch_block))
         else:
             s0, s1 = (gx0 - depth, gx0) if side == "west" else (gx1, gx1 + depth)
             parts.append(_box(f"{name}_entry_step", s0, s1, door_a0, door_a1, z0, z0 + floor,
@@ -513,6 +588,8 @@ def _building_shell(building: dict, entities: dict, *, with_interior: bool,
             p0, p1 = (s0 - 0.6, gx0 + 0.6) if side == "west" else (gx1 - 0.6, s1 + 0.6)
             parts.append(_box(f"{name}_porch", p0, p1, door_a0 - 1.0, door_a1 + 1.0, head, head + 0.4,
                               porch_block))
+            for tag, a0, a1 in (("south", door_a0 - 1.0, door_a0), ("north", door_a1, door_a1 + 1.0)):
+                parts.append(_box(f"{name}_porch_column_{tag}", s0, s1, a0, a1, z0, head, porch_block))
     if not with_interior:
         return parts
     children = [r for r in entities.values() if r["parent_id"] == building["id"]]

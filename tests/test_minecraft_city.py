@@ -14,7 +14,8 @@ import pytest
 
 from world_builder.adapters.minecraft.city import (CityExportError, _building_shell, _partition_boxes,
                                                    _roof_boxes, _shell_materials, _storey_bands,
-                                                   _storey_outlines, _street_block, export_city)
+                                                   _storey_outlines, _street_block, _window_boxes,
+                                                   export_city)
 from world_builder.storage.worldpkg import read_worldpkg
 
 SOURCE = Path(__file__).resolve().parents[1] / "artifacts/benchmark-city-v1/city-first.worldpkg"
@@ -262,6 +263,42 @@ def test_modern_style_gets_asphalt_streets_and_glazing() -> None:
     assert not [band for band in bands if band["source_id"].endswith("_0_east")], "the entrance storey is not glazed"
     timber = _storey_bands("b", outlines, 0.0, 0.2, 9.0, 3.0, "minecraft:dark_oak_planks")
     assert {band["block"] for band in timber} == {"minecraft:dark_oak_planks"}
+
+
+def test_each_style_gets_its_own_framed_window() -> None:
+    """Main line b (work order 017): windows carry frames, one profile per style.
+
+    The adapter used to draw a bare one-metre glass column every six metres.
+    Each background now states its own opening — narrow timber-framed slots in
+    the arcane town, a ribbon of glass in the CBD, high mullioned lights on the
+    works estate and squared stone frames at the harbour — and every window has
+    a jamb either side, a sill course under it and a head over it.
+    """
+    cast = {}
+    for style in ("arcane_medieval", "modern_grid", "industrial_works", "harbour_works"):
+        boxes = _window_boxes("b", "", "south", 0.0, 0.3, 0.0, 20.0, 0.0, 12.0, style)
+        cast[style] = boxes
+        assert boxes, style
+        panes = [box for box in boxes if box["block"] == "minecraft:glass"]
+        jambs = [box for box in boxes if box["source_id"].endswith("_jamb_west")]
+        sills = [box for box in boxes if box["source_id"].endswith("_sill")]
+        heads = [box for box in boxes if box["source_id"].endswith("_head")]
+        assert panes and len(jambs) == len(panes) == len(sills) == len(heads)
+        assert all(box["y1"] <= 12.0 + 1e-6 for box in boxes), "the head stays under the slab above"
+    # Four backgrounds, four window vocabularies.
+    def jamb_block(style: str) -> set[str]:
+        return {box["block"] for box in cast[style] if box["source_id"].endswith("_jamb_west")}
+
+    assert jamb_block("arcane_medieval") == {"minecraft:dark_oak_planks"}
+    assert jamb_block("modern_grid") == {"minecraft:light_gray_concrete"}
+    assert jamb_block("harbour_works") == {"minecraft:stone_bricks"}
+    widest = max(box["x1"] - box["x0"] for box in cast["modern_grid"] if box["block"] == "minecraft:glass")
+    narrowest = max(box["x1"] - box["x0"] for box in cast["arcane_medieval"] if box["block"] == "minecraft:glass")
+    assert narrowest <= 1.0 < 4.0 <= widest, "the CBD gets a ribbon, the timber town a slot"
+    assert any(box["source_id"].endswith("_mullion") for box in cast["industrial_works"])
+    assert not any(box["source_id"].endswith("_mullion") for box in cast["harbour_works"])
+    # A window whose head would collide with the slab above is dropped, not clipped.
+    assert _window_boxes("b", "", "south", 0.0, 0.3, 0.0, 20.0, 8.0, 9.0, "arcane_medieval") == []
 
 
 def test_a_setback_storey_carries_its_own_outline() -> None:
