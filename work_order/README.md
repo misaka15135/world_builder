@@ -6,6 +6,8 @@
 
 **2026-09-28 主线 a 实贴 + 主线 b（窗型/门廊立柱）**：带门楼/引道/室内的城堡已重贴进 `WB Scenes Rebuild` band 0（36 分块逐块与 manifest 吻合）；随后按 skill 规则 4/9 补**按背景的窗型**（窄高木框 / 连续带窗 / 中梃高窗 / 石框方窗，含窗樘、窗台、窗楣，矮层由层间腰线代替窗楣）与**门廊立柱**。四场景 seed 4 复导 `validation: pass`，完整回归 **163 passed**。**未达标**：真正的拱窗与券洞需要新几何，尚未实现（也未声称）；东西两面尚未开窗；新内容尚未重贴进新存档。详见 [017](017_building_designer.md)、[018](018_assembler_pipeline.md)、[022](022_scene_reconstruction_new_world.md)。
 
+**2026-09-28 band 0 换版（窗型实贴）**：band 0 已换成带框窗 + 门廊柱的版本。第一遍贴完进游戏看立面后**自我否决**——1 m 窗洞被两侧深色橡木窗樘压没（正是 historic-and-vernacular 卡点名的禁忌），于是把古代窗洞加宽到 2 m 重导、**再清一次重贴**，36 分块两遍都逐块与 manifest 吻合。截图五张在 `artifacts/minecraft-scene-mainline-b/arcane_medieval/target-20260928/`。**待办**：band 1/2/3 仍是上一版 `rebuild-4` 内容。详见 [017](017_building_designer.md)、[022](022_scene_reconstruction_new_world.md)。
+
 **2026-09-27 风格建筑双目标样件**：[021](021_style_building_cross_target_sample.md) 已完成；同一木构街屋设计导出 Unity GLB 和 Minecraft Sponge v3。v5 在 Unity 目标导入/重开 143/143 构件通过，1.8 m 控制器连续走通门、商铺、楼梯、二层房间；Minecraft 在 `WB Verify Flat` 实贴 1,571 方块，生存模式同路线从街道连续走到二层居室，两端目标截图与检查点已留证。手工样件尚未接入通用 E 设计器。
 
 **2026-09-27 最新状态**：008/009/016/017/018 保持 `in_progress`。开放空间代表样件已在两目标推进：Minecraft 广场 1 分块、公园 2 分块实贴且路径/灯具探针通过；广场冒险模式落地和脚下方块验证通过，自动输入未能完成连续实走。Unity 同修订广场 34 构件导入与重开通过，新增 Play Mode 控制器沿源步道 3/3 检查点连续通行。完整场景导出/漫游仍未验收；证据见 [008](008_unity_export.md)、[009](009_minecraft_schematic_export.md)、[018](018_assembler_pipeline.md)。此前冻结 20 例复跑 20/20 通过。

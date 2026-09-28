@@ -110,7 +110,11 @@ def _facade_blocks(style: str) -> tuple[str, str]:
 # boxes as the rest of the adapter. A true arch, tracery or a curved head still
 # needs geometry this adapter does not have and is not claimed here.
 WINDOW_STYLES = {
-    "arcane_medieval": {"pitch_m": 5.0, "width_m": 1.0, "sill_m": 1.0, "height_m": 1.6,
+    # Two metres of opening, not one: the timber town frames its windows in dark
+    # oak, and a one-metre pane between two dark jambs reads as a boarded slot
+    # rather than a window — the pitfall the historic/vernacular card names
+    # ("深色木框把门窗压没"). Two panes keep the glazing legible.
+    "arcane_medieval": {"pitch_m": 5.0, "width_m": 2.0, "sill_m": 1.0, "height_m": 1.6,
                         "glass": "minecraft:glass", "frame": "minecraft:dark_oak_planks",
                         "sill": "minecraft:stone_bricks", "mullion_m": 0.0},
     "modern_grid": {"pitch_m": 7.0, "width_m": 4.0, "sill_m": 1.2, "height_m": 1.6,

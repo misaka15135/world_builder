@@ -294,7 +294,9 @@ def test_each_style_gets_its_own_framed_window() -> None:
     assert jamb_block("harbour_works") == {"minecraft:stone_bricks"}
     widest = max(box["x1"] - box["x0"] for box in cast["modern_grid"] if box["block"] == "minecraft:glass")
     narrowest = max(box["x1"] - box["x0"] for box in cast["arcane_medieval"] if box["block"] == "minecraft:glass")
-    assert narrowest <= 1.0 < 4.0 <= widest, "the CBD gets a ribbon, the timber town a slot"
+    # Two panes of timber-framed slot against four of CBD ribbon: a one-metre
+    # slot between two dark jambs reads as a boarded hole, not a window.
+    assert narrowest == 2.0 < widest == 4.0, "the CBD gets a ribbon, the timber town a slot"
     assert any(box["source_id"].endswith("_mullion") for box in cast["industrial_works"])
     assert not any(box["source_id"].endswith("_mullion") for box in cast["harbour_works"])
     # A window whose head would collide with the slab above is dropped, not clipped.
