@@ -90,7 +90,9 @@ def test_projected_scene_exports_boxes(scene_package) -> None:
     boxes = city_boxes(projected, include_interiors=False)
     sources = [box["source_id"] for box in boxes]
     assert any("water" in source for source in sources), "the channel network becomes water boxes"
-    assert any(source.startswith("terrain_proxy") for source in sources), "one flat ground proxy"
+    # The ground is stepped now, not one flat proxy (work order 014): the package
+    # carries a sampled height grid and the adapter lays a column per cell.
+    assert any(source.startswith("terrain_grid_") for source in sources), "stepped ground"
     # The ground storey is split around its opening, on whichever face the
     # street was taken to be: the scene's heuristic asks for south or north.
     assert any(source.endswith(("_east_wall_south", "_west_wall_south",
