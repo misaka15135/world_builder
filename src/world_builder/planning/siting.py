@@ -772,6 +772,70 @@ def _service_roads(blocks, sites, network: list[Road], rail: Road | None = None)
     return roads
 
 
+def _work_rects(points, width: float) -> list[tuple[float, float, float, float]]:
+    """Axis-aligned rectangles covering a corridor, one per segment."""
+    half = width / 2
+    return [(min(x0, x1) - half, min(y0, y1) - half, max(x0, x1) + half, max(y0, y1) + half)
+            for (x0, y0), (x1, y1) in zip(points, points[1:])]
+
+
+def _mooring_rect(centre, heading: float, length: float, width: float
+                  ) -> tuple[float, float, float, float]:
+    """The ship's footprint (its bounding rectangle) where it would lie."""
+    cx, cy = centre
+    ux, uy = math.cos(heading), math.sin(heading)
+    px, py = -uy, ux
+    corners = [(cx + ux * length / 2 * along + px * width / 2 * across,
+                cy + uy * length / 2 * along + py * width / 2 * across)
+               for along in (-1.0, 1.0) for across in (-1.0, 1.0)]
+    xs = [corner[0] for corner in corners]
+    ys = [corner[1] for corner in corners]
+    return (min(xs), min(ys), max(xs), max(ys))
+
+
+def _rects_overlap(a: tuple[float, float, float, float], b: tuple[float, float, float, float]) -> bool:
+    return min(a[2], b[2]) - max(a[0], b[0]) > 1e-6 and min(a[3], b[3]) - max(a[1], b[1]) > 1e-6
+
+
+def _moor_a_vessel(terrain: TerrainPlan, water, anchor, heading: float, length: float,
+                   width: float, works) -> tuple[tuple[float, float], tuple[float, float]] | None:
+    """Lay a ship alongside the quay without parking it through a pier.
+
+    The first ship in this project was moored by taking the nearest water to a
+    harbour block and lying parallel to the shore — which runs the hull straight
+    across every pier that juts out from that shore (measured 2026-09-28: the
+    hull and the pier corridor overlapped by about 6 x 14 m). A berth is now
+    searched for: hold the heading, then step the hull away from the quay and
+    along it, and take the first position that clears every work already
+    sited. Nothing found means no hull, which is better than a ship inside a
+    jetty.
+    """
+    shore = math.atan2(water[1] - anchor[1], water[0] - anchor[0])
+    normal = (math.cos(shore), math.sin(shore))
+    axis = (math.cos(heading), math.sin(heading))
+    taken = [rect for work in works if work.type in {"pier", "quay_wall"}
+             for rect in _work_rects(work.points, work.width_m)]
+
+    def afloat(centre) -> bool:
+        # The whole waterline has to be on water: a hull that is half aground is
+        # the same defect as a hull inside a jetty, seen from the other side.
+        return all(terrain.water_at(centre[0] + axis[0] * offset, centre[1] + axis[1] * offset)
+                   for offset in (step * length / 8 - length / 2 for step in range(9)))
+
+    for push in (0.0, 8.0, 16.0, 24.0, 36.0, 48.0, 64.0, 80.0):
+        for slide in (0.0, 16.0, -16.0, 32.0, -32.0, 48.0, -48.0, 64.0, -64.0):
+            centre = (water[0] + normal[0] * push + axis[0] * slide,
+                      water[1] + normal[1] * push + axis[1] * slide)
+            if not afloat(centre):
+                continue
+            rect = _mooring_rect(centre, heading, length, width)
+            if any(_rects_overlap(rect, other) for other in taken):
+                continue
+            return ((centre[0] - axis[0] * length / 2, centre[1] - axis[1] * length / 2),
+                    (centre[0] + axis[0] * length / 2, centre[1] + axis[1] * length / 2))
+    return None
+
+
 def _place_works(brief: SceneBrief, pack: SettingPack, terrain: TerrainPlan, blocks, domains,
                  roads) -> list[Work]:
     """Site the linear repertoire: walls, piers, quays, rail and metro lines."""
@@ -800,9 +864,11 @@ def _place_works(brief: SceneBrief, pack: SettingPack, terrain: TerrainPlan, blo
                 anchor = berths[index % len(berths)].centre if berths else (terrain.region_m / 2,) * 2
                 water = _nearest_water(terrain, anchor)
                 heading = math.atan2(water[1] - anchor[1], water[0] - anchor[0]) + math.pi / 2
-                start = (water[0] - math.cos(heading) * length / 2, water[1] - math.sin(heading) * length / 2)
-                end = (water[0] + math.cos(heading) * length / 2, water[1] + math.sin(heading) * length / 2)
-                points = (start, end)
+                points = _moor_a_vessel(terrain, water, anchor, heading, length, width, works)
+                if points is None:
+                    # No clear berth on this stretch of water: skip the hull
+                    # rather than park it through a pier.
+                    continue
             elif entry.type == "city_wall":
                 inset = 6.0 + index * 4.0
                 x0, y0, x1, y1 = built[0] - inset, built[1] - inset, built[2] + inset, built[3] + inset

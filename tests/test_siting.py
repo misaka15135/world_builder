@@ -12,6 +12,7 @@ import pytest
 from world_builder.planning import (SceneError, compile_brief, load_districts_spec, load_setting_pack,
                                     plan_siting, plan_terrain, validate_siting)
 from world_builder.planning.catalogue import DEFAULT_SETTINGS_ROOT
+from world_builder.planning.siting import _mooring_rect, _rects_overlap, _work_rects
 
 PROMPTS = {
     "arcane_medieval": "河谷里的魔法城邦，要有城堡和冒险者工会",
@@ -118,6 +119,35 @@ def test_every_demanded_building_has_an_envelope(planned) -> None:
                 if entry.height_m_range:
                     assert entry.height_m_range[0] - 0.5 <= site.max_height_m <= entry.height_m_range[1] + 0.5
                 assert site.max_storeys >= 1
+
+
+def test_a_ship_is_moored_clear_of_the_berths(planned) -> None:
+    """Work order 016/017: a hull must not be parked through a pier.
+
+    The first vessel in this project was moored by taking the nearest water to a
+    harbour block and lying parallel to the shore, which ran the hull straight
+    across the piers that jut out from that shore (measured 2026-09-28: a 6 x 14
+    m overlap at the pier head). A berth is searched for instead: the hull is
+    stepped away from the quay and along it until it clears every work already
+    sited, and its whole waterline has to be on water.
+    """
+    pack, brief, terrain, plan, _ = planned["harbour"]
+    berths = [rect for work in plan.works if work.type in {"pier", "quay_wall"}
+              for rect in _work_rects(work.points, work.width_m)]
+    assert berths, "the harbour sites piers to moor against"
+    ships = [work for work in plan.works if work.type == "cargo_ship"]
+    assert ships, "the harbour brief demands vessels"
+    for ship in ships:
+        along = math.atan2(ship.points[-1][1] - ship.points[0][1], ship.points[-1][0] - ship.points[0][0])
+        centre = ((ship.points[0][0] + ship.points[-1][0]) / 2,
+                  (ship.points[0][1] + ship.points[-1][1]) / 2)
+        hull = _mooring_rect(centre, along, math.dist(ship.points[0], ship.points[-1]), ship.width_m)
+        assert not [rect for rect in berths if _rects_overlap(hull, rect)], \
+            "the hull clears every pier and quay"
+        waterline = [(centre[0] + math.cos(along) * step * ship.length_m / 2,
+                      centre[1] + math.sin(along) * step * ship.length_m / 2)
+                     for step in (-1, -0.5, 0, 0.5, 1)]
+        assert all(terrain.water_at(*point) for point in waterline), "the hull is afloat, not aground"
 
 
 def test_linear_works_and_vessels_are_corridors_not_plots(planned) -> None:

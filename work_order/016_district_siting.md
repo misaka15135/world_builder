@@ -83,3 +83,4 @@
 | 2026-09-27 | root | 统一默认提示词与预登记运行路径 | 背景包 `setting_version` 升到 `0.1.1`，必填 `default_prompt` 与冻结的 `scene_cases_v1.json` 四条提示词逐项一致；`--setting` 由此编译简报，港口 seed 4 经 `--setting`/`--prompt` 输出的 WIR 全文相等。预登记运行器改用统一 `design()` 入口，使开放空间进入批次。定向 24 passed、完整回归 **154 passed**、文档检查零错误；同一冻结 20 例复跑 **20/20 通过**、零模型调用，见 `artifacts/scene-benchmark-v1-current/report.json`。原 arcane-1 世界身份不变，修订 `revision_810335775d768944659fb2` → `revision_6c476c5b5ebfe2cd3e7c01`、设计 72 → 73（新增开放空间）；旧报告保留 | 016 仍有本地街区全非正交缺口；017 的 class 1/3 模板与目标侧开放空间验收继续 |
 
 开始前重读 014、015、006 的 network/parcels 阶段与 docs/04；注意保留旧修订的世界身份，不改写历史产物。
+| 2026-09-28 | root | 船的泊位改为搜索式，修掉「船穿码头」 | `_place_works` 里 `cargo_ship` 的定位从「最近水面 + 平行岸线」改成 `_moor_a_vessel()` 搜索：外移 0—80 m、沿岸 ±64 m 步进，接受条件是**不压任何已排码头/岸壁走廊**且**整条水线在水里**；找不到就不放船。实测 seed 4 港口：两艘船水线取样 21/21 在水里、与码头重叠 0（此前 1 艘半搁浅、2 处重叠）。新增 `test_a_ship_is_moored_clear_of_the_berths`。**未做**：船没有真正「贴靠」码头侧壁；`green` 之外的地表景观包络复核仍未做。完整回归 169 passed | 地表景观包络复核 |
