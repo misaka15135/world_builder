@@ -1007,8 +1007,26 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
         # A scene pipeline plans a river network, a canal or a coastline, so the
         # flat-bank policy cannot apply: the ground is one flat proxy and the
         # water is whatever the source channel polylines say it is.
-        surface_boxes = [_box("terrain_proxy", tlo[0], thi[0], tlo[1], thi[1], -0.2, 0.25,
-                              "minecraft:grass_block")]
+        # The ground: a flat proxy unless the package carries the sampled height
+        # grid, in which case each cell becomes a stepped column rising to its
+        # own height. The columns start below the lowest sample, so the ground is
+        # solid for any datum, and they are laid first so streets and buildings
+        # still win (work order 014's excavation).
+        grid = (terrain["geometry"] or {}).get("height_grid_m")
+        grid_step = float((terrain["geometry"] or {}).get("height_grid_spacing_m", 0.0) or 0.0)
+        if grid and grid_step > 0.0:
+            surface_boxes = []
+            base = min(min(row) for row in grid) - 4.0
+            for row_index, row in enumerate(grid):
+                for column_index, height in enumerate(row):
+                    gx0 = tlo[0] + column_index * grid_step
+                    gn0 = tlo[1] + row_index * grid_step
+                    surface_boxes.append(_box(
+                        f"terrain_grid_{row_index:02}_{column_index:02}", gx0, gx0 + grid_step,
+                        gn0, gn0 + grid_step, base, float(height) + 0.25, "minecraft:grass_block"))
+        else:
+            surface_boxes = [_box("terrain_proxy", tlo[0], thi[0], tlo[1], thi[1], -0.2, 0.25,
+                                  "minecraft:grass_block")]
         for record in entities:
             if record["kind"] not in {"river", "coast"}:
                 continue
