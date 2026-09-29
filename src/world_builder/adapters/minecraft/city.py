@@ -36,6 +36,13 @@ ROOF_EAVE_M = 0.6
 COORD_EPS_M = 1e-6
 DEFAULT_DATA_VERSION = 4671
 
+# Terrain relief above the datum stays off until the assembler carries the built
+# content up with the ground (work order 014, chosen 2026-09-29). The plans
+# lift the ground 0-26 m above the datum, and rendering that crust buried
+# every street and the river; the stepped code is kept behind this switch.
+TERRAIN_RELIEF_ENABLED = False
+
+
 PALETTE = {
     "minecraft:air": 0,
     "minecraft:stone_bricks": 1,
@@ -1023,7 +1030,15 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
         # still win (work order 014's excavation).
         grid = (terrain["geometry"] or {}).get("height_grid_m")
         grid_step = float((terrain["geometry"] or {}).get("height_grid_spacing_m", 0.0) or 0.0)
-        if grid and grid_step > 0.0:
+        # Interim policy (work order 014, 2026-09-29): the relief is only rendered
+        # when the terrain actually reaches the datum the built content sits on.
+        # Today's plans lift the ground 0.5-12 m above it, and laying that crust
+        # buried every street and the river; until the assembler carries the
+        # content up with the ground (the chosen fix), a grid that floats above
+        # the datum falls back to the flat proxy.
+        relieved = (TERRAIN_RELIEF_ENABLED and bool(grid) and grid_step > 0.0
+                    and min(min(row) for row in grid) <= 0.25)
+        if relieved:
             # Stepped ground as a crust, not a solid fill (work order 014): one
             # surface box per grid cell plus a riser on every step, because a
             # solid column multiplies into the whole footprint — 98 % of a band's
