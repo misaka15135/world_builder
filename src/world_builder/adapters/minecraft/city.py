@@ -670,10 +670,20 @@ def _dock_boxes(record: dict) -> list[dict]:
     walls are ordinary stone boxes; the gate face is left open so the basin
     reads as connected to the water. The gantry is four legs with a beam across
     the short axis — the `basin_with_gantry` silhouette, not a crane.
+
+    Every box is stated against the record's own **grade**, recovered as
+    `bounds.min.z + depth_m` (the assembler states the envelope as
+    `[-depth, 0]`). That is what lets the excavation travel with work order
+    014's ground following: measured 2026-09-29, the harbour's crust rose
+    7.6 m onto the sampled ground while the dock was still drawn against the
+    datum, so the basin sat in a cavity 6 m under the terrain crust instead
+    of opening through it.
     """
-    (x0, n0, _), (x1, n1, top) = record["bounds"]["min"], record["bounds"]["max"]
+    low, high = record["bounds"]["min"], record["bounds"]["max"]
+    x0, n0, x1, n1 = low[0], low[1], high[0], high[1]
     geometry = record["geometry"]
     depth = float(geometry.get("depth_m", 4.0))
+    grade = float(low[2]) + depth
     wall = 1.0
     boxes: list[dict] = [
         # The excavation: everything in the basin above its floor becomes air.
@@ -681,12 +691,14 @@ def _dock_boxes(record: dict) -> list[dict]:
         # thick and quantises to two layers, so an air box down to -depth would
         # eat its top layer and leave the basin a layer deeper than designed
         # (measured 2026-09-29: floor at -6, its -5 layer gone).
-        _box(f"{record['id']}_basin", x0, x1, n0, n1, -depth + 1.0, 0.5, "minecraft:air"),
+        _box(f"{record['id']}_basin", x0, x1, n0, n1,
+             grade - depth + 1.0, grade + 0.5, "minecraft:air"),
         # The slab is stated as -depth-0.5..-depth+1.0 on purpose: a box whose
         # top is exactly -depth quantises to the single cell below it (ceil
         # takes the -1), so the pit would end up a metre deeper than designed
         # (measured 2026-09-29). One extra layer keeps the top at -depth.
-        _box(f"{record['id']}_floor", x0, x1, n0, n1, -depth - 0.5, -depth + 1.0,
+        _box(f"{record['id']}_floor", x0, x1, n0, n1,
+             grade - depth - 0.5, grade - depth + 1.0,
              "minecraft:stone_bricks"),
     ]
     gate = geometry.get("gate_side", "south")
@@ -696,10 +708,10 @@ def _dock_boxes(record: dict) -> list[dict]:
         if face == gate:
             # The gate sill: a low step the vessel crosses, not a wall.
             boxes.append(_box(f"{record['id']}_gate_sill", fx0, fx1, fn0, fn1,
-                              -depth, -depth + 1.0, "minecraft:smooth_stone"))
+                              grade - depth, grade - depth + 1.0, "minecraft:smooth_stone"))
             continue
         boxes.append(_box(f"{record['id']}_wall_{face}", fx0, fx1, fn0, fn1,
-                          -depth, 0.5, "minecraft:stone_bricks"))
+                          grade - depth, grade + 0.5, "minecraft:stone_bricks"))
     # Gantry: two portals either side of the short axis, joined by a beam.
     gantry = float(geometry.get("gantry_height_m", 12.0))
     along_x = (x1 - x0) >= (n1 - n0)
@@ -712,9 +724,9 @@ def _dock_boxes(record: dict) -> list[dict]:
         beam = (x0 + leg, x1 - leg, n0, n1, gantry - 1.5, gantry)
     for index, (lx0, lx1, ln0, ln1) in enumerate(ends):
         boxes.append(_box(f"{record['id']}_gantry_leg_{index}", lx0, lx1, ln0, ln1,
-                          -depth, gantry, "minecraft:gray_concrete"))
+                          grade - depth, grade + gantry, "minecraft:gray_concrete"))
     boxes.append(_box(f"{record['id']}_gantry_beam", beam[0], beam[1], beam[2], beam[3],
-                      beam[4], beam[5], "minecraft:gray_concrete"))
+                      grade + beam[4], grade + beam[5], "minecraft:gray_concrete"))
     return boxes
 
 

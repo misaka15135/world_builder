@@ -395,6 +395,36 @@ def test_a_dry_dock_excavates_its_basin_and_raises_a_gantry() -> None:
     assert max(box["y1"] for box in gantry) == 13.0
 
 
+def test_a_dry_dock_excavates_the_grade_it_was_lifted_onto() -> None:
+    """Work order 014: the pit has to open through the ground, not under it.
+
+    The plan lifts the dock's envelope (`[-depth, 0]`) onto the sampled ground,
+    so the adapter reads the record's own grade as `min.z + depth` and states
+    every box against it. Measured 2026-09-29 in the harbour: the terrain crust
+    over the dock's footprint sat at 5.213..7.863 while the rim stayed at 0.5,
+    and the basin became a cavity six metres under the crust.
+    """
+    rise = 7.6
+    record = {"id": "dock_site_001", "kind": "dock",
+              "attributes": {"design_state": "planned", "gate_side": "north", "gantry_height_m": 11.0},
+              "geometry": {"representation": "basin", "depth_m": 3.0, "gate_side": "north",
+                           "gantry_height_m": 11.0},
+              "bounds": {"min": [12.0, 12.0, -3.0 + rise], "max": [81.24, 67.7, rise]}}
+    boxes = _dock_boxes(record)
+    basin = next(box for box in boxes if box["source_id"].endswith("_basin"))
+    floor = next(box for box in boxes if box["source_id"].endswith("_floor"))
+    assert (basin["y0"], basin["y1"]) == (rise - 2.0, rise + 0.5)
+    assert (floor["y0"], floor["y1"]) == (rise - 3.5, rise - 2.0)
+    assert basin["y1"] > rise, "the excavation has to reach above grade to cut the crust"
+    assert max(box["y1"] for box in boxes if "_gantry_" in box["source_id"]) == rise + 11.0
+    walls = [box for box in boxes if "_wall_" in box["source_id"]]
+    assert {box["y1"] for box in walls} == {rise + 0.5}, "the walls rise to the local grade"
+    # An unlifted record keeps the datum it has always used.
+    flat = dict(record, bounds={"min": [12.0, 12.0, -3.0], "max": [81.24, 67.7, 0.0]})
+    flat_basin = next(box for box in _dock_boxes(flat) if box["source_id"].endswith("_basin"))
+    assert (flat_basin["y0"], flat_basin["y1"]) == (-2.0, 0.5)
+
+
 def test_a_tank_farm_is_stepped_into_a_round_shell() -> None:
     """Main line c (work order 017): the first non-box geometry reaches blocks.
 
