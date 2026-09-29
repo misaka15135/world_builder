@@ -1,5 +1,25 @@
 # World Builder
 
+## 当前分支：API 驱动 A—F 多智能体
+
+`codex/api-agent-pipeline` 的默认产品入口为 `generate-world` / `tools/generate_agent_world.py`。
+A 场景需求 → B 地形与 C 风物清单并发 → D 空间分配 → 每个场地独立 E 设计 → F 审查与有限返工。
+各阶段均由配置的 API 提交 JSON 计划；本地负责不可绕过的规则验证、几何编译、WIR 持久化与导出。
+API 地址和模型使用 `yourapi` 占位。配置未完成时明确失败，不调用旧规则规划器代替模型。
+
+详见 [运行与架构说明](docs/05_api_agent_pipeline.md)、[JSON 契约](docs/contracts/api-agents-v0.1.md) 和 [023 工单](work_order/023_api_agent_pipeline.md)。
+
+无需密钥的**人工响应样例**（验证程序闭环，不代表模型质量）：
+
+```powershell
+$env:PYTHONPATH = 'src'
+python tools/generate_agent_world.py --prompt '一条街旁的一栋两层木构商铺和一座公共大厅，都能进入，商铺上层可达。' --region-m 32 --fixtures examples/agent_scene.responses.json --output artifacts/agent-runs/example --minecraft --unity
+```
+
+初版能力：模型直接声明整米盒体构件、地形单元、空间与逐格通路；输出自包含 `.worldpkg`、Minecraft schematic 和 Unity 可导入 GLB。真实 API 质量、游戏内加载和漫游尚未验收。输出目录必须为新目录。
+
+## 历史规则主线（保留作回归对照）
+
 自然语言驱动的分层三维世界生成与编辑系统。
 
 当前阶段：M2 最小生成闭环实施中。已提供 128 m 小范围本地生成试验：固定 seed、五阶段提交、6 栋建筑/2 栋室内模板、源端校验、SQLite 存档和故障恢复；v2 增加最多 3 次候选的楼梯修复、建筑预留空间反馈、锁冲突保护和逐次日志；v3 增加可替换的自然语言规格 JSON 接口、已接受响应回放与自包含 `.worldpkg` 交换。512 m、80 栋建筑/5 栋室内的独立离线源端规格在预登记基准中 30/30 完成。[Unity 两层建筑样件](docs/contracts/unity-sample-v0.1.md)已在目标编辑器由控制器连续穿门上楼；[Minecraft 区域样件](docs/contracts/minecraft-sample-v0.1.md)已在目标游戏由玩家连续走通南门至二层。真实模型服务、通用城邦跨目标导出和本地查看器尚未完成。能力与限制见 [006 运行说明](docs/contracts/generation-v0.1.md)。
@@ -18,7 +38,7 @@
 
 每次工作前先读 [AGENTS.md](AGENTS.md)、[工单索引](work_order/README.md)、[总规划](work_order/000_project_master_plan.md) 和当前工单。完成动作应即时记录，完成事项同时勾选与划线。
 
-当前任务是 [006：最小分层生成闭环](work_order/006_generation_vertical_slice.md)。当前在 Windows 基准主机本机运行，使用 PowerShell：
+旧规则路径的入口是 [006：最小分层生成闭环](work_order/006_generation_vertical_slice.md)，以下命令保留作历史对照；安装后的别名为 `generate-rule-world`。在 Windows 基准主机本机运行，使用 PowerShell：
 
 ```powershell
 $env:PYTHONPATH = 'src'

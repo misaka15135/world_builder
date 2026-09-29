@@ -1,5 +1,7 @@
 # 工单索引与协作流程
 
+**2026-09-29 模型驱动分支离线闭环完成**：[023](023_api_agent_pipeline.md) 在 `codex/api-agent-pipeline` 实现 API 驱动 A—F、六份实际运行 skill、严格 JSON 契约、预算、限定返工与回放。完整回归 220 passed；最终人工响应样例和回放均输出 45 网格 GLB、2707 方块 schematic，世界包/GLB 哈希一致。真实 API 使用 `yourapi` 占位；模型质量与目标实走未验收，后续 [024](024_api_agent_live_evaluation.md) 为 planned。
+
 **2026-09-29 014 第二处收口：城堡/筒仓/开放空间跟随地面**：核对 manifest 时发现整座城堡**根本没被抬升**——记录包络已在 16.67…34.67，适配器发出的 336 个盒子却停在 0…21.6，而同足迹的地形壳在 15.52…18.04（城墙 6.5、门楼 9.8、主楼 14.7 全在地下）。根因是 `_compound_boxes`/`_cylinder_boxes`/开放空间铺装都按**设计自身的基准面**发盒，地面跟随只抬「相对记录」的几何。新增 `_raised()` 按 `bounds.min.z` 偏移后重导：与上一版逐格比对**只有 2 块变化**（含城堡的 `c01_01` 48,739 → 47,266、含广场的 `c02_02` 56,615 → 55,203），两块先清窗（各清掉 589,824 方块）再贴，`blocks affected` 与 manifest 逐字相等；探针显示主楼楼板从世界 −55 抬到 −39、`RELOAD_*` 在重载后仍命中，俯视图可见**城堡立在地表之上**（此前埋在土里）。完整回归 184 passed、文档检查零错误。详见 [014](014_terrain_plan.md)、[017](017_building_designer.md)、[022](022_scene_reconstruction_new_world.md)。
 
 **2026-09-29 014 挖方落地：干船坞跟随地面，基坑真正敞开**：`_dock_boxes` 改为按记录自身的 **grade**（`bounds.min.z + depth_m`）发盒，于是地面跟随把干船坞一起抬到采样地面上——重导港口后与上一版逐格比对**只有含船坞的那一块变了**（71,934 → **65,715** 方块，盒数 14,801 不变、9 个 dock 盒整体 +7.6 m），实贴 `blocks affected = 65715` 与 manifest 逐字相等；探针确认地表被挖穿（`(47,−54,4056)` 空气）、坑底板与吊梁在预期高度，落盘走 Esc → Save and Quit to Title 并重载复核。**同轮查出的重要事实**：本环境里 **`//paste -a` 不会清除既有方块**（同一格连贴两次仍是旧雕纹石英，只有 `//set air` 清得掉）——所以以前"逐块核对 `blocks affected` 与 manifest 吻合"只能证明非空气方块放对了，不能证明空气格被清空；这次一个 chunk 窗口用 `//set air` 清出 **589,824** 个方块，说明 band 3 里仍积压着旧版本的实心填充。下一轮把其余 35 块（以及 band 0/1/2 抽查）按「先清窗、再贴」重做。详见 [014](014_terrain_plan.md)、[017](017_building_designer.md)、[022](022_scene_reconstruction_new_world.md)。
@@ -86,7 +88,10 @@
 | 021 | [风格建筑双目标样件](021_style_building_cross_target_sample.md) | done | root | 017、008、009 |
 | 022 | [新存档四场景重构](022_scene_reconstruction_new_world.md) | in_progress | root | 013—018、017、009 |
 
-下一个可分配编号：023。编号由协调者串行分配，避免并行碰撞。
+| 023 | [API 模型驱动 A—F 流水线](023_api_agent_pipeline.md) | done | root | 005、013—018、008/009 |
+| 024 | [真实 API 与目标平台验收](024_api_agent_live_evaluation.md) | planned | 待认领 | 023、008/009 |
+
+下一个可分配编号：025。编号由协调者串行分配，避免并行碰撞。
 
 **2026-09-27 更新（新存档四场景重构启动）**：按用户指示，用更新后的建筑 skill 重新生成**所有**建筑并把四个背景整合进**新存档** `WB Scenes Rebuild`（由 `WB Verify Flat` 复制：207/208 文件、唯缺 `session.lock`；复制时源世界在游戏里打开，故**没有可信全量哈希**，已记为待办）。四个场景带位固定 `(chunk_x*128, −61, chunk_z*128 + 1024 + band*1024)`，band 0/1/2/3 = 魔法城邦/现代都市/工业园/港口；**band 1 与旧现代都市（`z 1408…2048`）重叠**，粘贴前必须先清带并把旧证据留档。每 35 分钟推进任务 `world-builder-35m` 已创建（`FREQ=MINUTELY;INTERVAL=35`，静默策略 `failed_runs_only`）。另一位智能体的 skill 扩充（13 历史/地方 + 6 近现代工业 + 10 功能空间资料卡）经完整回归 **159 passed** 后整合提交（`bde89d6`）。详见 [022](022_scene_reconstruction_new_world.md)。
 

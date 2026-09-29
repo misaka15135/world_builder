@@ -1,0 +1,24 @@
+{
+  "contract_version": "0.1.0",
+  "endpoint": "https://yourapi/v1/chat/completions",
+  "model": "yourapi",
+  "api_key_env": "WORLD_BUILDER_API_KEY",
+  "protocol": "chat_completions",
+  "response_format": "json_object",
+  "token_parameter": "max_completion_tokens",
+  "stage_models": {"A": "yourapi", "B": "yourapi", "C": "yourapi", "D": "yourapi", "E": "yourapi", "F": "yourapi"},
+  "limits": {
+    "max_calls": 128,
+    "max_total_tokens": 1000000,
+    "max_output_tokens": 16000,
+    "max_response_bytes": 2000000,
+    "timeout_s": 90,
+    "wall_time_s": 1800,
+    "attempts": 3,
+    "review_rounds": 2,
+    "workers": 3,
+    "max_sites": 32,
+    "max_parts": 12000,
+    "max_voxels": 20000000
+  }
+}

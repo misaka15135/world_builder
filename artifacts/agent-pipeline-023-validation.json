@@ -1,0 +1,46 @@
+{
+  "work_order": "023",
+  "date": "2026-09-29",
+  "branch": "codex/api-agent-pipeline",
+  "base_commit": "981da95",
+  "contract_version": "0.1.0",
+  "full_regression": {
+    "command": "python -m pytest -q --basetemp artifacts/pytest-agents-full-20260929",
+    "passed": 220,
+    "failed": 0,
+    "elapsed_seconds": 329.66,
+    "agent_pipeline_tests": 36
+  },
+  "checks": {
+    "generated_schemas_match_runtime": "pass",
+    "six_skills_quick_validate": "pass",
+    "compileall": "pass",
+    "git_diff_whitespace": "pass",
+    "project_documentation": "pass"
+  },
+  "end_to_end": {
+    "source": "hand_authored_synthetic_fixture",
+    "prompt": "一条街旁的一栋两层木构商铺和一座公共大厅，都能进入，商铺上层可达。",
+    "region_m": 32,
+    "seed": 1,
+    "recording_directory": "artifacts/agent-runs/acceptance-20260929",
+    "replay_directory": "artifacts/agent-runs/acceptance-20260929-replay",
+    "calls_per_run": 7,
+    "network_calls": 0,
+    "unity_meshes": 45,
+    "minecraft_chunks": 1,
+    "minecraft_non_air_blocks": 2707,
+    "worldpkg_sha256": "292975f7fffe66ceb3da7aae81b4c80cdc49c7fc79b72db35e4c46be7417f082",
+    "glb_sha256": "aefacba9d85c1bb1abd460d83db8c4a1a7dfbe9ca73acbcea1f7b871bf23200c",
+    "replay_hashes_identical": true,
+    "independent_nbt_route_check": "pass_in_test_suite",
+    "worldpkg_reexport_bytes": "pass_in_test_suite"
+  },
+  "unverified": [
+    "real_api_completion_and_design_quality",
+    "real_provider_schema_compatibility_and_cost",
+    "target_application_import_and_continuous_walkthrough",
+    "old_vessel_and_dry_dock_capability_migration"
+  ],
+  "next_work_order": "024"
+}

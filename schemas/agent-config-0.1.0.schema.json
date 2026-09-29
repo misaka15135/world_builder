@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "contract_version": {
+      "const": "0.1.0"
+    },
+    "endpoint": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048
+    },
+    "model": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "api_key_env": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]{0,127}$"
+    },
+    "protocol": {
+      "enum": [
+        "chat_completions",
+        "json_contract"
+      ]
+    },
+    "response_format": {
+      "enum": [
+        "json_object",
+        "json_schema"
+      ]
+    },
+    "token_parameter": {
+      "enum": [
+        "max_completion_tokens",
+        "max_tokens"
+      ]
+    },
+    "stage_models": {
+      "type": "object",
+      "properties": {
+        "A": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "B": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "C": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "D": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "E": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "F": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F"
+      ],
+      "additionalProperties": false
+    },
+    "limits": {
+      "type": "object",
+      "properties": {
+        "max_calls": {
+          "type": "integer",
+          "minimum": 6,
+          "maximum": 512
+        },
+        "max_total_tokens": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 4000000
+        },
+        "max_output_tokens": {
+          "type": "integer",
+          "minimum": 512,
+          "maximum": 64000
+        },
+        "max_response_bytes": {
+          "type": "integer",
+          "minimum": 4096,
+          "maximum": 2000000
+        },
+        "timeout_s": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300
+        },
+        "wall_time_s": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 7200
+        },
+        "attempts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        },
+        "review_rounds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "workers": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "max_sites": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64
+        },
+        "max_parts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16000
+        },
+        "max_voxels": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 20000000
+        }
+      },
+      "required": [
+        "max_calls",
+        "max_total_tokens",
+        "max_output_tokens",
+        "max_response_bytes",
+        "timeout_s",
+        "wall_time_s",
+        "attempts",
+        "review_rounds",
+        "workers",
+        "max_sites",
+        "max_parts",
+        "max_voxels"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "contract_version",
+    "endpoint",
+    "model",
+    "api_key_env",
+    "protocol",
+    "response_format",
+    "token_parameter",
+    "stage_models",
+    "limits"
+  ],
+  "additionalProperties": false
+}

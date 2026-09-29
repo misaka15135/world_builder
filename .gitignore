@@ -9,6 +9,12 @@ __pycache__/
 .venv/
 venv/
 
+# User API configuration, credentials and model run transcripts stay local.
+.env
+.env.*
+config/agents.local.json
+artifacts/agent-runs/
+
 # Local generated repositories and content-addressed resources
 artifacts/**/wir.sqlite3
 artifacts/**/assets/
