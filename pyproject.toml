@@ -14,6 +14,7 @@ validate-worldpkg = "world_builder.wir.cli:main"
 generate-world = "world_builder.agents.cli:main"
 generate-rule-world = "world_builder.generation.cli:main"
 generate-agent-world = "world_builder.agents.cli:main"
+world-builder-workbench = "world_builder.workbench.server:main"
 worldpkg = "world_builder.storage.worldpkg_cli:main"
 export-minecraft-sample = "world_builder.adapters.minecraft.cli:main"
 

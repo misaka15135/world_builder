@@ -1,0 +1,44 @@
+{
+  "work_order": "025",
+  "date": "2026-09-29",
+  "branch": "codex/api-agent-pipeline",
+  "base_commit": "732a456",
+  "http_api_version": "1",
+  "tests": {
+    "command": "python -m pytest -q tests/test_workbench.py tests/test_agent_pipeline.py --basetemp artifacts/pytest-workbench-v3",
+    "passed": 56,
+    "failed": 0,
+    "seconds": 7.55,
+    "scope": "20 workbench tests including parameterized cases and 36 existing pipeline tests"
+  },
+  "browser": {
+    "engine": "Codex in-app browser",
+    "fixture_run": "succeeded",
+    "replay_run": "succeeded",
+    "calls_per_run": 7,
+    "network_calls": 0,
+    "scene_components": 45,
+    "source_id_pick": "part_hall_01_floor",
+    "height_slice": "6 m",
+    "top_view": "checked",
+    "result_json_dialog": "checked",
+    "agent_contract_dialog": "checked E schema",
+    "config_save": "validated locally, no credentials entered",
+    "api_placeholder": "blocked before network with explicit message",
+    "history_after_refresh_and_server_restart": "preserved",
+    "worldpkg_download_sha256": "292975f7fffe66ceb3da7aae81b4c80cdc49c7fc79b72db35e4c46be7417f082",
+    "desktop_viewport": [1440, 1000],
+    "narrow_viewport": [390, 844],
+    "horizontal_overflow": false,
+    "console_warnings_or_errors": 0,
+    "screenshots": ["desktop.png", "mobile.png"]
+  },
+  "boundaries": [
+    "Loopback-only single-user local application",
+    "Read-only cuboid source preview; face sorting is approximate",
+    "No live paid model calls or target-engine walkthrough",
+    "No full world editing or standalone desktop installer",
+    "Latest 100 runs shown; no automatic history deletion"
+  ],
+  "next_work": ["024 real API and target evaluation", "007 full semantic editor"]
+}

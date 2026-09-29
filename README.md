@@ -1,5 +1,13 @@
 # World Builder
 
+## 本地应用与网页测试台
+
+双击 [start_workbench.cmd](start_workbench.cmd)，或运行 `python tools/run_workbench.py --open`，打开 `http://127.0.0.1:8765`。
+
+支持场景输入、API 配置、离线样例、历史回放、A—F 进度、可旋转/剖切的源几何预览、JSON 诊断与产物下载。网页功能模块通过 HTTP API v1 接入独立任务服务，无需前端构建工具或 CDN。运行历史保存在本地忽略目录，填写的密钥仅用于单次运行。
+
+详见 [测试台使用与模块扩展说明](docs/06_web_workbench.md)。当前是只读预览与测试应用；完整世界编辑及真实目标效果另行验收。
+
 ## 当前分支：API 驱动 A—F 多智能体
 
 `codex/api-agent-pipeline` 的默认产品入口为 `generate-world` / `tools/generate_agent_world.py`。

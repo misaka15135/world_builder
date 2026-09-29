@@ -1,0 +1,12 @@
+:root {
+  --paper:#f5f5ee;
+  --surface:#fffef8;
+  --ink:#34412f;
+  --muted:#9aa58c;
+  --line:#e2e5d7;
+  --green:#294e3c;
+  --deep:#243e35;
+  --red:#b16b4c;
+  --font:"Segoe UI","Microsoft YaHei",sans-serif;
+  --mono:"Cascadia Code",Consolas,monospace
+}

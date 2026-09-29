@@ -42,7 +42,7 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 class APIProvider:
     network = True
 
-    def __init__(self, config: dict):
+    def __init__(self, config: dict, *, api_key: str | None = None):
         validate_schema(config, CONFIG_SCHEMA, "config.schema")
         self.config = config
         endpoint = urlsplit(config["endpoint"])
@@ -50,7 +50,7 @@ class APIProvider:
             raise AgentError("api.placeholder", "Replace yourapi endpoint and model in your local config")
         if endpoint.scheme != "https" or not endpoint.hostname or endpoint.username or endpoint.password or endpoint.fragment or endpoint.query:
             raise AgentError("api.endpoint", "Use a full HTTPS endpoint without credentials, query or fragment")
-        self.key = os.environ.get(config["api_key_env"], "")
+        self.key = os.environ.get(config["api_key_env"], "") if api_key is None else api_key
         if not self.key or self.key.lower() == "yourapi":
             raise AgentError("api.credential", f"Set environment variable {config['api_key_env']}")
 
