@@ -340,6 +340,23 @@ def _box(source_id: str, x0: float, x1: float, n0: float, n1: float, u0: float, 
             "z0": -n1, "z1": -n0, "block": block}
 
 
+def _raised(boxes: list[dict], base: float) -> list[dict]:
+    """Lift a design-frame box list onto the record's own ground level.
+
+    Work order 014's ground following raises a record's envelope onto the
+    sampled terrain, but only geometry stated *relative to the record* travels
+    with it. Compound volumes, silo vessels and open-space paving are stated in
+    the design's own frame (base_m, 0.0 …), so they used to stay at the datum:
+    measured 2026-09-29, the arcane scene's castle sat at 0…21.6 while the
+    terrain crust over its footprint was at 15.5…18.0, i.e. the keep was inside
+    the hill. `base` is `bounds.min.z`, which is the design's ground level
+    before the lift and the sampled ground after it.
+    """
+    if not base:
+        return boxes
+    return [dict(box, y0=box["y0"] + base, y1=box["y1"] + base) for box in boxes]
+
+
 def _roof_boxes(name: str, x0: float, x1: float, n0: float, n1: float, z1: float,
                 roof_h: float, style: str, block: str) -> list[dict]:
     """Stepped roof geometry driven by the declared style and roof height.
@@ -819,7 +836,7 @@ def _disc_rows(name: str, cx: float, cy: float, radius: float, low: float, high:
     return boxes
 
 
-def _cylinder_boxes(record: dict, ox: float, on: float) -> list[dict]:
+def _cylinder_boxes(record: dict, ox: float, on: float, base: float = 0.0) -> list[dict]:
     """A tank farm: each vessel is a stepped ring with its own cap.
 
     Work order 017 class 3 — the first geometry in this project that is not an
@@ -858,10 +875,10 @@ def _cylinder_boxes(record: dict, ox: float, on: float) -> list[dict]:
                                         top + layer * 0.8, cap, f"dome{layer}"))
         else:
             boxes.extend(_disc_rows(name, cx, cy, radius, top, top + 0.4, cap, "cap"))
-    return boxes
+    return _raised(boxes, base)
 
 
-def _compound_boxes(record: dict, ox: float, on: float) -> list[dict]:
+def _compound_boxes(record: dict, ox: float, on: float, datum: float = 0.0) -> list[dict]:
     """One castle: hollow volumes, a gatehouse, and the keep's interior.
 
     Work order 017 main line. Each volume is a hollow shell capped by its own
@@ -995,7 +1012,7 @@ def _compound_boxes(record: dict, ox: float, on: float) -> list[dict]:
                     rect = (wx0, wy0 + step * tread, wx1, wy0 + (step + 1) * tread)
                 boxes.append(_box(f"{name}_stair{index + 1}_tread_{step + 1:02}",
                                   rect[0], rect[2], rect[1], rect[3], low, rise, slab))
-    return boxes
+    return _raised(boxes, datum)
 
 
 def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
@@ -1119,16 +1136,16 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
         for record in entities:
             if record["kind"] != "open_space":
                 continue
-            (ox, on, _), (mx, mn, _) = record["bounds"]["min"], record["bounds"]["max"]
+            (ox, on, oz), (mx, mn, _) = record["bounds"]["min"], record["bounds"]["max"]
             plan = record["geometry"]
-            surface_boxes.append(_box(record["id"], ox, mx, on, mn, 0.0, 0.25,
+            surface_boxes.append(_box(record["id"], ox, mx, on, mn, oz, oz + 0.25,
                                       paving_blocks[plan["paving_token"]]))
             px0, py0, px1, py1 = plan["path"]["rect"]
             surface_boxes.append(_box(f"{record['id']}_path", ox + px0, ox + px1, on + py0, on + py1,
-                                      0.25, 0.4, paving_blocks[plan["path"]["token"]]))
+                                      oz + 0.25, oz + 0.4, paving_blocks[plan["path"]["token"]]))
             for item in plan["fixtures"]:
                 surface_boxes.append(_box(item["id"], ox + item["x0"], ox + item["x1"],
-                                          on + item["y0"], on + item["y1"], 0.25, 1.25,
+                                          on + item["y0"], on + item["y1"], oz + 0.25, oz + 1.25,
                                           fixture_blocks[item["use"]]))
         # Compounds (work order 017 class 3): a castle is a keep, towers, a hall
         # and a curtain wall. Each volume becomes a hollow shell with its own
@@ -1136,14 +1153,14 @@ def city_boxes(package: dict, *, include_interiors: bool) -> list[dict]:
         for record in entities:
             if record["kind"] != "compound":
                 continue
-            (ox, on, _), (_, _, _) = record["bounds"]["min"], record["bounds"]["max"]
-            surface_boxes.extend(_compound_boxes(record, ox, on))
+            (ox, on, oz), (_, _, _) = record["bounds"]["min"], record["bounds"]["max"]
+            surface_boxes.extend(_compound_boxes(record, ox, on, oz))
         # Tank farms (work order 017 class 3): round vessels, stepped.
         for record in entities:
             if record["kind"] != "cylinders":
                 continue
-            (ox, on, _), (_, _, _) = record["bounds"]["min"], record["bounds"]["max"]
-            surface_boxes.extend(_cylinder_boxes(record, ox, on))
+            (ox, on, oz), (_, _, _) = record["bounds"]["min"], record["bounds"]["max"]
+            surface_boxes.extend(_cylinder_boxes(record, ox, on, oz))
         # Vessels (work order 017 class 3): a cargo ship is a mooring line plus
         # a beam in the WIR, and it had no geometry at all until now.
         for record in entities:

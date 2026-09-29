@@ -32,6 +32,58 @@ def scene_package():
     return assemble_scene(brief, pack, terrain, siting, tuple(designs)), siting
 
 
+def test_the_castle_stands_on_the_ground_the_plan_lifted_it_onto(scene_package) -> None:
+    """Work order 014: a compound is drawn against its own ground level.
+
+    The plan raises the castle's envelope onto the sampled terrain, and only
+    geometry stated relative to the record travels with it. The volumes are
+    stated in the design's own frame (`base_m`, 0.0 …), so the adapter adds
+    `bounds.min.z` before it emits blocks. Measured 2026-09-29: without that,
+    the arcane scene's curtain wall, gatehouse and keep all sat at 0…21.6 m
+    while the terrain crust over their footprint was at 15.5…18.0 — the castle
+    was inside the hill.
+    """
+    package, _ = scene_package
+    boxes = city_boxes(project_for_minecraft(package), include_interiors=True)
+    castle = [box for box in boxes if box["source_id"].startswith("compound_")]
+    assert castle, "the arcane scene carries a castle"
+    over = _terrain_over(boxes, castle)
+    assert over, "the terrain grid covers the castle's footprint"
+    crust = min(box["y1"] for box in over)
+    assert min(box["y0"] for box in castle) >= crust - 2.0, \
+        "the castle starts at the datum instead of on the ground it was lifted onto"
+    keep = [box for box in castle if "keep" in box["source_id"]]
+    assert keep and max(box["y1"] for box in keep) > max(box["y1"] for box in over), \
+        "the keep has to rise above the crust, not sit inside it"
+
+
+def test_the_plaza_paving_follows_the_ground_too(scene_package) -> None:
+    """Work order 014: paving and fixtures are stated at 0.0 … 1.25 m of the design.
+
+    They are the same trap the castle was in: absolute heights do not travel
+    with the lift, so a plaza would end up buried under its own crust.
+    """
+    package, _ = scene_package
+    boxes = city_boxes(project_for_minecraft(package), include_interiors=True)
+    spaces = [box for box in boxes if box["source_id"].startswith("open_space_")
+              and "path" not in box["source_id"]]
+    assert spaces
+    over = _terrain_over(boxes, spaces)
+    assert over
+    crust = min(box["y1"] for box in over)
+    assert min(box["y0"] for box in spaces) >= crust - 2.0, \
+        "the paving starts at the datum instead of on the ground it was lifted onto"
+
+
+def _terrain_over(boxes: list[dict], footprint: list[dict]) -> list[dict]:
+    x0 = min(box["x0"] for box in footprint)
+    x1 = max(box["x1"] for box in footprint)
+    z0 = min(box["z0"] for box in footprint)
+    z1 = max(box["z1"] for box in footprint)
+    return [box for box in boxes if box["source_id"].startswith("terrain_grid")
+            and box["x1"] > x0 and box["x0"] < x1 and box["z1"] > z0 and box["z0"] < z1]
+
+
 def test_a_vessel_keeps_its_line_through_the_projection(scene_package) -> None:
     """Main line c (work order 017): a ship is not a corridor.
 
