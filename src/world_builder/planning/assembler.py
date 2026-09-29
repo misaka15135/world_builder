@@ -59,6 +59,18 @@ def _spec_record(brief: SceneBrief, pack: SettingPack, world_id: str) -> dict:
     }
 
 
+BUILT_ENTITY_KINDS = ("road", "bridge", "building", "open_space", "compound", "cylinders",
+                      "dock", "wall")
+
+
+def _ground_height(terrain: TerrainPlan, x: float, y: float) -> float:
+    """Nearest sampled ground height at a plan position (work order 014)."""
+    spacing, rows, columns = terrain.spacing_m, len(terrain.heights), len(terrain.heights[0])
+    column = min(max(int(round(x / spacing)), 0), columns - 1)
+    row = min(max(int(round(y / spacing)), 0), rows - 1)
+    return float(terrain.heights[row][column])
+
+
 def assemble_scene(brief: SceneBrief, pack: SettingPack, terrain: TerrainPlan, siting: SitingPlan,
                    designs: tuple[BuildingDesign, ...], *,
                    asset_sink: Callable[[dict, bytes], None] | None = None) -> dict:
@@ -388,6 +400,45 @@ def assemble_scene(brief: SceneBrief, pack: SettingPack, terrain: TerrainPlan, s
                                          for room in storey.rooms]))
 
     package_id = "package_" + hashlib.sha256(json.dumps(records, sort_keys=True).encode("utf-8")).hexdigest()[:22]
+    # Ground following (work order 014): the plan lifts the ground 0-26 m above the
+    # datum, so the built content is raised onto it — outermost built record only,
+    # children moving with their parent. Terrain and water stay put, and the stair
+    # flight levels are absolute, so they travel too.
+    by_id = {record["id"]: record for record in records}
+    children: dict = {}
+    for record in records:
+        children.setdefault(record.get("parent_id"), []).append(record)
+
+    def _lift(record: dict, rise: float) -> None:
+        bounds = record.get("bounds")
+        if bounds:
+            bounds["min"][2] = round(bounds["min"][2] + rise, 3)
+            bounds["max"][2] = round(bounds["max"][2] + rise, 3)
+        geometry = record.get("geometry") or {}
+        if geometry.get("floor_levels_m"):
+            geometry["floor_levels_m"] = [round(level + rise, 3)
+                                          for level in geometry["floor_levels_m"]]
+        for child in children.get(record["id"], ()):
+            _lift(child, rise)
+
+    for record in records:
+        if record["record_type"] != "entity" or record["kind"] not in BUILT_ENTITY_KINDS:
+            continue
+        parent = record.get("parent_id")
+        while parent is not None:
+            ancestor = by_id.get(parent)
+            if ancestor is None:
+                break
+            if ancestor["record_type"] == "entity" and ancestor["kind"] in BUILT_ENTITY_KINDS:
+                break
+            parent = ancestor.get("parent_id")
+        if parent is not None and by_id.get(parent, {}).get("kind") in BUILT_ENTITY_KINDS:
+            continue
+        low, high = record["bounds"]["min"], record["bounds"]["max"]
+        rise = _ground_height(terrain, (low[0] + high[0]) / 2, (low[1] + high[1]) / 2)
+        if rise > 1e-6:
+            _lift(record, rise)
+
     revision_id = "revision_" + package_id[8:]
     manifest = {
         "package_format": "worldpkg-json-snapshot", "package_mode": "self_contained",
@@ -473,7 +524,8 @@ def validate_scene(package: dict, terrain: TerrainPlan, siting: SitingPlan,
         if building is None:
             check("scene.building_present", False, f"{design.site_id} has no building record")
             continue
-        if abs(building["bounds"]["max"][2] - round(design.height_m, 3)) > 1e-6:
+        span = building["bounds"]["max"][2] - building["bounds"]["min"][2]
+        if abs(span - round(design.height_m, 3)) > 1e-6:
             check("scene.building_height", False, f"{design.site_id} height differs from its design")
             break
         for storey in design.storeys:

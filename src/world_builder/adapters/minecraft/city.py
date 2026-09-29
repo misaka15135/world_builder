@@ -40,7 +40,7 @@ DEFAULT_DATA_VERSION = 4671
 # content up with the ground (work order 014, chosen 2026-09-29). The plans
 # lift the ground 0-26 m above the datum, and rendering that crust buried
 # every street and the river; the stepped code is kept behind this switch.
-TERRAIN_RELIEF_ENABLED = False
+TERRAIN_RELIEF_ENABLED = True
 
 
 PALETTE = {
