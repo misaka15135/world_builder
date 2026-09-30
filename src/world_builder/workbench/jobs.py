@@ -37,10 +37,11 @@ def read_json(path, default=None):
 
 
 class JobService:
-    def __init__(self, root, config, *, execute=runner.execute, provider_factory=runner.provider_for):
+    def __init__(self, root, config, *, execute=runner.execute, provider_factory=runner.provider_for, preferences_path=None):
         self.root = Path(root).resolve()
         self.root.mkdir(parents=True, exist_ok=True)
         self.config = deepcopy(config)
+        self.preferences_path = Path(preferences_path) if preferences_path else None
         self.execute, self.provider_factory = execute, provider_factory
         self.lock, self.pool = RLock(), ThreadPoolExecutor(max_workers=1, thread_name_prefix="world-job")
         self.jobs, self.cancels = {}, {}
@@ -59,6 +60,14 @@ class JobService:
             for event in self.cancels.values():
                 event.set()
         self.pool.shutdown(wait=True, cancel_futures=True)
+
+    def save_preferences(self, config):
+        validate_schema(config, CONFIG_SCHEMA, "config.schema")
+        if self.preferences_path is None:
+            raise ServiceError(404, "preferences.disabled", "网页模式在浏览器中保存配置。")
+        with self.lock:
+            write_json(self.preferences_path, config)
+            self.config = deepcopy(config)
 
     def _persist(self, job):
         write_json(self.root / job["id"] / "job.json", job)

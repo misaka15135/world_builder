@@ -10,7 +10,9 @@ def main() -> int:
     root = Path(__file__).resolve().parents[1]
     errors: list[str] = []
     unity_cache = root / "adapters" / "unity" / "sample_project" / "Library"
-    markdown_files = sorted(path for path in root.rglob("*.md") if not path.is_relative_to(unity_cache))
+    excluded = [unity_cache, *(root / name for name in (".venv", ".venv-desktop", "dist", "build"))]
+    markdown_files = sorted(path for path in root.rglob("*.md")
+                            if not any(path.is_relative_to(directory) for directory in excluded))
     local_links = 0
 
     for path in markdown_files:

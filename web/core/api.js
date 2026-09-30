@@ -12,6 +12,7 @@ export const api = {
   async bootstrap() { const data = await request('/bootstrap'); token = data.session_token; return data; },
   jobs: () => request('/jobs'), job: id => request(`/jobs/${id}`),
   validateConfig: config => request('/config/validate', config), contract: stage => request(`/contracts/${stage}`),
+  savePreferences: config => request('/preferences', config),
   create: body => request('/jobs', body), cancel: id => request(`/jobs/${id}/cancel`, {}),
   document: (id, path) => request(`/jobs/${id}/document?path=${encodeURIComponent(path)}`),
   scene: id => request(`/jobs/${id}/scene`),

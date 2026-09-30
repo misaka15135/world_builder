@@ -6,6 +6,7 @@ import math
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Sequence
+from world_builder.resources import resource_root
 
 
 @dataclass(frozen=True)
@@ -25,7 +26,7 @@ class PackageValidationError(ValueError):
 
 
 def _default_schema_path() -> Path:
-    return Path(__file__).resolve().parents[3] / "schemas" / "wir-package-0.1.0.schema.json"
+    return resource_root() / "schemas" / "wir-package-0.1.0.schema.json"
 
 
 def _schema_issues(package: Mapping[str, Any], schema_path: Path) -> List[ValidationIssue]:

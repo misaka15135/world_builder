@@ -9,8 +9,9 @@ from pathlib import Path
 from jsonschema import Draft202012Validator
 
 from . import VERSION
+from world_builder.resources import resource_root
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = resource_root()
 STAGES = ("A", "B", "C", "D", "E", "F")
 MATERIALS = ("stone", "wood", "glass", "brick", "metal", "grass", "white", "water")
 

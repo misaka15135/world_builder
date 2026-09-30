@@ -1,0 +1,106 @@
+{
+  "status": "pass",
+  "date": "2026-09-30",
+  "version": "0.1.0",
+  "targeted_regression": {
+    "passed": 95,
+    "seconds": 39.51,
+    "command": "python -m pytest -q tests/test_desktop.py tests/test_workbench.py tests/test_agent_pipeline.py tests/test_wir_contract.py tests/test_model_and_package.py --basetemp artifacts/pytest-desktop-v1"
+  },
+  "build": {
+    "version": "0.1.0",
+    "python": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:09:58) [MSC v.1929 64 bit (AMD64)]",
+    "archive": "WorldBuilder-0.1.0-win-x64.zip",
+    "bytes": 15413115,
+    "sha256": "974490f904dcf6be11ebd8b780ee0f8be29ddb9a4db9e9b2eb1645368adf1390"
+  },
+  "frozen_self_test": {
+    "resource_root": "D:\\TongJi_Bache\\RIKA\\world_builder\\dist\\WorldBuilder\\_internal",
+    "runs": [
+      {
+        "id": "7462915bce5b436388386cbccd44f6c3",
+        "result": {
+          "accounted_tokens": 0,
+          "elapsed_s": 0.623,
+          "exports": {
+            "minecraft": {
+              "blocks": 2707,
+              "chunks": 1
+            },
+            "unity": {
+              "mesh_count": 45,
+              "sha256": "sha256:aefacba9d85c1bb1abd460d83db8c4a1a7dfbe9ca73acbcea1f7b871bf23200c"
+            }
+          },
+          "mode": "fixture",
+          "network_calls": 0,
+          "provider_calls": 7,
+          "revision_id": "revision_158a2254e11a5dadd08339c8",
+          "source_geometry_validation": "pass",
+          "target_load": "not_run",
+          "walkthrough": "not_run",
+          "world_id": "world_158a2254e11a5dadd08339c8",
+          "worldpkg_sha256": "sha256:292975f7fffe66ceb3da7aae81b4c80cdc49c7fc79b72db35e4c46be7417f082"
+        }
+      },
+      {
+        "id": "db99a09659ea4a788e662e4940483ca6",
+        "result": {
+          "accounted_tokens": 0,
+          "elapsed_s": 0.673,
+          "exports": {
+            "minecraft": {
+              "blocks": 2707,
+              "chunks": 1
+            },
+            "unity": {
+              "mesh_count": 45,
+              "sha256": "sha256:aefacba9d85c1bb1abd460d83db8c4a1a7dfbe9ca73acbcea1f7b871bf23200c"
+            }
+          },
+          "mode": "replay",
+          "network_calls": 0,
+          "provider_calls": 7,
+          "revision_id": "revision_158a2254e11a5dadd08339c8",
+          "source_geometry_validation": "pass",
+          "target_load": "not_run",
+          "walkthrough": "not_run",
+          "world_id": "world_158a2254e11a5dadd08339c8",
+          "worldpkg_sha256": "sha256:292975f7fffe66ceb3da7aae81b4c80cdc49c7fc79b72db35e4c46be7417f082"
+        }
+      }
+    ],
+    "status": "pass",
+    "version": "0.1.0"
+  },
+  "native_ui": {
+    "generated_job": "bf7ac980ffda47dca765d06ef82cf982",
+    "download": "downloaded.worldpkg",
+    "download_sha256": "292975f7fffe66ceb3da7aae81b4c80cdc49c7fc79b72db35e4c46be7417f082",
+    "closed_pid": 28300,
+    "closed_port": 50531,
+    "process_and_listener_absent_after_close": true,
+    "reopened_pid": 9896,
+    "reopened_port": 50399,
+    "history_restored": true,
+    "preview_restored": true,
+    "screenshot": "application.png",
+    "bootstrap_settings_persistence": "application"
+  },
+  "limitations": [
+    "Human-authored fixtures only; no real model calls tested.",
+    "Windows 11 with existing WebView2 runtime; clean-machine installation untested.",
+    "Unsigned portable folder; no installer or automatic updater."
+  ],
+  "observed_failures": [
+    "Save dialog cached accessibility index unavailable; completed with keyboard.",
+    "Alt+F4 did not close the main window in automation; title-bar close succeeded.",
+    "Second instance rejected by data-directory lock before the original window was closed."
+  ],
+  "documentation_check": {
+    "markdown_files": 104,
+    "local_links": 262,
+    "work_orders": 27,
+    "errors": []
+  }
+}

@@ -3,7 +3,8 @@ import {api} from '../core/api.js';
 const STORAGE = 'world-builder.settings.v1';
 export function settings(bootstrap, changed) {
   let config = structuredClone(bootstrap.config), pendingKey = '';
-  try { const saved = JSON.parse(localStorage.getItem(STORAGE)); if (saved?.contract_version === config.contract_version) config = saved; } catch { /* Storage is optional. */ }
+  const desktop = bootstrap.settings_persistence === 'application';
+  if (!desktop) try { const saved = JSON.parse(localStorage.getItem(STORAGE)); if (saved?.contract_version === config.contract_version) config = saved; } catch { /* Storage is optional. */ }
   const fill = () => {
     $('#setting-endpoint').value = config.endpoint; $('#setting-model').value = config.model;
     $('#setting-protocol').value = config.protocol; $('#setting-key').value = pendingKey;
@@ -24,9 +25,10 @@ export function settings(bootstrap, changed) {
       if (!advanced.limits || !advanced.stage_models) throw new Error('缺少 limits 或 stage_models。');
       const candidate = {...advanced, endpoint: $('#setting-endpoint').value.trim(), model: $('#setting-model').value.trim(), protocol: $('#setting-protocol').value};
       await api.validateConfig(candidate);
+      if (desktop) await api.savePreferences(candidate);
       config = candidate;
       pendingKey = $('#setting-key').value; $('#setting-key').value = '';
-      try { localStorage.setItem(STORAGE, JSON.stringify(config)); } catch { notify('浏览器存储不可用，设置仅在当前页面有效。'); }
+      if (!desktop) try { localStorage.setItem(STORAGE, JSON.stringify(config)); } catch { notify('浏览器存储不可用，设置仅在当前页面有效。'); }
       changed(config); $('#settings-dialog').close(); notify('设置已保存。填写的密钥仅用于下一次 API 运行。');
     } catch (error) { $('#settings-error').textContent = error.message; }
   };

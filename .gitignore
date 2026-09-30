@@ -7,6 +7,9 @@ __pycache__/
 .ruff_cache/
 *.egg-info/
 .venv/
+.venv-desktop/
+dist/
+build/
 venv/
 
 # User API configuration, credentials and model run transcripts stay local.

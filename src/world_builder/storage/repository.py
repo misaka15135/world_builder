@@ -12,6 +12,7 @@ from typing import Callable, Iterator
 
 from world_builder.generation.spec import canonical, digest
 from world_builder.wir.validator import validate_package
+from world_builder.resources import resource_root
 
 
 class StoreError(ValueError):
@@ -29,7 +30,7 @@ class Repository:
         self.database = self.root / "wir.sqlite3"
         with self.connect() as db:
             if not db.execute("SELECT 1 FROM sqlite_master WHERE name='schema_migrations'").fetchone():
-                migration = Path(__file__).resolve().parents[3] / "storage/migrations/0001_initial.sql"
+                migration = resource_root() / "storage/migrations/0001_initial.sql"
                 db.executescript("BEGIN IMMEDIATE;\n" + migration.read_text(encoding="utf-8"))
                 db.execute("INSERT INTO schema_migrations VALUES (1, '0001_initial', datetime('now'))")
                 db.commit()

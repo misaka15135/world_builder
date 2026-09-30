@@ -1,5 +1,7 @@
 # 工单索引与协作流程
 
+**2026-09-30 桌面应用完成**：[026](026_windows_desktop_application.md) 交付独立 WebView2 窗口与约 15 MB Windows 便携包，内含 Python、网页、契约和 skills；历史及非密钥设置保存在用户目录。95 项回归通过，exe 包内样例/回放、原生下载、关闭释放与重开历史/预览恢复通过。真实模型质量仍由 024 验收。
+
 **2026-09-29 网页测试台完成**：[025](025_modular_web_workbench.md) 交付模块化本地应用：双击启动、API 设置、样例/回放、A—F 进度、历史、取消、源几何旋转/剖切/拾取、Skill/Schema/JSON 检查和下载。20 项新增测试加 36 项流水线回归共 56 passed；浏览器样例/回放/下载和两种布局实际验收通过。接口、任务服务与前端模块分离；真实 API 质量仍由 024 验收，007 完整编辑器另行实施。
 
 **2026-09-29 模型驱动分支离线闭环完成**：[023](023_api_agent_pipeline.md) 在 `codex/api-agent-pipeline` 实现 API 驱动 A—F、六份实际运行 skill、严格 JSON 契约、预算、限定返工与回放。完整回归 220 passed；最终人工响应样例和回放均输出 45 网格 GLB、2707 方块 schematic，世界包/GLB 哈希一致。真实 API 使用 `yourapi` 占位；模型质量与目标实走未验收，后续 [024](024_api_agent_live_evaluation.md) 为 planned。
@@ -92,8 +94,9 @@
 | 023 | [API 模型驱动 A—F 流水线](023_api_agent_pipeline.md) | done | root | 005、013—018、008/009 |
 | 024 | [真实 API 与目标平台验收](024_api_agent_live_evaluation.md) | planned | 待认领 | 023、008/009 |
 | 025 | [模块化本地应用与网页测试台](025_modular_web_workbench.md) | done | root | 023、005 |
+| 026 | [Windows 桌面应用初版](026_windows_desktop_application.md) | done | root | 023、025 |
 
-下一个可分配编号：026。编号由协调者串行分配，避免并行碰撞。
+下一个可分配编号：027。编号由协调者串行分配，避免并行碰撞。
 
 **2026-09-27 更新（新存档四场景重构启动）**：按用户指示，用更新后的建筑 skill 重新生成**所有**建筑并把四个背景整合进**新存档** `WB Scenes Rebuild`（由 `WB Verify Flat` 复制：207/208 文件、唯缺 `session.lock`；复制时源世界在游戏里打开，故**没有可信全量哈希**，已记为待办）。四个场景带位固定 `(chunk_x*128, −61, chunk_z*128 + 1024 + band*1024)`，band 0/1/2/3 = 魔法城邦/现代都市/工业园/港口；**band 1 与旧现代都市（`z 1408…2048`）重叠**，粘贴前必须先清带并把旧证据留档。每 35 分钟推进任务 `world-builder-35m` 已创建（`FREQ=MINUTELY;INTERVAL=35`，静默策略 `failed_runs_only`）。另一位智能体的 skill 扩充（13 历史/地方 + 6 近现代工业 + 10 功能空间资料卡）经完整回归 **159 passed** 后整合提交（`bde89d6`）。详见 [022](022_scene_reconstruction_new_world.md)。
 

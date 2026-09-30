@@ -1,5 +1,11 @@
 # World Builder
 
+## Windows 桌面应用
+
+双击 `dist/WorldBuilder/WorldBuilder.exe` 打开独立应用窗口。便携包为 `dist/WorldBuilder-0.1.0-win-x64.zip`，需完整解压并保留 `_internal`。无需安装 Python；本机已具备所需 WebView2 运行库。
+
+可测试离线样例、自己的 API、A—F 进度、几何预览、历史回放与产物下载。历史和非密钥设置保存在 `%LOCALAPPDATA%/WorldBuilder`，更新应用目录时保留。详见 [桌面版使用与构建说明](docs/07_desktop_application.md)。
+
 ## 本地应用与网页测试台
 
 双击 [start_workbench.cmd](start_workbench.cmd)，或运行 `python tools/run_workbench.py --open`，打开 `http://127.0.0.1:8765`。

@@ -124,6 +124,7 @@ class Handler(BaseHTTPRequestHandler):
             route = parts[2:]
             if route == ["bootstrap"] and not write:
                 return self.json(200, {"api_version": "1", "session_token": self.server.token,
+                    "settings_persistence": "application" if svc.preferences_path else "browser",
                     "config": svc.config, "sample": {"prompt": SAMPLE_PROMPT, "region_m": 32, "seed": 1},
                     "credential_available": bool(os.environ.get(svc.config["api_key_env"], "")),
                     "skills": [{"stage": s, "text": (ROOT / f"skills/world-agent-{s.lower()}/SKILL.md").read_text("utf-8")
@@ -132,6 +133,9 @@ class Handler(BaseHTTPRequestHandler):
             if route == ["config", "validate"] and write:
                 validate_schema(body, CONFIG_SCHEMA, "config.schema")
                 return self.json(200, {"valid": True})
+            if route == ["preferences"] and write:
+                svc.save_preferences(body)
+                return self.json(200, {"saved": True})
             if len(route) == 2 and route[0] == "contracts" and route[1] in STAGES and not write:
                 return self.json(200, response_schema(route[1]))
             if route == ["jobs"]:
