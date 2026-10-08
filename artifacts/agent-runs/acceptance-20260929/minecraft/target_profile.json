@@ -1,0 +1,1 @@
+{"adapter_version":"api-agents.0.1.0","configuration":{"geometry":"integer_cuboids_v1","units":"m"},"declared_capabilities":["explicit_cuboids","source_ids","static_scene"],"extensions":{},"id":"profile_agents_minecraft_java","record_type":"target_profile","target":"minecraft_java","target_version":"1.21.11"}

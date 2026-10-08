@@ -1,0 +1,204 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://world-builder.local/schemas/wir-package-0.1.0.schema.json",
+  "title": "World Intermediate Representation package snapshot 0.1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["manifest", "records"],
+  "properties": {
+    "manifest": {"$ref": "#/$defs/manifest"},
+    "records": {"type": "array", "items": {"$ref": "#/$defs/record"}, "minItems": 2}
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]{2,127}$"},
+    "hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "vec3": {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3},
+    "quat": {"type": "array", "items": {"type": "number"}, "minItems": 4, "maxItems": 4},
+    "bounds": {
+      "type": "object", "additionalProperties": false, "required": ["min", "max"],
+      "properties": {"min": {"$ref": "#/$defs/vec3"}, "max": {"$ref": "#/$defs/vec3"}}
+    },
+    "transform": {
+      "type": "object", "additionalProperties": false,
+      "required": ["translation", "rotation_xyzw", "scale"],
+      "properties": {
+        "translation": {"$ref": "#/$defs/vec3"},
+        "rotation_xyzw": {"$ref": "#/$defs/quat"},
+        "scale": {"$ref": "#/$defs/vec3"}
+      }
+    },
+    "manifest": {
+      "type": "object", "additionalProperties": false,
+      "required": ["package_format", "schema_version", "package_id", "world_id", "revision_id", "required_capabilities", "units", "coordinate_system", "tolerances", "package_mode", "created_at"],
+      "properties": {
+        "package_format": {"const": "worldpkg-json-snapshot"},
+        "schema_version": {"const": "0.1.0"},
+        "package_id": {"$ref": "#/$defs/id"},
+        "world_id": {"$ref": "#/$defs/id"},
+        "revision_id": {"$ref": "#/$defs/id"},
+        "required_capabilities": {
+          "type": "array", "uniqueItems": true,
+          "items": {"enum": ["wir.core/0.1", "wir.constraints/0.1", "wir.revisions/0.1"]},
+          "minItems": 3
+        },
+        "optional_extensions": {"type": "object", "additionalProperties": true},
+        "units": {
+          "type": "object", "additionalProperties": false, "required": ["length", "angle"],
+          "properties": {"length": {"const": "m"}, "angle": {"const": "rad"}}
+        },
+        "coordinate_system": {
+          "type": "object", "additionalProperties": false,
+          "required": ["handedness", "x_axis", "y_axis", "z_axis", "transform_convention", "quaternion_order", "storage_precision"],
+          "properties": {
+            "handedness": {"const": "right"}, "x_axis": {"const": "east"},
+            "y_axis": {"const": "north"}, "z_axis": {"const": "up"},
+            "transform_convention": {"const": "column_vector_parent_times_local"},
+            "quaternion_order": {"const": "xyzw"}, "storage_precision": {"const": "float64"}
+          }
+        },
+        "tolerances": {
+          "type": "object", "additionalProperties": false,
+          "required": ["regional_m", "building_m", "interior_m", "angle_rad"],
+          "properties": {
+            "regional_m": {"type": "number", "exclusiveMinimum": 0},
+            "building_m": {"type": "number", "exclusiveMinimum": 0},
+            "interior_m": {"type": "number", "exclusiveMinimum": 0},
+            "angle_rad": {"type": "number", "exclusiveMinimum": 0}
+          }
+        },
+        "package_mode": {"enum": ["self_contained", "linked"]},
+        "created_at": {"type": "string", "format": "date-time"},
+        "extensions": {"type": "object", "additionalProperties": true}
+      }
+    },
+    "common": {
+      "type": "object",
+      "required": ["record_type", "id"],
+      "properties": {
+        "record_type": {"type": "string"}, "id": {"$ref": "#/$defs/id"},
+        "extensions": {"type": "object", "additionalProperties": true}
+      }
+    },
+    "world_spec": {
+      "allOf": [
+        {"$ref": "#/$defs/common"},
+        {"type": "object", "additionalProperties": false,
+          "required": ["record_type", "id", "source_prompt", "world_seed", "region_bounds", "style_profile", "target_profile_ids", "fantasy_exceptions"],
+          "properties": {
+            "record_type": {"const": "world_spec"}, "id": {"$ref": "#/$defs/id"},
+            "source_prompt": {"type": "string", "minLength": 1},
+            "world_seed": {"type": "string", "pattern": "^0x[0-9a-f]{16}$"},
+            "region_bounds": {"$ref": "#/$defs/bounds"},
+            "style_profile": {"type": "string", "minLength": 1},
+            "target_profile_ids": {"type": "array", "items": {"$ref": "#/$defs/id"}, "uniqueItems": true},
+            "fantasy_exceptions": {"type": "array", "items": {"type": "string"}},
+            "extensions": {"type": "object", "additionalProperties": true}
+          }
+        }
+      ]
+    },
+    "entity": {
+      "allOf": [
+        {"$ref": "#/$defs/common"},
+        {"type": "object", "additionalProperties": false,
+          "required": ["record_type", "id", "kind", "parent_id", "chunk_ids", "transform", "bounds", "generation_state", "semantic_completeness", "attributes", "constraint_ids", "recipe_id", "locks", "provenance"],
+          "properties": {
+            "record_type": {"const": "entity"}, "id": {"$ref": "#/$defs/id"},
+            "kind": {"type": "string", "minLength": 1},
+            "parent_id": {"anyOf": [{"$ref": "#/$defs/id"}, {"type": "null"}]},
+            "chunk_ids": {"type": "array", "items": {"$ref": "#/$defs/id"}, "uniqueItems": true, "minItems": 1},
+            "transform": {"$ref": "#/$defs/transform"}, "bounds": {"$ref": "#/$defs/bounds"},
+            "generation_state": {"enum": ["planned", "solved", "materialized", "failed"]},
+            "semantic_completeness": {"enum": ["shell_only", "spatial", "component", "detailed", "deferred"]},
+            "attributes": {"type": "object", "additionalProperties": true},
+            "geometry": {"type": ["object", "null"], "additionalProperties": true},
+            "constraint_ids": {"type": "array", "items": {"$ref": "#/$defs/id"}, "uniqueItems": true},
+            "recipe_id": {"anyOf": [{"$ref": "#/$defs/id"}, {"type": "null"}]},
+            "locks": {"type": "array", "items": {"$ref": "#/$defs/lock"}},
+            "provenance": {"type": "object", "additionalProperties": false, "required": ["source", "created_by"], "properties": {"source": {"enum": ["user", "generator", "import"]}, "created_by": {"type": "string", "minLength": 1}}},
+            "extensions": {"type": "object", "additionalProperties": true}
+          }
+        }
+      ]
+    },
+    "lock": {
+      "type": "object", "additionalProperties": false, "required": ["json_pointer", "mode", "reason"],
+      "properties": {"json_pointer": {"type": "string", "pattern": "^/"}, "mode": {"enum": ["value", "subtree"]}, "reason": {"type": "string", "minLength": 1}}
+    },
+    "relation": {
+      "allOf": [{"$ref": "#/$defs/common"}, {"type": "object", "additionalProperties": false,
+        "required": ["record_type", "id", "relation_type", "source_id", "target_ids", "attributes"],
+        "properties": {"record_type": {"const": "relation"}, "id": {"$ref": "#/$defs/id"}, "relation_type": {"type": "string", "minLength": 1}, "source_id": {"$ref": "#/$defs/id"}, "target_ids": {"type": "array", "items": {"$ref": "#/$defs/id"}, "minItems": 1, "uniqueItems": true}, "attributes": {"type": "object", "additionalProperties": true}, "extensions": {"type": "object", "additionalProperties": true}}
+      }]
+    },
+    "constraint": {
+      "allOf": [{"$ref": "#/$defs/common"}, {"type": "object", "additionalProperties": false,
+        "required": ["record_type", "id", "rule_id", "rule_version", "scope_entity_ids", "severity", "priority", "parameters", "tolerance", "source", "validation"],
+        "properties": {
+          "record_type": {"const": "constraint"}, "id": {"$ref": "#/$defs/id"}, "rule_id": {"type": "string", "minLength": 1}, "rule_version": {"type": "string", "minLength": 1},
+          "scope_entity_ids": {"type": "array", "items": {"$ref": "#/$defs/id"}, "minItems": 1, "uniqueItems": true},
+          "severity": {"enum": ["hard", "soft"]}, "priority": {"type": "integer", "minimum": 0, "maximum": 100},
+          "parameters": {"type": "object", "additionalProperties": true},
+          "tolerance": {"type": "object", "additionalProperties": false, "required": ["value", "unit"], "properties": {"value": {"type": "number", "minimum": 0}, "unit": {"enum": ["m", "rad", "unitless"]}}},
+          "source": {"enum": ["user", "system", "target_profile", "generator"]},
+          "validation": {"type": "object", "additionalProperties": false, "required": ["state", "checked_revision_id", "message"], "properties": {"state": {"enum": ["pass", "fail", "unknown"]}, "checked_revision_id": {"$ref": "#/$defs/id"}, "message": {"type": "string"}}},
+          "extensions": {"type": "object", "additionalProperties": true}
+        }
+      }]
+    },
+    "recipe": {
+      "allOf": [{"$ref": "#/$defs/common"}, {"type": "object", "additionalProperties": false,
+        "required": ["record_type", "id", "generator_id", "generator_version", "input_hash", "seed", "dependency_recipe_ids", "budget", "outcome"],
+        "properties": {
+          "record_type": {"const": "recipe"}, "id": {"$ref": "#/$defs/id"}, "generator_id": {"type": "string", "minLength": 1}, "generator_version": {"type": "string", "minLength": 1}, "input_hash": {"$ref": "#/$defs/hash"}, "seed": {"type": "string", "pattern": "^0x[0-9a-f]{16}$"},
+          "dependency_recipe_ids": {"type": "array", "items": {"$ref": "#/$defs/id"}, "uniqueItems": true},
+          "budget": {"type": "object", "additionalProperties": false, "required": ["wall_time_ms", "max_candidates", "max_model_calls"], "properties": {"wall_time_ms": {"type": "integer", "minimum": 1}, "max_candidates": {"type": "integer", "minimum": 1}, "max_model_calls": {"type": "integer", "minimum": 0}}},
+          "outcome": {"$ref": "#/$defs/outcome"}, "accepted_model_response_hash": {"anyOf": [{"$ref": "#/$defs/hash"}, {"type": "null"}]},
+          "extensions": {"type": "object", "additionalProperties": true}
+        }
+      }]
+    },
+    "outcome": {
+      "type": "object", "additionalProperties": false,
+      "required": ["termination_reason", "feasibility", "proof_ref"],
+      "properties": {
+        "termination_reason": {"enum": ["completed", "search_exhausted", "timeout", "budget_exhausted", "cancelled", "error"]},
+        "feasibility": {"enum": ["feasible", "infeasible", "unknown"]},
+        "proof_ref": {"type": ["string", "null"]}
+      }
+    },
+    "asset": {
+      "allOf": [{"$ref": "#/$defs/common"}, {"type": "object", "additionalProperties": false,
+        "required": ["record_type", "id", "content_hash", "uri", "media_type", "length_unit", "axis", "license", "bounds"],
+        "properties": {"record_type": {"const": "asset"}, "id": {"$ref": "#/$defs/id"}, "content_hash": {"$ref": "#/$defs/hash"}, "uri": {"type": "string", "minLength": 1}, "media_type": {"type": "string", "minLength": 1}, "length_unit": {"const": "m"}, "axis": {"type": "string", "minLength": 1}, "license": {"type": "object", "additionalProperties": false, "required": ["spdx", "source"], "properties": {"spdx": {"type": "string", "minLength": 1}, "source": {"type": "string", "minLength": 1}}}, "bounds": {"$ref": "#/$defs/bounds"}, "extensions": {"type": "object", "additionalProperties": true}}
+      }]
+    },
+    "revision": {
+      "allOf": [{"$ref": "#/$defs/common"}, {"type": "object", "additionalProperties": false,
+        "required": ["record_type", "id", "world_id", "parent_revision_ids", "created_at", "author", "change_set_hash", "validation_summary", "committed"],
+        "properties": {"record_type": {"const": "revision"}, "id": {"$ref": "#/$defs/id"}, "world_id": {"$ref": "#/$defs/id"}, "parent_revision_ids": {"type": "array", "items": {"$ref": "#/$defs/id"}, "uniqueItems": true}, "created_at": {"type": "string", "format": "date-time"}, "author": {"type": "string", "minLength": 1}, "change_set_hash": {"$ref": "#/$defs/hash"}, "validation_summary": {"type": "object", "additionalProperties": false, "required": ["hard_failures", "unknown_checks"], "properties": {"hard_failures": {"type": "integer", "minimum": 0}, "unknown_checks": {"type": "integer", "minimum": 0}}}, "committed": {"type": "boolean"}, "extensions": {"type": "object", "additionalProperties": true}}
+      }]
+    },
+    "target_profile": {
+      "allOf": [{"$ref": "#/$defs/common"}, {"type": "object", "additionalProperties": false,
+        "required": ["record_type", "id", "target", "target_version", "adapter_version", "configuration", "declared_capabilities"],
+        "properties": {"record_type": {"const": "target_profile"}, "id": {"$ref": "#/$defs/id"}, "target": {"enum": ["unity", "minecraft_java", "ifc"]}, "target_version": {"type": "string", "minLength": 1}, "adapter_version": {"type": "string", "minLength": 1}, "configuration": {"type": "object", "additionalProperties": true}, "declared_capabilities": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}, "extensions": {"type": "object", "additionalProperties": true}}
+      }]
+    },
+    "export_report": {
+      "allOf": [{"$ref": "#/$defs/common"}, {"type": "object", "additionalProperties": false,
+        "required": ["record_type", "id", "revision_id", "target_profile_id", "status", "coordinate_transform_row_major", "items", "summary"],
+        "properties": {"record_type": {"const": "export_report"}, "id": {"$ref": "#/$defs/id"}, "revision_id": {"$ref": "#/$defs/id"}, "target_profile_id": {"$ref": "#/$defs/id"}, "status": {"enum": ["planned", "succeeded", "succeeded_with_warnings", "failed"]}, "coordinate_transform_row_major": {"type": "array", "items": {"type": "number"}, "minItems": 16, "maxItems": 16}, "items": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["source_id", "classification", "message"], "properties": {"source_id": {"$ref": "#/$defs/id"}, "target_id": {"type": ["string", "null"]}, "classification": {"enum": ["preserved", "approximated", "omitted", "unsupported", "failed"]}, "message": {"type": "string"}}}}, "summary": {"type": "object", "additionalProperties": false, "required": ["preserved", "approximated", "omitted", "unsupported", "failed"], "properties": {"preserved": {"type": "integer", "minimum": 0}, "approximated": {"type": "integer", "minimum": 0}, "omitted": {"type": "integer", "minimum": 0}, "unsupported": {"type": "integer", "minimum": 0}, "failed": {"type": "integer", "minimum": 0}}}, "extensions": {"type": "object", "additionalProperties": true}}
+      }]
+    },
+    "record": {
+      "oneOf": [
+        {"$ref": "#/$defs/world_spec"}, {"$ref": "#/$defs/entity"},
+        {"$ref": "#/$defs/relation"}, {"$ref": "#/$defs/constraint"},
+        {"$ref": "#/$defs/recipe"}, {"$ref": "#/$defs/asset"},
+        {"$ref": "#/$defs/revision"}, {"$ref": "#/$defs/target_profile"},
+        {"$ref": "#/$defs/export_report"}
+      ]
+    }
+  }
+}

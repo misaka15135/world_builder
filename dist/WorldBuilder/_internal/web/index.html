@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#233e36"><title>World Builder · 世界实验台</title>
+  <link rel="icon" href="/mark.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="/"><img src="/mark.svg" alt="" width="35" height="35"><span>WORLD<br><b>BUILDER</b></span></a>
+    <div class="side-caption">创作空间 / WORKSPACE</div>
+    <nav aria-label="主导航">
+      <button class="nav-item active" data-page="studio"><span>◈</span> 世界实验台 <small>01</small></button>
+      <button class="nav-item" data-page="history"><span>◷</span> 运行档案 <small id="history-count">0</small></button>
+      <button class="nav-item" data-page="agents"><span>⌘</span> 智能体与契约 <small>06</small></button>
+    </nav>
+    <div class="side-bottom"><div class="local-tag"><i></i> 本地工作空间</div><p>API AGENTS / v0.1<br>从一句话，到一个世界。</p><button id="settings-side" class="side-settings">⚙ 连接与运行设置</button></div>
+  </aside>
+  <main class="main">
+    <header class="topbar"><div class="breadcrumbs">WORLD BUILDER <span>/</span> <b id="page-name">世界实验台</b></div><div class="top-actions"><span id="connection" class="connection">正在连接</span><button id="settings-top" class="button quiet">连接设置 <span>↗</span></button></div></header>
+    <div id="notice" class="notice" role="status" hidden></div>
+    <section id="page-studio" class="page">
+      <div class="page-heading"><div><p class="eyebrow">BUILD A WORLD, ONE IDEA AT A TIME</p><h1>让想象，成为空间<span>。</span></h1><p class="subtitle">描述一个场景，观察六个智能体如何共同构建它。</p></div><span class="version-tag">实验工作台 <i>ALPHA</i></span></div>
+      <div class="studio-grid">
+        <section class="panel brief-panel">
+          <div class="section-title"><h2><span class="section-number">01</span> 场景简报</h2><span class="muted small">BRIEF</span></div>
+          <form id="composer">
+            <div class="mode-switch" role="group" aria-label="运行模式"><button type="button" data-mode="fixture" class="selected">离线样例</button><button type="button" data-mode="api">我的 API</button></div>
+            <div id="mode-note" class="mode-note"></div>
+            <label class="field-label" for="prompt">你想构建怎样的世界？</label>
+            <textarea id="prompt" rows="6" maxlength="20000" required></textarea>
+            <div class="field-pair"><label>区域边长 <span>m</span><input id="region" type="number" min="32" max="512" step="16" value="32" required></label><label>随机种子<input id="seed" type="number" min="0" max="9007199254740991" step="1" value="1" required></label></div>
+            <fieldset class="export-options"><legend>生成产物</legend><span class="fixed-output">✓ WIR 世界包</span><label><input id="export-unity" type="checkbox" checked> Unity GLB</label><label><input id="export-minecraft" type="checkbox" checked> Minecraft</label></fieldset>
+            <button id="run" class="button primary run-button" type="submit">开始构建 <span>↗</span></button>
+            <div class="composer-footer"><span id="model-label">无需密钥 · 固定响应</span><span id="budget-label">最多 128 次调用</span></div>
+          </form>
+        </section>
+        <section class="panel scene-panel">
+          <div class="section-title"><h2><span class="section-number">02</span> 空间预览</h2><span id="scene-badge" class="pill">等待生成</span></div>
+          <div class="viewport"><canvas id="scene" aria-label="可旋转的源几何预览"></canvas><div id="scene-empty" class="scene-empty"><div class="empty-cube">◇</div><h3>你的世界将在这里展开</h3><p>先运行离线样例，体验完整构建流程。</p></div><div class="viewport-top"><span>WIR / 等轴投影</span><div><button id="reset-view" class="view-button" title="重置视角">重置视角</button><button id="top-view" class="view-button" title="切换俯视">俯视</button></div></div><div class="viewport-bottom"><span id="scene-stats">源几何 · 米制 · Z 向上</span><span>拖动旋转 · 滚轮缩放 · 点击查看</span></div></div>
+          <div class="scene-controls"><label><input id="show-terrain" type="checkbox" checked> 地形</label><label class="cut-control">剖切高度 <input id="cut-height" type="range" min="0" max="80" value="80"><output id="cut-value">全部</output></label></div>
+          <div id="selection" class="selection">选择构件可查看类型、材质、尺寸与源 ID。</div>
+        </section>
+      </div>
+      <section class="panel pipeline-panel"><div class="section-title"><h2><span class="section-number">03</span> 智能体流水线</h2><div class="inline-actions"><span id="job-status" class="pill">尚未运行</span><button id="cancel-run" class="button danger small-button" hidden>取消运行</button><button id="replay-run" class="button quiet small-button" hidden>回放此运行 ↻</button></div></div><div id="stages" class="stages"></div><div class="pipeline-foot"><span id="run-meta">A → B / C 并行 → D → 多个 E → F → 本地编译</span><span id="usage">调用记录会实时显示</span></div><div id="job-error" class="error-box" hidden></div></section>
+      <div class="results-grid"><section class="panel"><div class="section-title"><h2><span class="section-number">04</span> 运行记录</h2><span class="muted small">LIVE JOURNAL</span></div><div id="event-list" class="event-list"><p class="empty-note">开始构建后，在这里查看每个阶段的接受、拒绝与返工。</p></div></section><section class="panel"><div class="section-title"><h2><span class="section-number">05</span> 交付与诊断</h2><span id="resource-count" class="muted small">0 个文件</span></div><div id="artifacts" class="artifact-list"><p class="empty-note">完成后可下载世界包、目标文件与运行记录。</p></div><div class="document-tools"><label for="document-select">检查 JSON 契约与响应</label><div><select id="document-select"><option value="">选择运行文件</option></select><button id="inspect-document" class="button quiet small-button">查看</button></div></div></section></div>
+      <footer class="page-footer"><span>模型负责设计，本地规则负责验证。</span><span>预览是源几何示意；目标引擎效果与实际通行需单独验证。</span></footer>
+    </section>
+    <section id="page-history" class="page" hidden><div class="page-heading"><div><p class="eyebrow">EVERY ITERATION MATTERS</p><h1>运行档案<span>。</span></h1><p class="subtitle">保存每一次尝试，回到任何一个可追溯的结果。</p></div><button id="refresh-history" class="button quiet">刷新档案 ↻</button></div><div id="history-list" class="history-list"></div></section>
+    <section id="page-agents" class="page" hidden><div class="page-heading"><div><p class="eyebrow">SIX ROLES. ONE SHARED CONTRACT.</p><h1>各司其职，共建世界<span>。</span></h1><p class="subtitle">每个阶段独立加载 skill，通过版本化 JSON 交换计划。本地校验始终生效。</p></div></div><div id="agent-cards" class="agent-cards"></div><div class="architecture-note"><h3>为后续更新保留清晰边界</h3><p>网页模块 → HTTP API v1 → 任务服务 → 流水线适配层 → A—F 监督器</p><p>API 配置、任务状态、空间预览与产物检查可独立替换。当前预览只读；完整语义编辑另行实现。</p></div></section>
+  </main>
+  <dialog id="settings-dialog" class="settings-dialog"><form id="settings-form"><div class="dialog-heading"><div><p class="eyebrow">CONNECTION & LIMITS</p><h2>连接与运行设置</h2></div><button type="button" class="close-button" data-close="settings-dialog" aria-label="关闭设置">×</button></div><p class="dialog-description">支持兼容 Chat Completions 的 API 或自建 JSON 网关。</p><label>API 完整地址<input id="setting-endpoint" type="url" placeholder="https://yourapi/v1/chat/completions" required></label><div class="field-pair"><label>模型 ID<input id="setting-model" required placeholder="yourapi"></label><label>协议<select id="setting-protocol"><option value="chat_completions">Chat Completions</option><option value="json_contract">JSON Contract</option></select></label></div><label>API 密钥 <span class="muted">仅下次运行使用；留空则读取服务端环境变量</span><input id="setting-key" type="password" autocomplete="off" placeholder="yourapi"></label><div id="credential-note" class="small muted"></div><details><summary>各阶段模型与预算</summary><p class="small muted">阶段模型填写 yourapi 即继承主模型。高级配置保存到此浏览器，不含密钥。</p><textarea id="advanced-config" rows="12" spellcheck="false" aria-label="高级 JSON 配置"></textarea></details><p id="settings-error" class="error-text" role="alert"></p><div class="dialog-actions"><button id="reset-settings" type="button" class="button quiet">恢复服务端默认值</button><button type="submit" class="button primary">保存设置</button></div></form></dialog>
+  <dialog id="document-dialog" class="document-dialog"><div class="dialog-heading"><h2 id="document-title">运行文件</h2><button class="close-button" data-close="document-dialog" aria-label="关闭文档">×</button></div><pre id="document-content"></pre></dialog>
+</body>
+</html>

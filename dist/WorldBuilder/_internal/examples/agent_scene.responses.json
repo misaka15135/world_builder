@@ -1,0 +1,870 @@
+{
+  "fixture_version": "0.1.0",
+  "description": "Synthetic hand-authored responses; not model output.",
+  "prompt": "一条街旁的一栋两层木构商铺和一座公共大厅，都能进入，商铺上层可达。",
+  "region_m": 32,
+  "responses": {
+    "A:scene": {
+      "title": "木构商铺与公共大厅",
+      "region_m": 32,
+      "style": "木框架、砖基座、宽窗与不同高度屋顶，沿同一条街布置。",
+      "requirements": [
+        {
+          "id": "shops",
+          "description": "一栋两层商铺，底层营业、上层储藏，层层可达。",
+          "programme": "shop",
+          "min_count": 1,
+          "max_count": 1,
+          "interior_required": true
+        },
+        {
+          "id": "halls",
+          "description": "一座单层公共大厅，有独立入口和可进入的大厅。",
+          "programme": "hall",
+          "min_count": 1,
+          "max_count": 1,
+          "interior_required": true
+        }
+      ],
+      "acceptance_criteria": [
+        "两个入口连接公共街道",
+        "商铺上层有连续通路"
+      ]
+    },
+    "B:scene": {
+      "cell_m": 8,
+      "heights": [
+        [
+          2,
+          2,
+          2,
+          2
+        ],
+        [
+          2,
+          2,
+          2,
+          2
+        ],
+        [
+          2,
+          2,
+          2,
+          2
+        ],
+        [
+          2,
+          2,
+          2,
+          2
+        ]
+      ],
+      "ground_material": "grass",
+      "water": [],
+      "rationale": "小尺度街区采用平整台地，留出街道和两个不同功能地块。"
+    },
+    "C:scene": {
+      "types": [
+        {
+          "id": "shop",
+          "requirement_id": "shops",
+          "programme": "shop",
+          "count": 1,
+          "size_m": [
+            8,
+            8
+          ],
+          "max_height_m": 10,
+          "design_brief": "两层木构店住体量，独立储藏层、宽玻璃窗和可达楼梯。"
+        },
+        {
+          "id": "hall",
+          "requirement_id": "halls",
+          "programme": "hall",
+          "count": 1,
+          "size_m": [
+            8,
+            8
+          ],
+          "max_height_m": 8,
+          "design_brief": "单层通高公共大厅，直接临街入口。"
+        }
+      ]
+    },
+    "D:scene": {
+      "districts": [
+        {
+          "id": "centre",
+          "rect": [
+            0,
+            0,
+            32,
+            32
+          ],
+          "purpose": "公共街道连接商铺与大厅"
+        }
+      ],
+      "sites": [
+        {
+          "id": "hall_01",
+          "type_id": "hall",
+          "district_id": "centre",
+          "bounds": {
+            "min": [
+              4,
+              4,
+              2
+            ],
+            "max": [
+              12,
+              12,
+              10
+            ]
+          },
+          "foundation": false
+        },
+        {
+          "id": "shop_01",
+          "type_id": "shop",
+          "district_id": "centre",
+          "bounds": {
+            "min": [
+              16,
+              4,
+              2
+            ],
+            "max": [
+              24,
+              12,
+              12
+            ]
+          },
+          "foundation": false
+        }
+      ],
+      "roads": [
+        {
+          "id": "main",
+          "bounds": {
+            "min": [
+              0,
+              2,
+              2
+            ],
+            "max": [
+              32,
+              4,
+              3
+            ]
+          },
+          "kind": "road",
+          "material": "stone"
+        }
+      ]
+    },
+    "E:hall_01": {
+      "site_id": "hall_01",
+      "concept": "临街高门洞、通高公共厅与横向玻璃采光面。",
+      "parts": [
+        {
+          "id": "floor",
+          "role": "floor",
+          "bounds": {
+            "min": [
+              0,
+              0,
+              0
+            ],
+            "max": [
+              8,
+              8,
+              1
+            ]
+          },
+          "material": "wood"
+        },
+        {
+          "id": "south_left",
+          "role": "wall",
+          "bounds": {
+            "min": [
+              0,
+              0,
+              1
+            ],
+            "max": [
+              3,
+              1,
+              5
+            ]
+          },
+          "material": "brick"
+        },
+        {
+          "id": "south_right",
+          "role": "wall",
+          "bounds": {
+            "min": [
+              5,
+              0,
+              1
+            ],
+            "max": [
+              8,
+              1,
+              5
+            ]
+          },
+          "material": "brick"
+        },
+        {
+          "id": "entry_lintel",
+          "role": "wall",
+          "bounds": {
+            "min": [
+              3,
+              0,
+              4
+            ],
+            "max": [
+              5,
+              1,
+              5
+            ]
+          },
+          "material": "wood"
+        },
+        {
+          "id": "north",
+          "role": "wall",
+          "bounds": {
+            "min": [
+              0,
+              7,
+              1
+            ],
+            "max": [
+              8,
+              8,
+              5
+            ]
+          },
+          "material": "brick"
+        },
+        {
+          "id": "west",
+          "role": "wall",
+          "bounds": {
+            "min": [
+              0,
+              1,
+              1
+            ],
+            "max": [
+              1,
+              7,
+              5
+            ]
+          },
+          "material": "wood"
+        },
+        {
+          "id": "east_lower",
+          "role": "wall",
+          "bounds": {
+            "min": [
+              7,
+              1,
+              1
+            ],
+            "max": [
+              8,
+              7,
+              2
+            ]
+          },
+          "material": "wood"
+        },
+        {
+          "id": "east_glass",
+          "role": "window",
+          "bounds": {
+            "min": [
+              7,
+              1,
+              2
+            ],
+            "max": [
+              8,
+              7,
+              4
+            ]
+          },
+          "material": "glass"
+        },
+        {
+          "id": "east_upper",
+          "role": "wall",
+          "bounds": {
+            "min": [
+              7,
+              1,
+              4
+            ],
+            "max": [
+              8,
+              7,
+              5
+            ]
+          },
+          "material": "wood"
+        },
+        {
+          "id": "roof",
+          "role": "roof",
+          "bounds": {
+            "min": [
+              0,
+              0,
+              5
+            ],
+            "max": [
+              8,
+              8,
+              6
+            ]
+          },
+          "material": "stone"
+        }
+      ],
+      "spaces": [
+        {
+          "id": "main_hall",
+          "programme": "public_hall",
+          "bounds": {
+            "min": [
+              1,
+              1,
+              1
+            ],
+            "max": [
+              7,
+              7,
+              5
+            ]
+          },
+          "access_cell": [
+            3,
+            3,
+            1
+          ]
+        }
+      ],
+      "entry_cell": [
+        3,
+        0,
+        1
+      ],
+      "routes": [
+        {
+          "space_id": "main_hall",
+          "cells": [
+            [
+              3,
+              0,
+              1
+            ],
+            [
+              3,
+              1,
+              1
+            ],
+            [
+              3,
+              2,
+              1
+            ],
+            [
+              3,
+              3,
+              1
+            ]
+          ]
+        }
+      ]
+    },
+    "E:shop_01": {
+      "site_id": "shop_01",
+      "concept": "下层商铺、上层储藏，侧向直跑梯保留贯通净空。",
+      "parts": [
+        {
+          "id": "floor",
+          "role": "floor",
+          "bounds": {
+            "min": [
+              0,
+              0,
+              0
+            ],
+            "max": [
+              8,
+              8,
+              1
+            ]
+          },
+          "material": "wood"
+        },
+        {
+          "id": "south_left",
+          "role": "wall",
+          "bounds": {
+            "min": [
+              0,
+              0,
+              1
+            ],
+            "max": [
+              3,
+              1,
+              8
+            ]
+          },
+          "material": "brick"
+        },
+        {
+          "id": "south_right",
+          "role": "wall",
+          "bounds": {
+            "min": [
+              5,
+              0,
+              1
+            ],
+            "max": [
+              8,
+              1,
+              8
+            ]
+          },
+          "material": "brick"
+        },
+        {
+          "id": "entry_lintel",
+          "role": "wall",
+          "bounds": {
+            "min": [
+              3,
+              0,
+              4
+            ],
+            "max": [
+              5,
+              1,
+              8
+            ]
+          },
+          "material": "wood"
+        },
+        {
+          "id": "north",
+          "role": "wall",
+          "bounds": {
+            "min": [
+              0,
+              7,
+              1
+            ],
+            "max": [
+              8,
+              8,
+              8
+            ]
+          },
+          "material": "brick"
+        },
+        {
+          "id": "west",
+          "role": "wall",
+          "bounds": {
+            "min": [
+              0,
+              1,
+              1
+            ],
+            "max": [
+              1,
+              7,
+              8
+            ]
+          },
+          "material": "wood"
+        },
+        {
+          "id": "east_lower",
+          "role": "wall",
+          "bounds": {
+            "min": [
+              7,
+              1,
+              1
+            ],
+            "max": [
+              8,
+              7,
+              2
+            ]
+          },
+          "material": "wood"
+        },
+        {
+          "id": "east_glass",
+          "role": "window",
+          "bounds": {
+            "min": [
+              7,
+              1,
+              2
+            ],
+            "max": [
+              8,
+              7,
+              4
+            ]
+          },
+          "material": "glass"
+        },
+        {
+          "id": "east_upper",
+          "role": "wall",
+          "bounds": {
+            "min": [
+              7,
+              1,
+              4
+            ],
+            "max": [
+              8,
+              7,
+              8
+            ]
+          },
+          "material": "wood"
+        },
+        {
+          "id": "roof",
+          "role": "roof",
+          "bounds": {
+            "min": [
+              0,
+              0,
+              8
+            ],
+            "max": [
+              8,
+              8,
+              9
+            ]
+          },
+          "material": "stone"
+        },
+        {
+          "id": "upper_west",
+          "role": "floor",
+          "bounds": {
+            "min": [
+              1,
+              1,
+              4
+            ],
+            "max": [
+              5,
+              7,
+              5
+            ]
+          },
+          "material": "wood"
+        },
+        {
+          "id": "upper_east",
+          "role": "floor",
+          "bounds": {
+            "min": [
+              6,
+              1,
+              4
+            ],
+            "max": [
+              7,
+              7,
+              5
+            ]
+          },
+          "material": "wood"
+        },
+        {
+          "id": "upper_landing",
+          "role": "floor",
+          "bounds": {
+            "min": [
+              5,
+              6,
+              4
+            ],
+            "max": [
+              6,
+              7,
+              5
+            ]
+          },
+          "material": "wood"
+        },
+        {
+          "id": "step_1",
+          "role": "stair",
+          "bounds": {
+            "min": [
+              5,
+              2,
+              1
+            ],
+            "max": [
+              6,
+              3,
+              2
+            ]
+          },
+          "material": "wood"
+        },
+        {
+          "id": "step_2",
+          "role": "stair",
+          "bounds": {
+            "min": [
+              5,
+              3,
+              1
+            ],
+            "max": [
+              6,
+              4,
+              3
+            ]
+          },
+          "material": "wood"
+        },
+        {
+          "id": "step_3",
+          "role": "stair",
+          "bounds": {
+            "min": [
+              5,
+              4,
+              1
+            ],
+            "max": [
+              6,
+              5,
+              4
+            ]
+          },
+          "material": "wood"
+        },
+        {
+          "id": "step_4",
+          "role": "stair",
+          "bounds": {
+            "min": [
+              5,
+              5,
+              1
+            ],
+            "max": [
+              6,
+              6,
+              5
+            ]
+          },
+          "material": "wood"
+        },
+        {
+          "id": "counter",
+          "role": "furniture",
+          "bounds": {
+            "min": [
+              1,
+              6,
+              1
+            ],
+            "max": [
+              3,
+              7,
+              2
+            ]
+          },
+          "material": "white"
+        }
+      ],
+      "spaces": [
+        {
+          "id": "sales",
+          "programme": "sales",
+          "bounds": {
+            "min": [
+              1,
+              1,
+              1
+            ],
+            "max": [
+              4,
+              6,
+              4
+            ]
+          },
+          "access_cell": [
+            3,
+            3,
+            1
+          ]
+        },
+        {
+          "id": "store",
+          "programme": "storage",
+          "bounds": {
+            "min": [
+              1,
+              1,
+              5
+            ],
+            "max": [
+              5,
+              7,
+              8
+            ]
+          },
+          "access_cell": [
+            3,
+            6,
+            5
+          ]
+        }
+      ],
+      "entry_cell": [
+        3,
+        0,
+        1
+      ],
+      "routes": [
+        {
+          "space_id": "sales",
+          "cells": [
+            [
+              3,
+              0,
+              1
+            ],
+            [
+              3,
+              1,
+              1
+            ],
+            [
+              3,
+              2,
+              1
+            ],
+            [
+              3,
+              3,
+              1
+            ]
+          ]
+        },
+        {
+          "space_id": "store",
+          "cells": [
+            [
+              3,
+              0,
+              1
+            ],
+            [
+              3,
+              1,
+              1
+            ],
+            [
+              4,
+              1,
+              1
+            ],
+            [
+              5,
+              1,
+              1
+            ],
+            [
+              5,
+              2,
+              2
+            ],
+            [
+              5,
+              3,
+              3
+            ],
+            [
+              5,
+              4,
+              4
+            ],
+            [
+              5,
+              5,
+              5
+            ],
+            [
+              5,
+              6,
+              5
+            ],
+            [
+              4,
+              6,
+              5
+            ],
+            [
+              3,
+              6,
+              5
+            ]
+          ]
+        }
+      ]
+    },
+    "F:scene": {
+      "verdict": "accept",
+      "accepted_sites": [
+        "hall_01",
+        "shop_01"
+      ],
+      "requirement_review": [
+        {
+          "requirement_id": "shops",
+          "satisfied": true,
+          "evidence": "shop_01 的 sales 与 store 空间均有入口出发的路径，upper_west 位于局部 z=5。"
+        },
+        {
+          "requirement_id": "halls",
+          "satisfied": true,
+          "evidence": "hall_01 的 main_hall 直通 main 街道。"
+        }
+      ],
+      "fixes": [],
+      "limitations": [
+        "静态整米盒体",
+        "楼梯按一格跳跃通行验证，未做目标平台实走",
+        "样例为人工编写响应，不能作为真实模型生成质量证据"
+      ]
+    }
+  }
+}

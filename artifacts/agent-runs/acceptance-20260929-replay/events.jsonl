@@ -1,0 +1,16 @@
+{"event":"started","prompt":"一条街旁的一栋两层木构商铺和一座公共大厅，都能进入，商铺上层可达。","provider_mode":"ReplayProvider","region_m":32,"seed":1}
+{"attempt":1,"event":"request","request_id":"sha256:b4f29e61c8894312fee280c04a4ae650fe6d1aca1a1d85958e37d6c8909f11b4","scope_id":"scene","stage":"A"}
+{"event":"accepted","payload_sha256":"sha256:77aaf20d95107dcd89a9425015927d98c96d2139a03f5d295515dda35bbcbc07","request_id":"sha256:b4f29e61c8894312fee280c04a4ae650fe6d1aca1a1d85958e37d6c8909f11b4","scope_id":"scene","stage":"A"}
+{"attempt":1,"event":"request","request_id":"sha256:6c5fd95b54ba196320da29b3fc8e759cfa42488ddb9d68b9bbd98dc9c8e97f15","scope_id":"scene","stage":"B"}
+{"attempt":1,"event":"request","request_id":"sha256:87e32eaafbd8162c4726757e435e633434601e2211990bb17c34d3670159c7f1","scope_id":"scene","stage":"C"}
+{"event":"accepted","payload_sha256":"sha256:7f8d5622cd2d5bbb6c173ea145040585bc530e3cc354370ec17a1d025a84adec","request_id":"sha256:6c5fd95b54ba196320da29b3fc8e759cfa42488ddb9d68b9bbd98dc9c8e97f15","scope_id":"scene","stage":"B"}
+{"event":"accepted","payload_sha256":"sha256:c8fcf9f8fa80fe1b5c5d0dcef32fc1ca54752bf42315c978741189d7b70e163f","request_id":"sha256:87e32eaafbd8162c4726757e435e633434601e2211990bb17c34d3670159c7f1","scope_id":"scene","stage":"C"}
+{"attempt":1,"event":"request","request_id":"sha256:fd0b5c0833b578c6a88e199e335c44f3a329002a67ff737b3348c66e83b2a616","scope_id":"scene","stage":"D"}
+{"event":"accepted","payload_sha256":"sha256:45ac1c7b33265d38e03895d2424833ac7032cd62c98beaa3e67c0589f2d7e613","request_id":"sha256:fd0b5c0833b578c6a88e199e335c44f3a329002a67ff737b3348c66e83b2a616","scope_id":"scene","stage":"D"}
+{"attempt":1,"event":"request","request_id":"sha256:e6cb4c995e5dfff6e916fcd26880b1f7efc0638e3f88045362fd2cfece6dc924","scope_id":"hall_01","stage":"E"}
+{"attempt":1,"event":"request","request_id":"sha256:34de440ced2c5e612cbdf47ded2b08d04a6a0aa602e454e50276e5df6b30063f","scope_id":"shop_01","stage":"E"}
+{"event":"accepted","payload_sha256":"sha256:70c0a982d3f1da3feaef02582ca5158cbbadb3cdc0eb19c034234ace1375b368","request_id":"sha256:e6cb4c995e5dfff6e916fcd26880b1f7efc0638e3f88045362fd2cfece6dc924","scope_id":"hall_01","stage":"E"}
+{"event":"accepted","payload_sha256":"sha256:6baecb4ed060e645695ea22bb577c9f30a9bc3ec6b839554b1a70cdbf200d083","request_id":"sha256:34de440ced2c5e612cbdf47ded2b08d04a6a0aa602e454e50276e5df6b30063f","scope_id":"shop_01","stage":"E"}
+{"attempt":1,"event":"request","request_id":"sha256:4cd363ca21db4ce1dfa9b84b881df1835b2741cbfb71a1ded8c297a8597c6d00","scope_id":"scene","stage":"F"}
+{"event":"accepted","payload_sha256":"sha256:2028d6d840549ba7201f1616eaadd4f4c3a60a6654f6b77762e8f88ea6b8be38","request_id":"sha256:4cd363ca21db4ce1dfa9b84b881df1835b2741cbfb71a1ded8c297a8597c6d00","scope_id":"scene","stage":"F"}
+{"event":"planning_completed","plans_sha256":"sha256:daa8078382e1c28827535b8d577c6686726584f9ae658ea47c891643fa0620d4"}

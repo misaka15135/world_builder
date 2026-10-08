@@ -1,0 +1,1 @@
+{"adapter_version":"api-agents.0.1.0","configuration":{"geometry":"integer_cuboids_v1","units":"m"},"declared_capabilities":["explicit_cuboids","source_ids","static_scene"],"extensions":{},"id":"profile_agents_unity","record_type":"target_profile","target":"unity","target_version":"6000.3.24f1"}
