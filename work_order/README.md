@@ -1,5 +1,74 @@
 # 工单索引与协作流程
 
+更新日期：2026-10-10。当前 main 为 Agent 场景搭建产品主线；codex/local-validation 为旧规则与本地验证对照。远端尚未同步，见 [027](027_branch_role_alignment.md)。
+
+每次工作先阅读本文件、[总规划](000_project_master_plan.md) 和当前工单，按 [AGENTS](../AGENTS.md) 登记范围并记录证据。产品边界见 [当前项目基线](../docs/00_project_baseline.md)，其他资料用途见 [文档索引](../docs/README.md)。
+
+## 当前路线与状态
+
+023—026 完成的是固定 A—F 原型及只读应用，不能代表真实模型、自然场景或编辑能力已验收。029—038 均 planned，实施入口为 029；035 首批 profile 可先交付，032/030 随后推进。024 分批积累真实效果证据；038 负责历史状态核对。039 本轮只对齐核心文档。完整依赖见总规划的“当前实施路线”，IFC 不属于必经阶段。
+
+## 工单表
+
+| 编号 | 工单 | 状态 | 执行者 | 依赖 |
+|---|---|---|---|---|
+| 000 | [项目总规划](000_project_master_plan.md) | in_progress | 协调者 | 无 |
+| 001 | [问题重述与正式方案](001_problem_and_proposal.md) | done | root | 002、003 提供证据 |
+| 002 | [分层生成可行性调研](002_generation_research.md) | done | generation_research | 无 |
+| 003 | [世界元数据与跨目标导出调研](003_representation_research.md) | done | representation_research | 无 |
+| 004 | [方案独立审查](004_proposal_review.md) | done | proposal_review | 001 初稿、002、003 |
+| 005 | [WIR v0.1 数据契约与样例](005_wir_contract.md) | done | root | 001—004 |
+| 006 | [最小分层生成闭环](006_generation_vertical_slice.md) | in_progress | root | 005 |
+| 007 | [本地三维查看与增量编辑](007_local_viewer_editor.md) | planned | 待认领 | 005、023、032、033；复用 025/034 |
+| 008 | [Unity 场景导出与加载验证](008_unity_export.md) | in_progress | root | 005；新主线适配归 036，007 联调单列 |
+| 009 | [Minecraft Java 区域导出](009_minecraft_schematic_export.md) | in_progress | root | 005；新主线适配归 036，007 联调单列 |
+| 010 | [Minecraft Java 独立世界导出](010_minecraft_world_export.md) | planned | 待认领 | 009、035、036；输出形态需求明确后 |
+| 011 | [IFC 建筑概念模型验证](011_ifc_concept_export.md) | planned | 待认领 | 005；专业工程用途明确后的独立扩展 |
+| 012 | [大区域与资源扩展验证](012_large_world_benchmarks.md) | planned | 待认领 | 024、030、031、033、036；必要查看/加载性能子项 |
+| 013 | [场景简报（流水线 A）](013_scene_brief.md) | in_progress | root | 005 |
+| 014 | [地形方案（流水线 B）](014_terrain_plan.md) | in_progress | root | 013 |
+| 015 | [风物目录与背景包（流水线 C）](015_landmark_catalogue.md) | in_progress | root | 013 |
+| 016 | [区块归属与选址（流水线 D）](016_district_siting.md) | in_progress | root | 014、015 |
+| 017 | [单栋建筑设计器（流水线 E）](017_building_designer.md) | in_progress | root | 015、016 |
+| 018 | [装配器与场景流水线（流水线 F）](018_assembler_pipeline.md) | in_progress | root | 013—017 |
+| 019 | [Minecraft 本机启动恢复](019_minecraft_recovery.md) | done | root | 无；参考 009、018 |
+| 020 | [场景道路走廊栅格化与地面填充顺序](020_scene_corridor_rasterization.md) | done | root | 018、016 |
+| 021 | [风格建筑双目标样件](021_style_building_cross_target_sample.md) | done | root | 017、008、009 |
+| 022 | [新存档四场景重构](022_scene_reconstruction_new_world.md) | in_progress | root | 013—018、017、009 |
+| 023 | [API 模型驱动 A—F 流水线](023_api_agent_pipeline.md) | done | root | 005、013—018、008/009 |
+| 024 | [真实 API 与目标平台验收](024_api_agent_live_evaluation.md) | planned | 待认领 | 首批 023、008/009；新增批次 031、034、036 |
+| 025 | [模块化本地应用与网页测试台](025_modular_web_workbench.md) | done | root | 023、005 |
+| 026 | [Windows 桌面应用初版](026_windows_desktop_application.md) | done | root | 023、025 |
+| 027 | [本地主线与验证分支职责调整](027_branch_role_alignment.md) | done | root | 023、025、026 |
+| 028 | [场景搭建后续工单规划](028_followup_work_order_planning.md) | done | root | 027 |
+| 029 | [通用场景需求与任务契约](029_scene_task_contracts.md) | planned | 待认领 | 023、028 |
+| 030 | [能力驱动的任务调度与作用域返工](030_capability_task_runtime.md) | planned | 待认领 | 029、035 |
+| 031 | [自然景观资产与分布构建](031_natural_scene_assets.md) | planned | 待认领 | 029、030、032、035 |
+| 032 | [稳定世界身份与任务依赖存储](032_world_revision_identity.md) | planned | 待认领 | 005、023、029 |
+| 033 | [用户修改指令与局部再生成](033_scoped_scene_revision.md) | planned | 待认领 | 030、031、032 |
+| 034 | [场景反馈与修订工作台](034_feedback_workbench.md) | planned | 待认领 | 025、033 |
+| 035 | [目标平台能力配置与后续平台选型](035_target_profiles_and_selection.md) | planned | 待认领 | 005、028、029 |
+| 036 | [Unity 与 Minecraft 通用场景适配](036_unity_minecraft_scene_adapters.md) | planned | 待认领 | 031、035；复用 008/009 |
+| 037 | [下一游戏平台场景适配原型](037_next_game_scene_adapter.md) | planned | 待认领 | 035、036、024；平台/形态/环境明确后 |
+| 038 | [历史工单证据与当前职责核对](038_historical_work_order_reconciliation.md) | planned | 待认领 | 027、028 |
+| 039 | [核心文档与协作入口对齐](039_core_document_alignment.md) | done | root | 027、028 |
+
+下一个可分配编号：040。编号由协调者串行分配，避免并行碰撞。
+
+## 执行约定
+
+1. 读取索引、总规划和相关工单。
+2. 确认依赖与文件所有权，登记执行者和状态。
+3. 按验收标准实施，完成动作立即记录；完成条目同时勾选和划掉。
+4. 记录验证命令、结果或文档证据，不将设计目标描述为已实现能力。
+5. 阶段结束更新工单、索引和总规划；明确下一步。
+
+新工单使用 [模板](TEMPLATE.md)。研究与方案交付物放在 `docs/`，工单记录计划、状态、动作和证据。
+
+## 历史更新（保留原日期和记录）
+
+以下文字包括原日期的“当前”“最新”和分支名，只描述当时路线；今天的执行顺序以本文件上方与总规划的当前部分为准。历史条目的逐项完成证据由 038 核对。
+
 **2026-10-10 后续工单规划**：[028](028_followup_work_order_planning.md) 创建 029—038，覆盖通用场景任务、按能力调度、自然资产、稳定修订、局部修改、反馈工作台、平台配置/适配及历史状态核对。实施工单均 planned，024 分批真实验收，011 为独立可选扩展。当前顺序见 [总规划](000_project_master_plan.md)“当前实施路线”；旧日期段落与 006/013—022 状态属于对应历史路线，不应直接当作新增产品任务。
 
 **2026-10-10 本地分支职责调整**：[027](027_branch_role_alignment.md) 将 API Agent 分支设为 `main`，原 `main` 完整保留为 `codex/local-validation`。远端未修改，两条本地分支暂未配置 upstream。场景调度、用户修改闭环和平台适配仍处于讨论阶段，本轮没有实现这些能力。
@@ -70,50 +139,6 @@
 
 每次工作先阅读本文件、[总规划](000_project_master_plan.md) 和当前工单，再执行任务。具体规则见 [AGENTS.md](../AGENTS.md)。
 
-| 编号 | 工单 | 状态 | 执行者 | 依赖 |
-|---|---|---|---|---|
-| 000 | [项目总规划](000_project_master_plan.md) | in_progress | 协调者 | 无 |
-| 001 | [问题重述与正式方案](001_problem_and_proposal.md) | done | root | 002、003 提供证据 |
-| 002 | [分层生成可行性调研](002_generation_research.md) | done | generation_research | 无 |
-| 003 | [世界元数据与跨目标导出调研](003_representation_research.md) | done | representation_research | 无 |
-| 004 | [方案独立审查](004_proposal_review.md) | done | proposal_review | 001 初稿、002、003 |
-| 005 | [WIR v0.1 数据契约与样例](005_wir_contract.md) | done | root | 001—004 |
-| 006 | [最小分层生成闭环](006_generation_vertical_slice.md) | in_progress | root | 005 |
-| 007 | [本地三维查看与增量编辑](007_local_viewer_editor.md) | planned | 待认领 | 005、023、032、033；复用 025/034 |
-| 008 | [Unity 场景导出与加载验证](008_unity_export.md) | in_progress | root | 005；新主线适配归 036，007 联调单列 |
-| 009 | [Minecraft Java 区域导出](009_minecraft_schematic_export.md) | in_progress | root | 005；新主线适配归 036，007 联调单列 |
-| 010 | [Minecraft Java 独立世界导出](010_minecraft_world_export.md) | planned | 待认领 | 009、035、036；输出形态需求明确后 |
-| 011 | [IFC 建筑概念模型验证](011_ifc_concept_export.md) | planned | 待认领 | 005；专业工程用途明确后的独立扩展 |
-| 012 | [大区域与资源扩展验证](012_large_world_benchmarks.md) | planned | 待认领 | 024、030、031、033、036；必要查看/加载性能子项 |
-| 013 | [场景简报（流水线 A）](013_scene_brief.md) | in_progress | root | 005 |
-| 014 | [地形方案（流水线 B）](014_terrain_plan.md) | in_progress | root | 013 |
-| 015 | [风物目录与背景包（流水线 C）](015_landmark_catalogue.md) | in_progress | root | 013 |
-| 016 | [区块归属与选址（流水线 D）](016_district_siting.md) | in_progress | root | 014、015 |
-| 017 | [单栋建筑设计器（流水线 E）](017_building_designer.md) | in_progress | root | 015、016 |
-| 018 | [装配器与场景流水线（流水线 F）](018_assembler_pipeline.md) | in_progress | root | 013—017 |
-| 019 | [Minecraft 本机启动恢复](019_minecraft_recovery.md) | done | root | 无；参考 009、018 |
-| 020 | [场景道路走廊栅格化与地面填充顺序](020_scene_corridor_rasterization.md) | done | root | 018、016 |
-| 021 | [风格建筑双目标样件](021_style_building_cross_target_sample.md) | done | root | 017、008、009 |
-| 022 | [新存档四场景重构](022_scene_reconstruction_new_world.md) | in_progress | root | 013—018、017、009 |
-| 023 | [API 模型驱动 A—F 流水线](023_api_agent_pipeline.md) | done | root | 005、013—018、008/009 |
-| 024 | [真实 API 与目标平台验收](024_api_agent_live_evaluation.md) | planned | 待认领 | 首批 023、008/009；新增批次 031、034、036 |
-| 025 | [模块化本地应用与网页测试台](025_modular_web_workbench.md) | done | root | 023、005 |
-| 026 | [Windows 桌面应用初版](026_windows_desktop_application.md) | done | root | 023、025 |
-| 027 | [本地主线与验证分支职责调整](027_branch_role_alignment.md) | done | root | 023、025、026 |
-| 028 | [场景搭建后续工单规划](028_followup_work_order_planning.md) | done | root | 027 |
-| 029 | [通用场景需求与任务契约](029_scene_task_contracts.md) | planned | 待认领 | 023、028 |
-| 030 | [能力驱动的任务调度与作用域返工](030_capability_task_runtime.md) | planned | 待认领 | 029、035 |
-| 031 | [自然景观资产与分布构建](031_natural_scene_assets.md) | planned | 待认领 | 029、030、032、035 |
-| 032 | [稳定世界身份与任务依赖存储](032_world_revision_identity.md) | planned | 待认领 | 005、023、029 |
-| 033 | [用户修改指令与局部再生成](033_scoped_scene_revision.md) | planned | 待认领 | 030、031、032 |
-| 034 | [场景反馈与修订工作台](034_feedback_workbench.md) | planned | 待认领 | 025、033 |
-| 035 | [目标平台能力配置与后续平台选型](035_target_profiles_and_selection.md) | planned | 待认领 | 005、028、029 |
-| 036 | [Unity 与 Minecraft 通用场景适配](036_unity_minecraft_scene_adapters.md) | planned | 待认领 | 031、035；复用 008/009 |
-| 037 | [下一游戏平台场景适配原型](037_next_game_scene_adapter.md) | planned | 待认领 | 035、036、024；平台/形态/环境明确后 |
-| 038 | [历史工单证据与当前职责核对](038_historical_work_order_reconciliation.md) | planned | 待认领 | 027、028 |
-
-下一个可分配编号：039。编号由协调者串行分配，避免并行碰撞。
-
 **2026-09-27 更新（新存档四场景重构启动）**：按用户指示，用更新后的建筑 skill 重新生成**所有**建筑并把四个背景整合进**新存档** `WB Scenes Rebuild`（由 `WB Verify Flat` 复制：207/208 文件、唯缺 `session.lock`；复制时源世界在游戏里打开，故**没有可信全量哈希**，已记为待办）。四个场景带位固定 `(chunk_x*128, −61, chunk_z*128 + 1024 + band*1024)`，band 0/1/2/3 = 魔法城邦/现代都市/工业园/港口；**band 1 与旧现代都市（`z 1408…2048`）重叠**，粘贴前必须先清带并把旧证据留档。每 35 分钟推进任务 `world-builder-35m` 已创建（`FREQ=MINUTELY;INTERVAL=35`，静默策略 `failed_runs_only`）。另一位智能体的 skill 扩充（13 历史/地方 + 6 近现代工业 + 10 功能空间资料卡）经完整回归 **159 passed** 后整合提交（`bde89d6`）。详见 [022](022_scene_reconstruction_new_world.md)。
 
 **2026-09-27 更新（E 阶段建筑 skill + 缺陷清单）**：用户评审指出 E 阶段"没美感、没设计感（全是四方盒子）、功能也不全（只有一层楼梯，到不了其他楼层）"。本轮新增 [skills/building-design/SKILL.md](../skills/building-design/SKILL.md)——十条可核对的规则（体量 2—4 个且高差 ≥2 m、开间:进深 1.0—1.6、层高 ≥3.0 m、立面深度靠腰线/出檐 ≥0.6 m/勒脚/角柱、屋顶原型与出檐、材质 3—4 种靠明度区分、入口 2.0×2.4 m 且门垛 ≥1 m、每层都要有可达楼梯、每层 ≥2 间用途房间+通道、每 6—8 m 一扇窗、与环境协调）+ 机器校验清单 + 能力边界 + 来源与访问状态（官方 Wiki 直连 403、可读页面向生存建造、搜索引擎要验证码故不引用社区教程；哪些是设计判断单独标注）。`tests/test_building_skill.py` 钉住主题、关键数字与边界。**按用户评审拆出的下一批**：a) 多部楼梯与逐层可达；b) 模板加入体量组合与立面线脚；c) 采光/门廊/环境协调字段。
@@ -159,13 +184,3 @@
 2026-09-25 更新（city.2 目标侧）：Minecraft 适配器已支持任意层数与房间隔墙，并从 `city.2` 修订重导（16 分块、2,579 盒、627,953 方块、164 隔墙）、在目标世界清除旧建筑层后重贴。俯瞰可见大小不一的建筑，街面可见高矮不同的建筑、东门洞与室内木板地面。仍待：`benchmarks/city_cases_v2.json` 的 30 输入批次、三层以上楼梯、家具落块。
 
 2026-09-26 当前状态（上方按日期的更新行保留为历史，最新状态以此行为准）：006 城邦生成器迭代到 `0.1.0-city.7`，内容剖面字段 `district_v4`。已实现且各有独立规则：建筑体量按分区与样式分异、功能 programme（住宅/商铺/工坊/图书馆/旅店/教堂/市政厅/公寓/写字楼）、每层两间带用途房间与匹配家具、隔墙作为源实体、**逐层退台外轮廓**（首层与东侧不动，退距取整米、逐层不递减）、屋顶原型（双坡/尖塔/平顶）、城墙（古代样式专属）、道路宽度与网格规则度按分区，以及样式 profile（`arcane_medieval` 坡屋顶加城墙；`modern_grid` 退台楼群、沥青路面与玻璃幕墙）；Minecraft 适配器策略 `0.1.0-city.4` 按层落墙环与腰线，加 0.6 m 出檐（古代木腰线、现代玻璃带）。源端预登记批次 city.3、city.4（重跑）、city.5 古代、city.5 现代、city.6 古代均达标（30/30、首候选 15/30；city.6 古代单世界 46.5—82.3 秒）；city.6 现代批次因实现已推进到 city.7 而作废，city.7 古代与现代两份登记（各 30 输入）待运行。**已更正一处错误记载**：屋顶原型自 city.4 起只写进属性、适配器读的是几何字段，因此 city.4—city.6 的导出全是平屋顶（v5/v6 清单各 80 个平屋顶代理、0 个阶梯屋顶盒），city.5 工单里"目标平台可见阶梯双坡屋顶"一句与产物不符，已在 006 中更正并在 city.7 修复。目标侧 Minecraft 1.21.11/Fabric/WorldEdit 世界中已贴入两座 **city.7** 城：古代 `x 0—512`（退台、双坡/尖塔屋顶、城墙与桥）、现代 `x 800—1312`（退台楼群、深灰车行道、玻璃带），16 分块逐块盒数与清单一致、分块地表抽验通过、两城俯瞰完整；同名 `.schem` 切换时曾误贴 4 个现代分块进古代城邦，已清层重贴。008 in_progress：Unity 城邦导出仍是单盒包络（退台与坡屋顶不可见），室内路径只支持"两层 + 一梯"，其余接缝、切线材质、性能与 007 同修订联调待做。009 in_progress：城邦方块化与目标验证已通，`building_001—004` 逐栋室内实走与通用跨目标联调未完成。007、010—012 planned。真实云模型服务、复杂地形与护城河开挖未验证。
-
-## 执行约定
-
-1. 读取索引、总规划和相关工单。
-2. 确认依赖与文件所有权，登记执行者和状态。
-3. 按验收标准实施，完成动作立即记录；完成条目同时勾选和划掉。
-4. 记录验证命令、结果或文档证据，不将设计目标描述为已实现能力。
-5. 阶段结束更新工单、索引和总规划；明确下一步。
-
-新工单使用 [模板](TEMPLATE.md)。研究与方案交付物放在 `docs/`，工单记录计划、状态、动作和证据。

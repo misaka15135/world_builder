@@ -1,5 +1,7 @@
 # API Agents JSON 契约 0.1.0
 
+适用范围（2026-10-10）：当前本地 main 的固定 A—F 实现。本文与对应 Schema/运行 skills 继续按 0.1.0 使用；[029](../../work_order/029_scene_task_contracts.md) 将定义通用场景任务和兼容策略，尚未替换本契约。产品目标及当前限制见 [项目基线](../00_project_baseline.md)。
+
 适用于 [023](../../work_order/023_api_agent_pipeline.md)。实现入口：[contracts.py](../../src/world_builder/agents/contracts.py)、[validation.py](../../src/world_builder/agents/validation.py)、[runtime.py](../../src/world_builder/agents/runtime.py)。
 
 ## 权威边界

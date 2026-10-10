@@ -2,6 +2,8 @@
 
 版本：HTTP API v1 / UI 0.1；工单：[025](../work_order/025_modular_web_workbench.md)。
 
+适用范围（2026-10-10）：当前 main 的只读场景构建与诊断入口，产品定位见 [项目基线](00_project_baseline.md)。[034](../work_order/034_feedback_workbench.md) 将接入后端局部修改服务，007 保留完整手工编辑；这些规划尚未扩展本文的 HTTP API v1。当前预览中的拾取只显示对象信息，不会修改世界。
+
 ## 启动与使用
 
 在项目根目录双击 [start_workbench.cmd](../start_workbench.cmd)，或执行：
@@ -69,7 +71,7 @@ flowchart TD
 | 任务服务 | [jobs.py](../src/world_builder/workbench/jobs.py) | 状态、持久化、队列限制与取消；可独立测试 |
 | 适配层 | [runner.py](../src/world_builder/workbench/runner.py) | 唯一执行 Supervisor/save_world 的模块；替换生成后端时主要改此处 |
 
-例如升级 WebGL 查看器时只替换 `preview.js` 的 `load/clear` 接口；增加后端模型协议时改 Provider；增加任务队列时改 JobService；引入桌面壳时可继续加载相同本地网页和 HTTP API。本版是“本地应用 + 网页界面”，没有额外制作 Electron/Tauri 安装包或公网部署。
+例如升级 WebGL 查看器时只替换 `preview.js` 的 `load/clear` 接口；增加后端模型协议时改 Provider；增加任务队列时改 JobService。026 已通过 [Windows 桌面壳](07_desktop_application.md) 复用相同网页与 HTTP API，宿主使用 pywebview。本网页服务没有公网部署。
 
 ## HTTP API v1
 

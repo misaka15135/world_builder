@@ -1,5 +1,7 @@
 # Windows 桌面应用 0.1.0
 
+适用范围（2026-10-10）：当前 main 中 026 已实现的桌面宿主，复用 [网页测试台](06_web_workbench.md) 与固定 A—F 流水线。产品定位见 [项目基线](00_project_baseline.md)；029—037 的能力尚未进入本版。已有便携包是构建时快照，本次文档对齐没有重新构建或升级该产物。
+
 ## 启动与使用
 
 本机构建输出为 `dist/WorldBuilder/WorldBuilder.exe`。双击打开独立窗口；分享时使用 `dist/WorldBuilder-0.1.0-win-x64.zip`，先完整解压再启动。必须保留 `_internal` 文件夹，里面包含 Python、网页、JSON 契约、六份 agent skill 和运行资源。
@@ -12,7 +14,7 @@
 
 ## 系统与数据
 
-Windows x64；无需另装 Python。系统需有 Microsoft Edge WebView2 Runtime 和 .NET Framework 4.6.2 或更新版本。本轮在 Windows 11、WebView2 154.0.4258.37 上验收；未在干净系统中验证运行库安装。
+Windows x64；无需另装 Python。系统需有 Microsoft Edge WebView2 Runtime 和 .NET Framework 4.6.2 或更新版本。026 在 Windows 11、WebView2 154.0.4258.37 上验收；未在干净系统中验证运行库安装。
 
 数据独立于程序目录，默认位于 `%LOCALAPPDATA%/WorldBuilder`：
 

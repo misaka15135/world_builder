@@ -1,5 +1,7 @@
 # WIR 0.1 模块接口
 
+适用范围（2026-10-10）：下文是 005 冻结的跨模块接口设计，不代表各模块都已实现。当前 Agent 请求/响应见 [0.1.0 契约](api-agents-v0.1.md)，网页现有接口见 [HTTP API v1](../06_web_workbench.md)。稳定世界/对象身份、增量命令与用户修改由 [032](../../work_order/032_world_revision_identity.md) / [033](../../work_order/033_scoped_scene_revision.md) 后续实现；IFC 是独立可选扩展。本轮不变更接口字段或 Schema。
+
 本文件固定 006—011 之间的最小边界。传输结构必须携带 `contract_version: "0.1.0"`；不支持的主版本或必需能力应明确拒绝。
 
 ## 规划器
