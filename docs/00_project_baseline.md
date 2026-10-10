@@ -12,7 +12,7 @@
 
 ## 当前实现与证据
 
-本地 `main` 是原 Agent 分支；`codex/local-validation` 是原规则主线。更名没有迁移旧规则路线的所有能力，也没有同步远端。`main` 保留部分旧代码供复用与回归，默认产品入口仍为 Agent 流水线。
+`main` 是原 Agent 分支；`codex/local-validation` 是原规则主线。两条分支已按 [040](../work_order/040_remote_branch_publication.md) 同步到远端，默认分支为 main，旧 Agent 远端分支保留。分支调整没有迁移旧规则路线的所有能力；`main` 保留部分旧代码供复用与回归，默认产品入口仍为 Agent 流水线。
 
 | 层 | 已有行为 | 适用边界 |
 |---|---|---|

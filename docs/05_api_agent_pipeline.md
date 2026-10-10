@@ -1,6 +1,6 @@
 # API 驱动 A—F 多智能体流水线
 
-版本：0.1.0；日期：2026-09-29；当前本地分支：`main`（2026-10-10 由 `codex/api-agent-pipeline` 重命名）；实现工单：[023](../work_order/023_api_agent_pipeline.md)；分支调整：[027](../work_order/027_branch_role_alignment.md)。
+版本：0.1.0；日期：2026-09-29；当前产品分支：`main`（2026-10-10 由 `codex/api-agent-pipeline` 重命名，已同步 origin/main）；实现工单：[023](../work_order/023_api_agent_pipeline.md)；分支调整：[027](../work_order/027_branch_role_alignment.md)；推送记录：[040](../work_order/040_remote_branch_publication.md)。
 
 ## 运行机制
 

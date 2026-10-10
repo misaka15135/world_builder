@@ -1,6 +1,6 @@
 # 工单索引与协作流程
 
-更新日期：2026-10-10。当前 main 为 Agent 场景搭建产品主线；codex/local-validation 为旧规则与本地验证对照。远端尚未同步，见 [027](027_branch_role_alignment.md)。
+更新日期：2026-10-10。当前 main 为 Agent 场景搭建产品主线；codex/local-validation 为旧规则与本地验证对照。两条分支已同步远端并配置对应 upstream，默认分支为 main，见 [040](040_remote_branch_publication.md)。
 
 每次工作先阅读本文件、[总规划](000_project_master_plan.md) 和当前工单，按 [AGENTS](../AGENTS.md) 登记范围并记录证据。产品边界见 [当前项目基线](../docs/00_project_baseline.md)，其他资料用途见 [文档索引](../docs/README.md)。
 
@@ -52,8 +52,9 @@
 | 037 | [下一游戏平台场景适配原型](037_next_game_scene_adapter.md) | planned | 待认领 | 035、036、024；平台/形态/环境明确后 |
 | 038 | [历史工单证据与当前职责核对](038_historical_work_order_reconciliation.md) | planned | 待认领 | 027、028 |
 | 039 | [核心文档与协作入口对齐](039_core_document_alignment.md) | done | root | 027、028 |
+| 040 | [全部更改推送与远端分支职责同步](040_remote_branch_publication.md) | done | root | 027、028、039 |
 
-下一个可分配编号：040。编号由协调者串行分配，避免并行碰撞。
+下一个可分配编号：041。编号由协调者串行分配，避免并行碰撞。
 
 ## 执行约定
 

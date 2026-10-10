@@ -41,6 +41,6 @@ python tools/generate_agent_world.py --prompt '一条街旁的一栋两层木构
 
 ## 分支与协作入口
 
-2026-10-10 的本地分支职责：`main` 为 Agent 产品主线，由原 `codex/api-agent-pipeline` 更名；`codex/local-validation` 保留原 `main` 的规则生成与本地验证对照。远端尚未同步，两条本地分支暂未配置 upstream，见 [027](work_order/027_branch_role_alignment.md)。旧规则路径的运行方式与证据见 [006 说明](docs/contracts/generation-v0.1.md)，不是当前产品默认入口。
+2026-10-10 的分支职责：`main` 为 Agent 产品主线，由原 `codex/api-agent-pipeline` 更名；`codex/local-validation` 保留原 `main` 的规则生成与本地验证对照。两条分支已推送并追踪对应 origin 分支，GitHub 默认分支为 main，旧 Agent 远端分支保留。调整见 [027](work_order/027_branch_role_alignment.md)，推送记录见 [040](work_order/040_remote_branch_publication.md)。旧规则路径的运行方式与证据见 [006 说明](docs/contracts/generation-v0.1.md)，不是当前产品默认入口。
 
 每次工作先读 [AGENTS.md](AGENTS.md)、[工单索引](work_order/README.md)、[总规划](work_order/000_project_master_plan.md) 和当前工单。实施入口为 [029 通用场景契约](work_order/029_scene_task_contracts.md)；024 随能力推进积累真实效果证据，038 单独核对历史工单。IFC 是独立可选扩展。早期 01—04 方案保留作历史参考，当前目标与路线以项目基线和总规划的当前部分为准。
