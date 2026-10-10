@@ -2,6 +2,8 @@
 
 2026-10-10 本地分支职责：`main` 为 Agent 主导的场景搭建产品主线，由原 `codex/api-agent-pipeline` 重命名；`codex/local-validation` 保留原 `main` 的规则生成、目标验证和回归对照。产品范围为场景搭建，不包含游戏玩法逻辑生成。远端分支尚未同步，两条本地分支暂未配置 upstream。调整记录见 [027 工单](work_order/027_branch_role_alignment.md)。
 
+后续需求已拆为 [029—038 工单](work_order/README.md)，实施顺序见 [当前总规划](work_order/000_project_master_plan.md)。这些工单尚未实现：通用场景任务、自然资产、用户修改与平台能力仍需独立验收。当前可运行能力以以下 API 流水线说明为准，历史规则方案不作为新产品默认路线。
+
 ## Windows 桌面应用
 
 双击 `dist/WorldBuilder/WorldBuilder.exe` 打开独立应用窗口。便携包为 `dist/WorldBuilder-0.1.0-win-x64.zip`，需完整解压并保留 `_internal`。无需安装 Python；本机已具备所需 WebView2 运行库。

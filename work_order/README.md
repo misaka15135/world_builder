@@ -1,5 +1,7 @@
 # 工单索引与协作流程
 
+**2026-10-10 后续工单规划**：[028](028_followup_work_order_planning.md) 创建 029—038，覆盖通用场景任务、按能力调度、自然资产、稳定修订、局部修改、反馈工作台、平台配置/适配及历史状态核对。实施工单均 planned，024 分批真实验收，011 为独立可选扩展。当前顺序见 [总规划](000_project_master_plan.md)“当前实施路线”；旧日期段落与 006/013—022 状态属于对应历史路线，不应直接当作新增产品任务。
+
 **2026-10-10 本地分支职责调整**：[027](027_branch_role_alignment.md) 将 API Agent 分支设为 `main`，原 `main` 完整保留为 `codex/local-validation`。远端未修改，两条本地分支暂未配置 upstream。场景调度、用户修改闭环和平台适配仍处于讨论阶段，本轮没有实现这些能力。
 
 **2026-09-30 桌面应用完成**：[026](026_windows_desktop_application.md) 交付独立 WebView2 窗口与约 15 MB Windows 便携包，内含 Python、网页、契约和 skills；历史及非密钥设置保存在用户目录。95 项回归通过，exe 包内样例/回放、原生下载、关闭释放与重开历史/预览恢复通过。真实模型质量仍由 024 验收。
@@ -64,7 +66,7 @@
 
 **2026-09-27 建筑 skill 调研扩充**：按用户要求，017 将原十条通用建议修订为 [skill 入口](../skills/building-design/SKILL.md)和历史/地方、近现代/工业、功能/流程三份参考卡；覆盖 13 个历史及地方风格案例、6 个近现代与工业案例、10 类功能空间。逐卡附 Minecraft 官方、UNESCO、Historic England、English Heritage 或 NPS 来源，区分案例事实与项目转译；取消跨风格的体量数、房间数和材质数硬规则。资料卡尚未驱动生成器，建筑观感和多层通行仍需目标样件验证。详见 [017](017_building_designer.md)。
 
-更新日期：2026-09-27。
+更新日期：2026-10-10。
 
 每次工作先阅读本文件、[总规划](000_project_master_plan.md) 和当前工单，再执行任务。具体规则见 [AGENTS.md](../AGENTS.md)。
 
@@ -77,12 +79,12 @@
 | 004 | [方案独立审查](004_proposal_review.md) | done | proposal_review | 001 初稿、002、003 |
 | 005 | [WIR v0.1 数据契约与样例](005_wir_contract.md) | done | root | 001—004 |
 | 006 | [最小分层生成闭环](006_generation_vertical_slice.md) | in_progress | root | 005 |
-| 007 | [本地三维查看与增量编辑](007_local_viewer_editor.md) | planned | 待认领 | 005；最终联调需要 006 |
-| 008 | [Unity 场景导出与加载验证](008_unity_export.md) | in_progress | root | 005；完整验收 006、007 |
-| 009 | [Minecraft Java 区域导出](009_minecraft_schematic_export.md) | in_progress | root | 005；完整验收 006、007 |
-| 010 | [Minecraft Java 独立世界导出](010_minecraft_world_export.md) | planned | 待认领 | 009 |
-| 011 | [IFC 建筑概念模型验证](011_ifc_concept_export.md) | planned | 待认领 | 005、006；游戏首版之后 |
-| 012 | [大区域与资源扩展验证](012_large_world_benchmarks.md) | planned | 待认领 | 006、007、008、009 |
+| 007 | [本地三维查看与增量编辑](007_local_viewer_editor.md) | planned | 待认领 | 005、023、032、033；复用 025/034 |
+| 008 | [Unity 场景导出与加载验证](008_unity_export.md) | in_progress | root | 005；新主线适配归 036，007 联调单列 |
+| 009 | [Minecraft Java 区域导出](009_minecraft_schematic_export.md) | in_progress | root | 005；新主线适配归 036，007 联调单列 |
+| 010 | [Minecraft Java 独立世界导出](010_minecraft_world_export.md) | planned | 待认领 | 009、035、036；输出形态需求明确后 |
+| 011 | [IFC 建筑概念模型验证](011_ifc_concept_export.md) | planned | 待认领 | 005；专业工程用途明确后的独立扩展 |
+| 012 | [大区域与资源扩展验证](012_large_world_benchmarks.md) | planned | 待认领 | 024、030、031、033、036；必要查看/加载性能子项 |
 | 013 | [场景简报（流水线 A）](013_scene_brief.md) | in_progress | root | 005 |
 | 014 | [地形方案（流水线 B）](014_terrain_plan.md) | in_progress | root | 013 |
 | 015 | [风物目录与背景包（流水线 C）](015_landmark_catalogue.md) | in_progress | root | 013 |
@@ -94,12 +96,23 @@
 | 021 | [风格建筑双目标样件](021_style_building_cross_target_sample.md) | done | root | 017、008、009 |
 | 022 | [新存档四场景重构](022_scene_reconstruction_new_world.md) | in_progress | root | 013—018、017、009 |
 | 023 | [API 模型驱动 A—F 流水线](023_api_agent_pipeline.md) | done | root | 005、013—018、008/009 |
-| 024 | [真实 API 与目标平台验收](024_api_agent_live_evaluation.md) | planned | 待认领 | 023、008/009 |
+| 024 | [真实 API 与目标平台验收](024_api_agent_live_evaluation.md) | planned | 待认领 | 首批 023、008/009；新增批次 031、034、036 |
 | 025 | [模块化本地应用与网页测试台](025_modular_web_workbench.md) | done | root | 023、005 |
 | 026 | [Windows 桌面应用初版](026_windows_desktop_application.md) | done | root | 023、025 |
 | 027 | [本地主线与验证分支职责调整](027_branch_role_alignment.md) | done | root | 023、025、026 |
+| 028 | [场景搭建后续工单规划](028_followup_work_order_planning.md) | done | root | 027 |
+| 029 | [通用场景需求与任务契约](029_scene_task_contracts.md) | planned | 待认领 | 023、028 |
+| 030 | [能力驱动的任务调度与作用域返工](030_capability_task_runtime.md) | planned | 待认领 | 029、035 |
+| 031 | [自然景观资产与分布构建](031_natural_scene_assets.md) | planned | 待认领 | 029、030、032、035 |
+| 032 | [稳定世界身份与任务依赖存储](032_world_revision_identity.md) | planned | 待认领 | 005、023、029 |
+| 033 | [用户修改指令与局部再生成](033_scoped_scene_revision.md) | planned | 待认领 | 030、031、032 |
+| 034 | [场景反馈与修订工作台](034_feedback_workbench.md) | planned | 待认领 | 025、033 |
+| 035 | [目标平台能力配置与后续平台选型](035_target_profiles_and_selection.md) | planned | 待认领 | 005、028、029 |
+| 036 | [Unity 与 Minecraft 通用场景适配](036_unity_minecraft_scene_adapters.md) | planned | 待认领 | 031、035；复用 008/009 |
+| 037 | [下一游戏平台场景适配原型](037_next_game_scene_adapter.md) | planned | 待认领 | 035、036、024；平台/形态/环境明确后 |
+| 038 | [历史工单证据与当前职责核对](038_historical_work_order_reconciliation.md) | planned | 待认领 | 027、028 |
 
-下一个可分配编号：028。编号由协调者串行分配，避免并行碰撞。
+下一个可分配编号：039。编号由协调者串行分配，避免并行碰撞。
 
 **2026-09-27 更新（新存档四场景重构启动）**：按用户指示，用更新后的建筑 skill 重新生成**所有**建筑并把四个背景整合进**新存档** `WB Scenes Rebuild`（由 `WB Verify Flat` 复制：207/208 文件、唯缺 `session.lock`；复制时源世界在游戏里打开，故**没有可信全量哈希**，已记为待办）。四个场景带位固定 `(chunk_x*128, −61, chunk_z*128 + 1024 + band*1024)`，band 0/1/2/3 = 魔法城邦/现代都市/工业园/港口；**band 1 与旧现代都市（`z 1408…2048`）重叠**，粘贴前必须先清带并把旧证据留档。每 35 分钟推进任务 `world-builder-35m` 已创建（`FREQ=MINUTELY;INTERVAL=35`，静默策略 `failed_runs_only`）。另一位智能体的 skill 扩充（13 历史/地方 + 6 近现代工业 + 10 功能空间资料卡）经完整回归 **159 passed** 后整合提交（`bde89d6`）。详见 [022](022_scene_reconstruction_new_world.md)。
 

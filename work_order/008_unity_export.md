@@ -5,7 +5,7 @@
 - 修改范围：2026-09-27 root 接入场景驱动 WIR 的 Unity 静态导出，并在已安装的 Unity 6000.3.24f1 中加载一个含开放空间的代表场景；新增独立产物与目标证据，不覆盖 city.7/v1—v3 历史场景。
 - 创建日期：2026-09-21
 - 执行者：root
-- 依赖：005；样件试验可与 006 并行，完整验收需要 006、007
+- 依赖：005；具备对应样件源修订和可用 Unity 目标环境
 - 修改范围：2026-09-25 本阶段由 root 实施五栋已生成室内建筑的 Unity 派生构件与通行验收，涉及 `src/world_builder/adapters/unity/city.py`、`tests/test_unity_city.py`、`adapters/unity/sample_project/Assets/WorldBuilderCity/`、`artifacts/unity-city/`、`docs/contracts/unity-city-v0.1.md` 及 008/000/索引。源 WIR、固定手工样件及 WIR 0.1 Schema 不改；导出版本另起 v2，不覆盖 v1 证据。
 - 修改范围：2026-09-25 后续由 root 对其余四栋生成室内建筑逐栋做 Unity Play Mode 通行验收；修改 `WorldBuilderCityV2Builder.cs`、`WorldBuilderCityInteriorWalkValidator.cs`、新场景/运行证据、008/000/索引及 Unity 城邦说明。v2 GLB 与首栋已有证据保持不变。
 - 修改范围：2026-09-25 root 继续分块子阶段；新增 v3 网格切分与多 GLB 清单、对应 Unity 静态导入和验证，修改 `city.py`、CLI、测试、`WorldBuilderCity/Editor/`、独立 v3 产物、说明及 008/000/索引。v1/v2 导出与目标证据不覆盖；导航和 007 联调另行验收。
@@ -14,6 +14,10 @@
 - 修改范围：2026-09-25 root 继续 v3 NavMeshAgent 运行验收；新增独立运行场景、运行时记录组件和批处理/Play Mode 启动入口，修改 `WorldBuilderCityV3NavBuilder.cs`、`Assets/WorldBuilderCity/`、独立证据、Unity 城邦说明及 008/000/索引。复用已保存的 v3 NavMesh，不覆盖先前静态/控制器/NavMesh 证据；室内导航和 007 联调不在本阶段。仅本地提交。
 - 修改范围：2026-09-25 root 继续 v2 首栋室内导航子阶段；从已验收的 `CityInteriors.unity` 派生独立 NavMesh 场景及目标路径验证，新增 `WorldBuilderCity/Editor/` 构建器、独立证据、说明和 008/000/索引。先验证 `building_000` 道路—东门—楼梯—二层房间，不改源 WIR、v2 GLB 或既有运行证据；其余四栋及 Agent 室内实走另行验收。仅本地提交。
 - 修改范围：2026-09-25 root 继续 v2 首栋室内 NavMeshAgent 运行验收；修改 `WorldBuilderCityV2InteriorNavBuilder.cs` 并新增独立运行组件、场景、JSON/日志摘录、说明和 008/000/索引。验证已保存导航面上道路—东门—楼梯—二层房间的实际 Agent 运动；不覆盖先前导航/控制器证据。开工时发现 `v3-agent-walk-validation.json` 有阶段外未提交变化，保留原状且不纳入本次提交。仅本地提交。
+
+## 当前主线衔接（2026-10-10）
+
+既有样件与规则版城邦证据保留。新主线通用场景适配由 036 实施、真实模型产物验收由 024 实施；结果按子项回填本工单，避免重复开发。源表示/自然资产由 029/031 交接，target profile 归 035。007 同修订联调作为完整手工编辑的后续子项，不阻塞独立场景导入与加载。下方带日期的实现和未完成描述按对应版本理解，状态核对归 038。
 
 ## 目标与范围
 
@@ -136,6 +140,8 @@
 | 2026-09-27 | root | 风格建筑样件 v5 Unity 目标落地 | 独立木构街屋导入与另进程重开均为 143/143 构件来源 ID、MeshCollider 通过；`artifacts/building-style-study/v5/unity-walk-validation.json` 的 1.8 m CharacterController 连续走通门、商铺、楼梯、二层房间，6/6 检查点、326 帧楼梯支撑、0 帧侧向阻挡；斜向目标截图已取得。v3/v4 的入口受阻失败证据保留在各自目录，修复和任务边界见 021；此结果仅限手工街屋样件 | 继续通用 E 设计器与场景适配器的多层/风格能力 |
 
 ## 交接说明
+
+2026-10-10 路线变更（028）：仅更新文档依赖和职责，未新增 Unity 导出、加载或实走证据，状态保持 in_progress。下一增量按 036 范围认领，新真实模型批次交接 024。
 
 开始前登记负责人及实际文件范围。完成每个有实际结果的动作后更新记录；通过验收后用 `- [x] ~~工作描述~~` 划掉完成事项，并由协调者同步索引和总规划。
 | 2026-09-29 | root | **跨目标核对：同一修订的开放空间在 Minecraft 与 Unity 两端一致** | 用**今天的修订**（港口 seed 4，`world_d387dde2dfa293df` / `revision_ae9b214ce8c50a2e16eaf6`）跑两端：① 先把场景包落成 WIR JSON（`artifacts/scene-mainline-e/harbour.wir.json`，`validation: pass`）；② `tools/export_unity_open_space.py --source-id open_space_site_000` 导出 Unity GLB（`artifacts/unity-scene-open-space-20260929/container_yard/`，44 KB GLB + manifest）。**可核对的一致性**：**两端都是 34 个构件**——Minecraft 侧按 source id 反查是「铺装 1 + 步道 1 + WIR 里 32 个 fixture 全部命中」= 34 盒；Unity manifest 的 `piece_count` 也是 **34**，并带着 `source_id` / `source_revision_id` / `source_snapshot_sha256` / `glb_sha256` / 版本与 `limits`。**如实记录的两点**：① Unity 的场景侧目前只有 `export_open_space()` 一个入口（**只覆盖开放空间**，地形/道路/建筑/城堡/干船坞都还没接），这正是 008 未完成的那条；② Minecraft manifest 里 `open_space_*` 前缀盒子只有 2 个，是**fixture 用自己的 id 落盒**（例如 `site_000` 的 32 件），不是丢件——按 WIR 的 fixture id 反查是 32/32 命中。**测试/回归**：本轮无代码改动，未新增测试；完整回归与文档检查按轮次要求执行 | 下一轮：把 Unity 场景侧再补一个种类（建筑或城堡体量），或干船坞深挖所需的地形开挖 |
