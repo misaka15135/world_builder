@@ -40,6 +40,7 @@
 | 2026-10-11 | root | 用户授权启动 024，确认使用 DeepSeek 官方 API；从 origin/main=244e3f2 建立独立工作目录 | 现有环境未设置 API 密钥；先冻结首批输入、预算与检查口径，再运行真实调用；不把旧 Unity 分支证据计为本批通过 | 准备首批预登记与安全的本地密钥输入路径 |
 | 2026-10-11 | root | 冻结四例 DeepSeek Flash 预登记和无密钥配置，提供单例本机输入与离线回放入口 | [`benchmarks/agent_live_024_deepseek_v1.json`](../benchmarks/agent_live_024_deepseek_v1.json)、[`config/agents.deepseek-024.json`](../config/agents.deepseek-024.json)、[`tools/run_live_024.py`](../tools/run_live_024.py)、[运行说明](../docs/08_live_evaluation_024.md)；同一配置的人工响应预检完成 7 次离线阶段调用、45 Unity 网格、2707 Minecraft 方块，真实网络调用 0 | 本机安全输入密钥，运行单层首例并分析真实 usage、失败和导出 |
 | 2026-10-11 | root | 首例用用户本机输入的密钥请求 DeepSeek 官方 API | `single_storey` 两次 A 阶段请求均返回 HTTP 400，`result.json` 为 `failed`，没有模型响应或 usage；此失败保留在首批分母，不覆盖或删改。现有 Provider 只记录状态码，无法判断具体请求字段问题 | 增加不记录密钥的服务端错误摘要和单次诊断，先查明 400，再冻结修正后的新批次 |
+| 2026-10-11 | root | 增加服务端错误摘要脱敏与单次 A 请求诊断入口 | 针对性测试 37 passed；诊断尚未发出新请求。等待用户完成密钥轮换后，在本机窗口输入新密钥；不能继续使用已公开的旧密钥 | 执行一次诊断并根据服务端字段提示修正协议，预登记 v2 批次 |
 
 ## 交接说明
 
