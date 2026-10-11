@@ -74,6 +74,9 @@ class APIProvider:
             raise AgentError("api.placeholder", "Replace yourapi endpoint and model in your local config")
         if endpoint.scheme != "https" or not endpoint.hostname or endpoint.username or endpoint.password or endpoint.fragment or endpoint.query:
             raise AgentError("api.endpoint", "Use a full HTTPS endpoint without credentials, query or fragment")
+        if "deepseek_thinking" in config and (endpoint.hostname != "api.deepseek.com" or
+                                              config["protocol"] != "chat_completions"):
+            raise AgentError("api.config", "deepseek_thinking requires the official DeepSeek Chat endpoint")
         self.key = os.environ.get(config["api_key_env"], "") if api_key is None else api_key
         if not self.key or self.key.lower() == "yourapi":
             raise AgentError("api.credential", f"Set environment variable {config['api_key_env']}")
@@ -91,6 +94,8 @@ class APIProvider:
                                  {"role": "user", "content": canonical(data).decode("utf-8")}],
                     config["token_parameter"]: config["limits"]["max_output_tokens"],
                     "response_format": {"type": config["response_format"]}}
+            if "deepseek_thinking" in config:
+                body["thinking"] = {"type": config["deepseek_thinking"]}
             if config["response_format"] == "json_schema":
                 schema = {k: v for k, v in request["response_schema"].items() if k != "$schema"}
                 body["response_format"]["json_schema"] = {

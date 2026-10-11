@@ -65,6 +65,8 @@ F 的返工阶段仅 B/C/D/E。B/C/D 的 scope_id 为 scene；E 必须引用现�
 
 本地配置 Schema 为 [agent-config](../../schemas/agent-config-0.1.0.schema.json)。Schema 由同一代码定义生成，更新后执行：
 
+可选的 `deepseek_thinking` 仅用于 DeepSeek 官方 Chat endpoint，值为 `enabled` 或 `disabled`；它只改变供应商请求体，不改变 A—F 计划 Schema。省略时不传该字段，由供应商采用默认值。不同设置的真实评估必须分开登记，不可混合分母。
+
 ```powershell
 $env:PYTHONPATH = 'src'
 python tools/write_agent_contracts.py

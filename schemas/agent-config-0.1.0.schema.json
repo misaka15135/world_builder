@@ -160,6 +160,12 @@
         "max_voxels"
       ],
       "additionalProperties": false
+    },
+    "deepseek_thinking": {
+      "enum": [
+        "enabled",
+        "disabled"
+      ]
     }
   },
   "required": [

@@ -60,3 +60,17 @@ python tools/run_live_024.py --batch-version v3 --case single_storey --replay
 ```
 
 三版的运行日志与分母独立；后两版是调试后的新评估，不能抹去先前两次失败或作为无偏模型成功率估计。
+
+## v3 输出截断与 v4 无思考对照
+
+v3 单层例 A—D 各一次通过，E 两次未完整结束，整例 6 次网络请求、189.141 秒，最终 `stage.exhausted`。本地对两次无完整响应的请求按预留预算保守计账，**不能把 79,210 个本地计账 token 当成供应商实际 usage 或账单**；四个成功阶段的 usage 留在各自 `completion.json`。未生成 WIR 或目标文件。DeepSeek [思考模式文档](https://api-docs.deepseek.com/guides/thinking_mode/)说明默认启用思考、可用 `{"thinking":{"type":"disabled"}}` 关闭；[Chat Completions 文档](https://api-docs.deepseek.com/api/create-chat-completion/)说明 `finish_reason="length"` 表示生成被上限截断。现有 `api.incomplete` 未保存服务端 finish_reason，截断只是合理推断，不能称已证明。
+
+为检验该推断，另冻结 [v4 批次](../benchmarks/agent_live_024_deepseek_v4.json) 和[无思考配置](../config/agents.deepseek-024-nonthinking.json)。四例、skill、16,000 单次输出上限及其余预算均保持 v3 不变，仅显式关闭 DeepSeek 思考模式；v3 失败仍留存。执行：
+
+```powershell
+python tools/run_live_024.py --batch-version v4 --check
+python tools/run_live_024.py --batch-version v4 --case single_storey --key-file C:\Users\rjc\Desktop\api.txt
+python tools/run_live_024.py --batch-version v4 --case single_storey --replay
+```
+
+结果位于 `artifacts/agent-runs/live-024-deepseek-v4/`。首例后逐项检查并决定是否继续另外三例；任何已启动的 v4 案例均计入 v4 分母。

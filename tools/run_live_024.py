@@ -50,7 +50,7 @@ def verify_replay(original: Path, replay: Path) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true", help="validate setup without API access")
-    parser.add_argument("--batch-version", choices=("v1", "v2", "v3"), default="v1",
+    parser.add_argument("--batch-version", choices=("v1", "v2", "v3", "v4"), default="v1",
                         help="registered batch version; v1 is retained for replay and audit")
     parser.add_argument("--case", help="one case ID from the registered batch")
     parser.add_argument("--replay", action="store_true", help="replay a completed API case offline")
@@ -69,10 +69,13 @@ def main() -> int:
         parser.error("this registered batch requires the official DeepSeek Flash endpoint and model")
     if config["token_parameter"] != "max_tokens" or config["response_format"] != "json_object":
         parser.error("DeepSeek wire configuration differs from the registered batch")
+    if config.get("deepseek_thinking") != ("disabled" if args.batch_version == "v4" else None):
+        parser.error("DeepSeek thinking setting differs from the registered batch")
     if args.check:
         print(json.dumps({"status": "ready", "batch_id": batch["batch_id"],
                           "case_ids": list(cases), "model": config["model"],
                           "max_calls_per_case": config["limits"]["max_calls"],
+                          "thinking": config.get("deepseek_thinking", "provider_default"),
                           "key_present": bool(os.environ.get(config["api_key_env"]))}, ensure_ascii=False))
         return 0
     if args.case not in cases:

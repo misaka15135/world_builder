@@ -4,7 +4,7 @@
 - 创建日期：2026-09-29
 - 执行者：root
 - 依赖：023；新增能力批次分别需要 031、034、036
-- 修改范围：预登记 DeepSeek 官方 API 首批评估案例与预算、无密钥配置和本地运行指引、匿名化结果摘要及目标导出验证记录；首例 HTTP 400 诊断增加 `src/world_builder/agents/providers.py` 的安全错误分类、相应单元测试和 `tools/diagnose_live_024.py` 的一次性本地诊断入口。用户改用桌面密钥文件后，允许诊断入口及 `tools/run_live_024.py` 只读取该文件第一行，不输出密钥。原 v1/v2 首例保留；v2 暴露 A 将道路、入口、室内错误计为场地，故修改 `skills/world-agent-a/SKILL.md`、`skills/world-agent-c/SKILL.md`、`src/world_builder/agents/validation.py`、对应测试和契约/运行说明，另冻结 v3，运行入口按批次隔离输出。密钥与原始调用日志仅保存在本地忽略目录。
+- 修改范围：预登记 DeepSeek 官方 API 评估案例与预算、无密钥配置和本地运行指引、匿名化结果摘要及目标导出验证记录；首例 HTTP 400 诊断增加 `src/world_builder/agents/providers.py` 的安全错误分类、相应单元测试和 `tools/diagnose_live_024.py` 的一次性本地诊断入口。桌面密钥文件只读首行、不输出密钥。原 v1/v2/v3 首例保留；v2 暴露 A 的场地语义问题，已修改 A/C skill、校验、测试和文档。v3 暴露 E 输出截断，增加无思考模式的显式 DeepSeek 配置支持（`contracts.py`、Provider、生成 Schema、测试、说明），冻结 v4 对照批次并隔离输出。密钥与原始调用日志仅保存在本地忽略目录。
 
 ## 目标与范围
 
@@ -44,6 +44,8 @@
 | 2026-10-11 | root | 用用户指定的桌面密钥文件第一行做一次原始 A 请求诊断 | DeepSeek 返回 `deepseek-flash`，986 输入 / 5475 输出 token，27.265 秒；响应 request_id 与原始请求一致，A 阶段 JSON Schema 有效。该诊断不纳入 v1 四例分母，未复现 400；旧 400 原因无法凭现有证据判定。完整回归 247 passed | 冻结隔离的 v2 四例批次，先跑单层完整链路 |
 | 2026-10-11 | root | 预登记同条件 v2 并运行单层首例 | 1 次真实调用、`deepseek-flash`、本地计账 6499 token、25.688 秒；A 响应分别创建场地、道路、房屋、入口、室内五项 `min_count=1`，触发 `budget.sites`（上限 4）并终止。响应格式有效，业务语义与 A→C→D 的“需求＝场地类型”契约不一致；v2 失败保留，余三例未运行 | 澄清 A/C skill，令 A 场地预算违规可反馈重试但绝不放宽硬上限；另预登记 v3 |
 | 2026-10-11 | root | 澄清 A/C 的场地语义并保留硬预算，另冻结 v3 同输入批次 | A 的道路/入口/室内纳入场地描述与验收条件，C 不额外建类型；超限以 `brief.site_budget` 重试，但总数仍不超过 `max_sites`；针对性回归 38 passed。v3 预登记在首次真实调用之前，v1/v2 失败不删除 | 跑 v3 单层案例，复核各阶段真实响应、usage 与导出 |
+| 2026-10-11 | root | v3 单层真实调用 | A—D 各一次通过；E 两次 `api.incomplete`，总 6 次请求、189.141 秒、本地保守计账 79210 token，最终 `stage.exhausted`；成功响应的 usage 分别为 A 1114/2630、B 1575/844、C 1549/2033、D 2859/4803，E 未取得完成响应/usage。未产生 WIR 或目标导出，失败保留；余三例未启动 | 根据官方参数文档，显式关闭思考模式做独立 v4 对照；不把本地计账当成实际账单 |
+| 2026-10-11 | root | 为 DeepSeek 官方 Chat 增加可选思考模式开关，冻结 v4 对照 | 官方文档默认思考开启；v4 仅显式 `deepseek_thinking=disabled`，与 v3 相同四例、skills、单次输出上限和其余预算；39 项针对性回归通过。`api.incomplete` 未留 finish_reason，截断仍为假设而非已证实原因 | 先跑 v4 单层例并复核输出；成功再离线回放与逐例继续 |
 
 ## 交接说明
 

@@ -303,9 +303,13 @@ def test_http_error_hint_redacts_key_and_bounds_untrusted_body():
     assert len(message) < 400
 
 
-def test_api_wire_and_secret_boundary(tmp_path, config, sample, monkeypatch):
+@pytest.mark.parametrize("thinking,endpoint", [(None, "https://example.invalid/v1/chat/completions"),
+                                                   ("disabled", "https://api.deepseek.com/chat/completions")])
+def test_api_wire_and_secret_boundary(tmp_path, config, sample, monkeypatch, thinking, endpoint):
     from world_builder.agents import providers
-    config.update(endpoint="https://example.invalid/v1/chat/completions", model="user-selected-model")
+    config.update(endpoint=endpoint, model="user-selected-model")
+    if thinking:
+        config["deepseek_thinking"] = thinking
     monkeypatch.setenv("WORLD_BUILDER_API_KEY", "test-secret-never-log")
     requests = []
     class Response:
@@ -320,6 +324,7 @@ def test_api_wire_and_secret_boundary(tmp_path, config, sample, monkeypatch):
             assert req.headers["Authorization"] == "Bearer test-secret-never-log"
             assert body["response_format"] == {"type": "json_object"}
             assert body["max_completion_tokens"] == config["limits"]["max_output_tokens"]
+            assert body.get("thinking") == ({"type": thinking} if thinking else None)
             data = strict_json(body["messages"][1]["content"])
             requests.append(data)
             envelope = {k: data[k] for k in ("contract_version", "stage", "request_id", "scope_id")}

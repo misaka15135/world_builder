@@ -154,6 +154,8 @@ CONFIG_SCHEMA = obj(
                attempts=integer(1, 4), review_rounds=integer(0, 3),
                workers=integer(1, 8), max_sites=integer(1, 64),
                max_parts=integer(1, 16000), max_voxels=integer(1000, 20000000)))
+# Optional, DeepSeek-specific wire control. Old provider configs remain valid.
+CONFIG_SCHEMA["properties"]["deepseek_thinking"] = enum("enabled", "disabled")
 
 HASH = {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
 E_MAP = {"type": "object", "patternProperties": {ID["pattern"]: PAYLOADS["E"]},

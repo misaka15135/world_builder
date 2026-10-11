@@ -58,6 +58,7 @@ python tools/generate_agent_world.py --config config/agents.local.json --prompt 
 | `response_format` | Chat 协议的 `json_object` 或 `json_schema`；后者要求服务支持使用的 Schema 子集 |
 | `token_parameter` | Chat 协议的 `max_completion_tokens` 或兼容服务的 `max_tokens` |
 | `api_key_env` | 保存令牌的环境变量名；配置不含实际密钥 |
+| `deepseek_thinking` | 可选，仅 DeepSeek 官方 Chat endpoint 可用；`enabled`/`disabled` 显式控制其思考模式，省略时沿用服务端默认值 |
 
 Chat 协议使用 system 消息加载本地 skill，user 消息提供请求、依赖与 Schema。服务器要返回一个完成的文本 choice 和整数 token usage；拒绝 tool calls、拒答和截断响应。JSON 模式仍需本地 Schema 校验。[OpenAI 官方 Structured Outputs 文档](https://developers.openai.com/api/docs/guides/structured-outputs)说明了 JSON 模式与 Schema 约束的区别、截断与拒答处理；访问日期 2026-09-29。此来源用于协议字段，不构成其它供应商兼容性承诺。
 
