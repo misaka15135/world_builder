@@ -4,7 +4,7 @@
 - 创建日期：2026-09-29
 - 执行者：root
 - 依赖：023；新增能力批次分别需要 031、034、036
-- 修改范围：预登记 DeepSeek 官方 API 首批评估案例与预算、无密钥配置和本地运行指引、匿名化结果摘要及目标导出验证记录；首例 HTTP 400 诊断增加 `src/world_builder/agents/providers.py` 的安全错误分类、相应单元测试和 `tools/diagnose_live_024.py` 的一次性本地诊断入口。用户改用桌面密钥文件后，允许诊断入口及 `tools/run_live_024.py` 只读取该文件第一行，不输出密钥。密钥与原始调用日志仅保存在本地忽略目录。
+- 修改范围：预登记 DeepSeek 官方 API 首批评估案例与预算、无密钥配置和本地运行指引、匿名化结果摘要及目标导出验证记录；首例 HTTP 400 诊断增加 `src/world_builder/agents/providers.py` 的安全错误分类、相应单元测试和 `tools/diagnose_live_024.py` 的一次性本地诊断入口。用户改用桌面密钥文件后，允许诊断入口及 `tools/run_live_024.py` 只读取该文件第一行，不输出密钥。原 v1 首例保留；同配置同输入另冻结 `benchmarks/agent_live_024_deepseek_v2.json` 并让运行入口按批次隔离输出。密钥与原始调用日志仅保存在本地忽略目录。
 
 ## 目标与范围
 
@@ -41,6 +41,7 @@
 | 2026-10-11 | root | 冻结四例 DeepSeek Flash 预登记和无密钥配置，提供单例本机输入与离线回放入口 | [`benchmarks/agent_live_024_deepseek_v1.json`](../benchmarks/agent_live_024_deepseek_v1.json)、[`config/agents.deepseek-024.json`](../config/agents.deepseek-024.json)、[`tools/run_live_024.py`](../tools/run_live_024.py)、[运行说明](../docs/08_live_evaluation_024.md)；同一配置的人工响应预检完成 7 次离线阶段调用、45 Unity 网格、2707 Minecraft 方块，真实网络调用 0 | 本机安全输入密钥，运行单层首例并分析真实 usage、失败和导出 |
 | 2026-10-11 | root | 首例用用户本机输入的密钥请求 DeepSeek 官方 API | `single_storey` 两次 A 阶段请求均返回 HTTP 400，`result.json` 为 `failed`，没有模型响应或 usage；此失败保留在首批分母，不覆盖或删改。现有 Provider 只记录状态码，无法判断具体请求字段问题 | 增加不记录密钥的服务端错误摘要和单次诊断，先查明 400，再冻结修正后的新批次 |
 | 2026-10-11 | root | 增加服务端错误摘要脱敏与单次 A 请求诊断入口 | 针对性测试 37 passed；诊断尚未发出新请求。等待用户完成密钥轮换后，在本机窗口输入新密钥；不能继续使用已公开的旧密钥 | 执行一次诊断并根据服务端字段提示修正协议，预登记 v2 批次 |
+| 2026-10-11 | root | 用用户指定的桌面密钥文件第一行做一次原始 A 请求诊断 | DeepSeek 返回 `deepseek-flash`，986 输入 / 5475 输出 token，27.265 秒；响应 request_id 与原始请求一致，A 阶段 JSON Schema 有效。该诊断不纳入 v1 四例分母，未复现 400；旧 400 原因无法凭现有证据判定。完整回归 247 passed | 冻结隔离的 v2 四例批次，先跑单层完整链路 |
 
 ## 交接说明
 

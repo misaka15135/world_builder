@@ -19,9 +19,6 @@ from world_builder.agents.providers import load_config  # noqa: E402
 from world_builder.storage.worldpkg import read_worldpkg  # noqa: E402
 from world_builder.wir.validator import load_and_validate  # noqa: E402
 
-REGISTER = ROOT / "benchmarks/agent_live_024_deepseek_v1.json"
-
-
 def sha256(path: Path) -> str:
     return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -53,13 +50,16 @@ def verify_replay(original: Path, replay: Path) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true", help="validate setup without API access")
+    parser.add_argument("--batch-version", choices=("v1", "v2"), default="v1",
+                        help="registered batch version; v1 is retained for replay and audit")
     parser.add_argument("--case", help="one case ID from the registered batch")
     parser.add_argument("--replay", action="store_true", help="replay a completed API case offline")
     parser.add_argument("--key-file", type=Path,
                         help="read only the first line locally; never print or copy the key")
     args = parser.parse_args()
 
-    batch = json.loads(REGISTER.read_text(encoding="utf-8"))
+    register = ROOT / f"benchmarks/agent_live_024_deepseek_{args.batch_version}.json"
+    batch = json.loads(register.read_text(encoding="utf-8"))
     cases = {item["id"]: item for item in batch["cases"]}
     config_path = ROOT / batch["config"]
     config = load_config(config_path)
@@ -78,7 +78,7 @@ def main() -> int:
     if args.case not in cases:
         parser.error("--case must be one of: " + ", ".join(cases))
 
-    original = ROOT / "artifacts" / "agent-runs" / "live-024-deepseek-v1" / args.case
+    original = ROOT / "artifacts" / "agent-runs" / f"live-024-deepseek-{args.batch_version}" / args.case
     output = original.with_name(original.name + "-replay") if args.replay else original
     if output.exists():
         parser.error(f"output already exists; never overwrite a registered result: {output}")
@@ -122,7 +122,7 @@ def main() -> int:
         exit_code = run_agent(command)
         if output.exists():
             context = {"batch_id": batch["batch_id"], "case_id": args.case,
-                       "prereg_sha256": sha256(REGISTER), "config_sha256": sha256(config_path),
+                       "prereg_sha256": sha256(register), "config_sha256": sha256(config_path),
                        "checkout_commit": revision, "endpoint": config["endpoint"],
                        "model": config["model"], "program_exit_code": exit_code}
             (output / "evaluation_context.json").write_text(

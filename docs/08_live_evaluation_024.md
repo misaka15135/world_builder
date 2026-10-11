@@ -38,3 +38,13 @@ python tools/run_live_024.py --case single_storey --replay
 ## 首例 HTTP 400 诊断记录
 
 2026-10-11 首次 `single_storey` 真实调用在 A 阶段两次收到 HTTP 400，未获得模型内容或服务端 usage。此案例仍属于 v1 的四例分母，不覆盖输出或把诊断请求算作新的预登记样本。DeepSeek [错误码说明](https://api-docs.deepseek.com/quick_start/error_codes/)将 400 归为请求格式错误，具体字段需要服务端错误正文确认。Provider 现在只保留长度受限且密钥脱敏的错误摘要；独立诊断脚本 `tools/diagnose_live_024.py` 使用原始 A 请求做至多一次请求，结果放在被 Git 忽略的 `diagnostic-A/`，与评估样本分开。若需修复配置或协议，应另冻版本再运行，不能改写 v1 记录。
+
+使用新密钥、原请求及原配置的一次独立诊断返回 `deepseek-flash`，986 输入 / 5475 输出 token，响应通过 A 阶段 JSON Schema。它证明该请求在诊断时可用，但不能证明原 HTTP 400 的具体原因。v1 只启动了单层案例，失败仍保留；其余三例未启动。另以完全相同的四例输入、预算、模型、skill 与验收口径冻结 [v2 批次](../benchmarks/agent_live_024_deepseek_v2.json)，以隔离重试和原记录：
+
+```powershell
+python tools/run_live_024.py --batch-version v2 --check
+python tools/run_live_024.py --batch-version v2 --case single_storey --key-file C:\Users\rjc\Desktop\api.txt
+python tools/run_live_024.py --batch-version v2 --case single_storey --replay
+```
+
+v2 输出在 `artifacts/agent-runs/live-024-deepseek-v2/`；上述回放仅在真实案例完成后运行，且不读取密钥文件。每个已启动的 v2 案例都计入 v2 分母，不能用 v1 或诊断结果替代。
