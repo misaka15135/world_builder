@@ -19,6 +19,8 @@ python tools/run_live_024.py --case single_storey
 
 第二条命令会在本机终端无回显地提示输入 DeepSeek API 密钥；密钥只设置在这次 Python 进程的 `WORLD_BUILDER_API_KEY` 环境变量里，不写入配置或结果。不要把密钥发到聊天、命令行参数或截图。若已由可信的本地运行环境设置该变量，脚本不会再提示。其余 ID 为 `two_storey_shop`、`multiple_sites`、`uneven_ground`，逐个运行并检查上一个结果。输出写入被 Git 忽略的 `artifacts/agent-runs/live-024-deepseek-v1/<case-id>/`，已有同名目录时拒绝覆盖。`evaluation_context.json` 只记录案例、配置及预登记哈希、代码提交与退出码，不含密钥。
 
+如果密钥较长，可将其放在本机 UTF-8 或带 BOM 的 UTF-16 文本文件第一行，使用 `--key-file C:\Users\rjc\Desktop\api.txt`。程序只读取首行并将其用于当前进程，不输出密钥或将文件复制进仓库。桌面明文文件仍有被其他程序或同步服务读取的风险，评估后应由用户自行安全删除或移入受保护的密钥管理器；不要提交该文件。
+
 ## 结果复核
 
 每例检查 `result.json`、`events.jsonl`、`calls/*/{request,response,completion}.json` 的请求身份、响应哈希、真实模型 usage、首次接受与拒绝原因；失败的调用也保留。成功案例用同一脚本离线回放：

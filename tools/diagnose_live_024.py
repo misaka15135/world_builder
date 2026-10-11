@@ -2,6 +2,7 @@
 """Retry one recorded A-stage request solely to diagnose a DeepSeek HTTP 400."""
 from __future__ import annotations
 
+import argparse
 import getpass
 import hashlib
 import json
@@ -23,6 +24,10 @@ OUTPUT = ROOT / "artifacts/agent-runs/live-024-deepseek-v1/diagnostic-A"
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--key-file", type=Path,
+                        help="read only the first line locally; never print or copy the key")
+    args = parser.parse_args()
     if OUTPUT.exists():
         raise SystemExit("Diagnostic output already exists; refusing to overwrite it")
     request_bytes = SOURCE.read_bytes()
@@ -31,7 +36,13 @@ def main() -> int:
     key_name = config["api_key_env"]
     entered_key = not bool(os.environ.get(key_name))
     if entered_key:
-        key = getpass.getpass("DeepSeek API key (input hidden): ").strip()
+        if args.key_file:
+            with args.key_file.open("rb") as stream:
+                encoding = "utf-16" if stream.read(2) in (b"\xff\xfe", b"\xfe\xff") else "utf-8-sig"
+            with args.key_file.open("r", encoding=encoding) as stream:
+                key = stream.readline().strip()
+        else:
+            key = getpass.getpass("DeepSeek API key (input hidden): ").strip()
         if not key:
             raise SystemExit("API key is required")
         os.environ[key_name] = key

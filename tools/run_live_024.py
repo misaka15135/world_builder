@@ -55,6 +55,8 @@ def main() -> int:
     parser.add_argument("--check", action="store_true", help="validate setup without API access")
     parser.add_argument("--case", help="one case ID from the registered batch")
     parser.add_argument("--replay", action="store_true", help="replay a completed API case offline")
+    parser.add_argument("--key-file", type=Path,
+                        help="read only the first line locally; never print or copy the key")
     args = parser.parse_args()
 
     batch = json.loads(REGISTER.read_text(encoding="utf-8"))
@@ -100,7 +102,13 @@ def main() -> int:
     key_name = config["api_key_env"]
     entered_key = not bool(os.environ.get(key_name))
     if entered_key:
-        key = getpass.getpass("DeepSeek API key (input hidden, held only in this process): ").strip()
+        if args.key_file:
+            with args.key_file.open("rb") as stream:
+                encoding = "utf-16" if stream.read(2) in (b"\xff\xfe", b"\xfe\xff") else "utf-8-sig"
+            with args.key_file.open("r", encoding=encoding) as stream:
+                key = stream.readline().strip()
+        else:
+            key = getpass.getpass("DeepSeek API key (input hidden, held only in this process): ").strip()
         if not key:
             parser.error("API key is required")
         os.environ[key_name] = key
