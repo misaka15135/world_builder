@@ -74,3 +74,5 @@ python tools/run_live_024.py --batch-version v4 --case single_storey --replay
 ```
 
 结果位于 `artifacts/agent-runs/live-024-deepseek-v4/`。首例后逐项检查并决定是否继续另外三例；任何已启动的 v4 案例均计入 v4 分母。
+
+v4 单层例实际在 25.11 秒内发出 7 次请求，服务端记录的输入/输出 usage 合计 21,425 token。A 首次为 `json.invalid`、C 首次为 `contract.schema`，各重试后被接受；但 A 仍把“可步行街道”单列为场地需求，C 因覆盖规则建立街道场地类型。D 两次试图把 1 m 厚的道路作为至少 3 m 高的建筑场地放置，均被 `siting.size` 拒绝。故 v4 最终失败，未形成 WIR 或目标导出；其余三例未启动。关闭思考模式缩短了耗时，但本实验不能证明流程可行，也不能推断总体模型质量。现暂停新增付费样本，待道路/建造场地在需求契约中有明确类型区分，并补足不完整响应的 finish_reason/usage 留证后再冻结后续批次。
