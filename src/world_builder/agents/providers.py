@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import os
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
@@ -37,6 +39,28 @@ def load_config(path):
 class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         return None
+
+
+def _http_error_message(exc: urllib.error.HTTPError, key: str) -> str:
+    """Keep a bounded provider hint, never an authorization value or raw body."""
+    fallback = f"HTTP {exc.code}; inspect provider configuration or quota"
+    try:
+        payload = json.loads(exc.read(4096))
+        error = payload.get("error") if isinstance(payload, dict) else None
+        if not isinstance(error, dict):
+            return fallback
+        fields = []
+        for name in ("type", "code", "param", "message"):
+            value = error.get(name)
+            if not isinstance(value, str) or not value:
+                continue
+            value = value.replace(key, "[redacted]")
+            value = re.sub(r"(?i)sk[-_][A-Za-z0-9_-]{8,}", "[redacted]", value)
+            value = " ".join(value.split())[:300]
+            fields.append(f"{name}={value}")
+        return f"HTTP {exc.code}; " + "; ".join(fields) if fields else fallback
+    except (OSError, ValueError, TypeError):
+        return fallback
 
 
 class APIProvider:
@@ -84,7 +108,7 @@ class APIProvider:
                     raise AgentError("api.status", f"HTTP {response.status}")
                 wire = response.read(config["limits"]["max_response_bytes"] + 1)
         except urllib.error.HTTPError as exc:
-            raise AgentError("api.http", f"HTTP {exc.code}; inspect provider configuration or quota") from None
+            raise AgentError("api.http", _http_error_message(exc, self.key)) from None
         except (OSError, TimeoutError) as exc:
             raise AgentError("api.transport", f"API request failed: {type(exc).__name__}") from None
         if len(wire) > config["limits"]["max_response_bytes"]:

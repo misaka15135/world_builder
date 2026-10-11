@@ -5,10 +5,12 @@ from collections import Counter
 from copy import deepcopy
 import gzip
 import hashlib
+import io
 import json
 from pathlib import Path
 import struct
 from threading import Barrier, Lock
+import urllib.error
 
 import pytest
 from jsonschema import Draft202012Validator
@@ -18,7 +20,7 @@ from world_builder.agents.compiler import compile_package, export_geometry, save
 from world_builder.agents.contracts import (AgentError, ROOT, STAGES, canonical, contract_document,
                                            digest, response_schema, strict_json, validate_schema)
 from world_builder.agents.providers import (APIProvider, Completion, FixtureProvider, ReplayProvider,
-                                           decode_wire, load_config)
+                                           _http_error_message, decode_wire, load_config)
 from world_builder.agents.runtime import Supervisor
 from world_builder.agents.validation import check_plan
 from world_builder.storage.worldpkg import read_worldpkg
@@ -269,6 +271,18 @@ def test_provider_placeholder_is_rejected_before_any_network(config, monkeypatch
     with pytest.raises(AgentError) as exc:
         APIProvider(config)
     assert exc.value.code == "api.placeholder"
+
+
+def test_http_error_hint_redacts_key_and_bounds_untrusted_body():
+    key = "sk-private-key-12345678"
+    body = canonical({"error": {"type": "invalid_request_error", "code": "invalid_format",
+                                "message": "bad field for " + key + " " + "x" * 1000}})
+    error = urllib.error.HTTPError("https://api.deepseek.com/chat/completions", 400,
+                                   "Bad Request", {}, io.BytesIO(body))
+    message = _http_error_message(error, key)
+    assert "HTTP 400" in message and "invalid_format" in message
+    assert key not in message and "[redacted]" in message
+    assert len(message) < 400
 
 
 def test_api_wire_and_secret_boundary(tmp_path, config, sample, monkeypatch):

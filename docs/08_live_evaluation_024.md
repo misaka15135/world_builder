@@ -32,3 +32,7 @@ python tools/run_live_024.py --case single_storey --replay
 人工逐例按预登记的 `manual_focus` 核对需求符合、布局、风格和必要手工修整。目标验收按文件结构、Unity/Minecraft 实际导入与重开、碰撞或支撑、适用的连续通行分开记录；缺少目标环境或未实际执行时写 `not_run`，不能用已有旧分支截图代替。四例均完成机器检查才可称本首批机器验收通过；四例样本不足以估计总体成功率。
 
 本批完成后，024 仍须等待自然/混合场景、用户反馈修改及新版双目标真实场景的后续批次，不能仅凭本批将工单置为 `done`。
+
+## 首例 HTTP 400 诊断记录
+
+2026-10-11 首次 `single_storey` 真实调用在 A 阶段两次收到 HTTP 400，未获得模型内容或服务端 usage。此案例仍属于 v1 的四例分母，不覆盖输出或把诊断请求算作新的预登记样本。DeepSeek [错误码说明](https://api-docs.deepseek.com/quick_start/error_codes/)将 400 归为请求格式错误，具体字段需要服务端错误正文确认。Provider 现在只保留长度受限且密钥脱敏的错误摘要；独立诊断脚本 `tools/diagnose_live_024.py` 使用原始 A 请求做至多一次请求，结果放在被 Git 忽略的 `diagnostic-A/`，与评估样本分开。若需修复配置或协议，应另冻版本再运行，不能改写 v1 记录。
