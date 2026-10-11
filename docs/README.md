@@ -1,6 +1,6 @@
 # 项目文档索引
 
-更新日期：2026-10-10。先辨明文档描述的是当前目标、现有行为还是历史证据，再用于设计和执行。
+更新日期：2026-10-11。先辨明文档描述的是当前目标、现有行为还是历史证据，再用于设计和执行。
 
 ## 当前入口
 
@@ -10,6 +10,7 @@
 | [05 Agent 流水线](05_api_agent_pipeline.md) | 当前 0.1.0 固定 A—F 的运行、API、回放与限制 |
 | [06 网页测试台](06_web_workbench.md) | HTTP API v1、只读预览、任务与历史管理 |
 | [07 桌面应用](07_desktop_application.md) | Windows 0.1.0 便携包、数据目录、依赖和构建 |
+| [08 真实 API 首批评估](08_live_evaluation_024.md) | 024 的 DeepSeek 四例预登记、预算、无回显密钥输入及分层验收 |
 | [Agent JSON 契约](contracts/api-agents-v0.1.md) | 023 已实现的严格请求/响应与几何规则 |
 | [WIR 契约](contracts/wir-v0.1.md) / [存储入口](../storage/README.md) | 源世界、版本、事务、资源与交换边界 |
 | [工单索引](../work_order/README.md) / [总规划](../work_order/000_project_master_plan.md) | 任务状态、依赖、验收与当前实施顺序 |

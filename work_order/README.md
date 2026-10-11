@@ -6,7 +6,7 @@
 
 ## 当前路线与状态
 
-023—026 完成的是固定 A—F 原型及只读应用，不能代表真实模型、自然场景或编辑能力已验收。029—038 均 planned，实施入口为 029；035 首批 profile 可先交付，032/030 随后推进。024 分批积累真实效果证据；038 负责历史状态核对。039 本轮只对齐核心文档。完整依赖见总规划的“当前实施路线”，IFC 不属于必经阶段。
+023、025、026 完成的是固定 A—F 原型及只读应用，不能代表真实模型、自然场景或编辑能力已验收。024 已开始 DeepSeek 官方 API 首批预登记，真实调用尚待本机密钥输入；029—038 均 planned，实施入口为 029。035 首批 profile 可先交付，032/030 随后推进；038 负责历史状态核对。完整依赖见总规划的“当前实施路线”，IFC 不属于必经阶段。
 
 ## 工单表
 
@@ -36,7 +36,7 @@
 | 021 | [风格建筑双目标样件](021_style_building_cross_target_sample.md) | done | root | 017、008、009 |
 | 022 | [新存档四场景重构](022_scene_reconstruction_new_world.md) | in_progress | root | 013—018、017、009 |
 | 023 | [API 模型驱动 A—F 流水线](023_api_agent_pipeline.md) | done | root | 005、013—018、008/009 |
-| 024 | [真实 API 与目标平台验收](024_api_agent_live_evaluation.md) | planned | 待认领 | 首批 023、008/009；新增批次 031、034、036 |
+| 024 | [真实 API 与目标平台验收](024_api_agent_live_evaluation.md) | in_progress | root | 首批 023、008/009；新增批次 031、034、036 |
 | 025 | [模块化本地应用与网页测试台](025_modular_web_workbench.md) | done | root | 023、005 |
 | 026 | [Windows 桌面应用初版](026_windows_desktop_application.md) | done | root | 023、025 |
 | 027 | [本地主线与验证分支职责调整](027_branch_role_alignment.md) | done | root | 023、025、026 |
