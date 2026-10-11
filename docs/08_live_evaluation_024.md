@@ -48,3 +48,15 @@ python tools/run_live_024.py --batch-version v2 --case single_storey --replay
 ```
 
 v2 输出在 `artifacts/agent-runs/live-024-deepseek-v2/`；上述回放仅在真实案例完成后运行，且不读取密钥文件。每个已启动的 v2 案例都计入 v2 分母，不能用 v1 或诊断结果替代。
+
+## v2 语义失败与 v3 预登记
+
+v2 单层首例的 A 响应格式有效，但把一栋房屋、道路、入口和房间拆为五个各需一个场地的需求，超过冻结的 `max_sites=4`，因此在一次调用后以 `budget.sites` 失败，没有继续到 B—F。这个结果保留；v2 其余三例未启动。A/C skill 现明确附属特征不单独占场地；A 超限仍被硬规则拒绝，但以 `brief.site_budget` 在阶段尝试预算内允许反馈重提。原输入、上限、模型和验收口径冻结为独立的 [v3 批次](../benchmarks/agent_live_024_deepseek_v3.json)：
+
+```powershell
+python tools/run_live_024.py --batch-version v3 --check
+python tools/run_live_024.py --batch-version v3 --case single_storey --key-file C:\Users\rjc\Desktop\api.txt
+python tools/run_live_024.py --batch-version v3 --case single_storey --replay
+```
+
+三版的运行日志与分母独立；后两版是调试后的新评估，不能抹去先前两次失败或作为无偏模型成功率估计。

@@ -194,6 +194,24 @@ def test_schema_refuses_unknown_fields_and_cross_scope_response(sample):
     assert strict_json((ROOT / "schemas/agent-response-0.1.0.schema.json").read_bytes()) == contract_document()
 
 
+def test_a_site_budget_keeps_hard_limit_but_allows_model_retry(tmp_path, config, sample):
+    config["limits"].update(max_sites=4, attempts=2)
+    def split_features_into_sites(request, response, number):
+        if request["stage"] == "A":
+            requirements = response["payload"]["requirements"]
+            for suffix in ("road", "entrance", "room"):
+                item = deepcopy(requirements[0])
+                item["id"] = suffix
+                requirements.append(item)
+        return response
+    provider = ScriptedProvider(split_features_into_sites)
+    with pytest.raises(AgentError) as exc:
+        run(tmp_path, config, sample, provider)
+    assert exc.value.code == "stage.exhausted"
+    assert "brief.site_budget" in str(exc.value)
+    assert provider.counts[("A", "scene")] == 2
+
+
 @pytest.mark.parametrize("case", ["missing_type", "missing_site", "floating_site", "road_through_site",
                                  "solid_room", "blocked_door", "teleport", "missing_floor_path", "forged_approval"])
 def test_semantic_failures_are_not_overridden_by_f(config, sample, case):

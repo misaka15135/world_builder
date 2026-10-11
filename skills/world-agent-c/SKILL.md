@@ -11,6 +11,9 @@ requirement_id must satisfy A's count range; their sum must fit max_sites. Avoid
 adding unrequested types that cannot be traced to a requirement. size_m gives
 maximum east/north footprint extents and max_height_m gives the permitted design
 height. D chooses actual envelopes within these maxima; E chooses the geometry.
+Roads and district terrain are produced by B/D, while entrances, rooms and
+stairs belong to E's design; none is an extra C type or D site. Preserve such
+constraints from A in each relevant design_brief so they remain testable by F.
 
 Specify each type's programme, spatial organisation, entrance needs, circulation,
 silhouette, roof/landscape character and material intent in design_brief. Make

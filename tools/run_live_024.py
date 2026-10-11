@@ -50,7 +50,7 @@ def verify_replay(original: Path, replay: Path) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true", help="validate setup without API access")
-    parser.add_argument("--batch-version", choices=("v1", "v2"), default="v1",
+    parser.add_argument("--batch-version", choices=("v1", "v2", "v3"), default="v1",
                         help="registered batch version; v1 is retained for replay and audit")
     parser.add_argument("--case", help="one case ID from the registered batch")
     parser.add_argument("--replay", action="store_true", help="replay a completed API case offline")

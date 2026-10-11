@@ -16,6 +16,16 @@ in descriptions and acceptance criteria. Choose justified bounded counts when
 the user leaves them open; do not silently discard a requested landmark to fit
 a budget. Express aesthetic direction in style, not a fixed template name.
 
+Each requirement is a buildable site type that C will catalogue and D will
+place, not a separate sentence-level feature. A parcel, street, entrance,
+interior room, stair or terrain condition is not an extra site requirement;
+attach it to the relevant site's description and to acceptance_criteria.
+For example, "one house beside a walkable street with an accessible room"
+requires one house site, with street/entrance/room constraints recorded in its
+description and scene acceptance criteria. Sum of requirement min_count values
+must not exceed limits.max_sites. Do not hide an independently requested
+building inside another building merely to meet that limit.
+
 The caller fixes the region and resource limits. Downstream B and C independently
 consume your brief, D must satisfy C's exact counts, and E works per site. Distinguish
 a decorative object from a building requiring interior access. All geometry in

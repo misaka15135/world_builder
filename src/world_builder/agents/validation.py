@@ -65,7 +65,8 @@ def check_plan(stage, payload, plans, *, region_m, limits, scope_id="scene"):
         for item in payload["requirements"]:
             require(item["min_count"] <= item["max_count"], "brief.count", "Reversed requirement count")
         require(sum(x["min_count"] for x in payload["requirements"]) <= limits["max_sites"],
-                "budget.sites", "Required sites exceed caller's limit")
+                "brief.site_budget",
+                "A requirements imply too many sites; keep roads, entrances and rooms as site/scene criteria")
     elif stage == "B":
         step, grid = payload["cell_m"], payload["heights"]
         require(region_m % step == 0 and len(grid) == region_m // step

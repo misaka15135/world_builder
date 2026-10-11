@@ -1,0 +1,45 @@
+{
+  "batch_id": "024-deepseek-official-v3",
+  "date_registered": "2026-10-11",
+  "reason": "The v2 single_storey response split one house, road, entrance and room into five site requirements and hit max_sites=4. A/C instructions now clarify that ancillary features do not each consume a site; A site-budget violations are retryable within the existing attempt limit. The hard site limit, provider, four inputs and all success criteria remain unchanged. V1/v2 failures remain separate.",
+  "scope": "Existing 0.1.0 fixed A-F building-oriented pipeline only; later natural, editing and target-adapter batches are separate.",
+  "config": "config/agents.deepseek-024.json",
+  "sample_count": 4,
+  "sample_policy": "One run per case. Every started v3 run remains in the v3 denominator, including API, schema, geometry, budget and export failures. Earlier batches and the one-request diagnostic are never overwritten or counted as v3 samples.",
+  "success": {
+    "machine": "result.json succeeds, source geometry validates, WIR package round-trips, Unity GLB and Minecraft schematic are produced from the same revision, and exact offline replay reproduces the package and target hashes.",
+    "human": "Record requirement coverage, spatial layout, style, visible target usability and every manual correction for each successful sample; missing evidence is unverified rather than pass.",
+    "batch": "Report completed cases out of all four, first-attempt success, rejections by category, retries, wall time and provider-reported tokens. Four of four machine successes are required to call v3 machine passed; this small sample does not establish a population success rate.",
+    "target_levels": ["file_structure", "actual_import_and_reopen", "collision_or_support", "continuous_walk_when_applicable"]
+  },
+  "cases": [
+    {
+      "id": "single_storey",
+      "prompt": "在一块32米见方的平坦区域内，沿一条可步行的街道建造一栋单层木屋。木屋需要一个面向街道的入口和一间能够从街道进入的室内房间。",
+      "region_m": 32,
+      "seed": 41,
+      "manual_focus": ["一栋木屋", "单层", "入口接街道", "室内可进入"]
+    },
+    {
+      "id": "two_storey_shop",
+      "prompt": "在一块32米见方的街区内建造一栋两层木构商铺。一层是沿街商店，二层是一间居室；从街道进入商店后，应能沿楼梯连续到达二层居室。",
+      "region_m": 32,
+      "seed": 42,
+      "manual_focus": ["一栋商铺", "两层用途", "沿街入口", "楼梯与二层通路"]
+    },
+    {
+      "id": "multiple_sites",
+      "prompt": "在一块48米见方的平坦街区内建造一间单层商铺和一栋单层住宅。两栋建筑分开布置，各自有入口，街道应连接两处入口，留下可辨认的公共空地。",
+      "region_m": 48,
+      "seed": 43,
+      "manual_focus": ["商铺与住宅各一栋", "场地不重叠", "两处入口接路", "公共空地"]
+    },
+    {
+      "id": "uneven_ground",
+      "prompt": "在一块32米见方的缓坡地形上建造一栋单层小屋和一条连接其入口的道路。地面需有可辨认的高差；小屋必须稳定落地，入口和道路应在该高差下保持可通行。",
+      "region_m": 32,
+      "seed": 44,
+      "manual_focus": ["地面确有高差", "小屋受地形支撑", "入口与道路连通", "通行不被地形堵塞"]
+    }
+  ]
+}
