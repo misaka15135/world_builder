@@ -77,6 +77,9 @@ class APIProvider:
         if "deepseek_thinking" in config and (endpoint.hostname != "api.deepseek.com" or
                                               config["protocol"] != "chat_completions"):
             raise AgentError("api.config", "deepseek_thinking requires the official DeepSeek Chat endpoint")
+        if "deepseek_reasoning" in config and (endpoint.hostname != "api.deepseek.com" or
+                                               config["protocol"] != "responses"):
+            raise AgentError("api.config", "deepseek_reasoning requires the official DeepSeek Responses endpoint")
         self.key = os.environ.get(config["api_key_env"], "") if api_key is None else api_key
         if not self.key or self.key.lower() == "yourapi":
             raise AgentError("api.credential", f"Set environment variable {config['api_key_env']}")
@@ -100,6 +103,17 @@ class APIProvider:
                 schema = {k: v for k, v in request["response_schema"].items() if k != "$schema"}
                 body["response_format"]["json_schema"] = {
                     "name": f"world_builder_{request['stage']}", "strict": True, "schema": schema}
+        elif config["protocol"] == "responses":
+            data = {k: v for k, v in request.items() if k != "instructions"}
+            schema = {k: v for k, v in request["response_schema"].items() if k != "$schema"}
+            body = {"model": model, "stream": False, "store": False,
+                    "instructions": request["instructions"],
+                    "input": canonical(data).decode("utf-8"),
+                    "max_output_tokens": config["limits"]["max_output_tokens"],
+                    "text": {"format": {"type": "json_schema",
+                                        "name": f"world_builder_{request['stage']}", "schema": schema}}}
+            if "deepseek_reasoning" in config:
+                body["reasoning"] = {"effort": config["deepseek_reasoning"]}
         else:
             body = {"model": model, "max_output_tokens": config["limits"]["max_output_tokens"], "request": request}
         req = urllib.request.Request(config["endpoint"], data=canonical(body), method="POST",
@@ -127,7 +141,20 @@ def decode_wire(wire, model, protocol):
         if protocol == "chat_completions":
             choices = body["choices"]
             if len(choices) != 1 or choices[0]["finish_reason"] != "stop":
-                raise AgentError("api.incomplete", "Expected exactly one complete, non-tool response")
+                reason = choices[0].get("finish_reason") if len(choices) == 1 else None
+                if reason not in ("length", "content_filter", "tool_calls",
+                                  "insufficient_system_resource", "aborted", "stop"):
+                    reason = "unknown"
+                reported = body.get("usage")
+                usage = None
+                if isinstance(reported, dict):
+                    prompt = reported.get("prompt_tokens")
+                    completion = reported.get("completion_tokens")
+                    if type(prompt) is int and prompt >= 0 and type(completion) is int and completion >= 0:
+                        usage = {"input_tokens": prompt, "output_tokens": completion}
+                raise AgentError("api.incomplete", f"Provider response incomplete (finish_reason={reason})",
+                                 details={"finish_reason": reason, "choice_count": len(choices),
+                                          "provider_usage": usage})
             message = choices[0]["message"]
             if message.get("refusal") or message.get("tool_calls"):
                 raise AgentError("api.refusal", "Provider refused or attempted a tool call")
@@ -136,6 +163,26 @@ def decode_wire(wire, model, protocol):
                 raise AgentError("api.content", "Expected text containing the response JSON")
             raw = content.encode("utf-8")
             input_tokens, output_tokens = body["usage"]["prompt_tokens"], body["usage"]["completion_tokens"]
+        elif protocol == "responses":
+            usage = body.get("usage")
+            if body.get("status") != "completed":
+                reason = body.get("incomplete_details")
+                reason = reason.get("reason") if isinstance(reason, dict) else None
+                if reason not in ("max_output_tokens", "content_filter"):
+                    reason = "unknown"
+                reported = None
+                if isinstance(usage, dict) and type(usage.get("input_tokens")) is int and type(usage.get("output_tokens")) is int:
+                    reported = {"input_tokens": usage["input_tokens"], "output_tokens": usage["output_tokens"]}
+                raise AgentError("api.incomplete", f"Provider response incomplete (reason={reason})",
+                                 details={"reason": reason, "provider_usage": reported})
+            output = body["output"]
+            if len(output) != 1 or output[0].get("type") != "message" or output[0].get("status") != "completed":
+                raise AgentError("api.content", "Expected one completed assistant message")
+            parts = output[0]["content"]
+            if len(parts) != 1 or parts[0].get("type") != "output_text" or not isinstance(parts[0].get("text"), str):
+                raise AgentError("api.content", "Expected one JSON output_text part")
+            raw = parts[0]["text"].encode("utf-8")
+            input_tokens, output_tokens = usage["input_tokens"], usage["output_tokens"]
         else:
             if set(body) != {"response", "usage", "model"}:
                 raise AgentError("api.contract", "Expected response, usage and model")
@@ -184,7 +231,7 @@ class ReplayProvider:
                 raise AgentError("replay.mismatch", "Recorded request differs")
             if not (path / "response.json").exists() and (path / "error.json").exists():
                 failure = strict_json((path / "error.json").read_bytes())
-                raise AgentError(failure["code"], failure["message"])
+                raise AgentError(failure["code"], failure["message"], details=failure.get("details"))
             meta = strict_json((path / "completion.json").read_bytes())
             raw = (path / "response.json").read_bytes()
         except OSError as exc:

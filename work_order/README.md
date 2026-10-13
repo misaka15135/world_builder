@@ -1,12 +1,16 @@
 # 工单索引与协作流程
 
-更新日期：2026-10-10。当前 main 为 Agent 场景搭建产品主线；codex/local-validation 为旧规则与本地验证对照。两条分支已同步远端并配置对应 upstream，默认分支为 main，见 [040](040_remote_branch_publication.md)。
+更新日期：2026-10-13。当前 main 为 Agent 场景搭建产品主线；codex/local-validation 为旧规则与本地验证对照。两条分支已同步远端并配置对应 upstream，默认分支为 main，见 [040](040_remote_branch_publication.md)。
 
 每次工作先阅读本文件、[总规划](000_project_master_plan.md) 和当前工单，按 [AGENTS](../AGENTS.md) 登记范围并记录证据。产品边界见 [当前项目基线](../docs/00_project_baseline.md)，其他资料用途见 [文档索引](../docs/README.md)。
 
 ## 当前路线与状态
 
-023、025、026 完成的是固定 A—F 原型及只读应用，不能代表真实模型、自然场景或编辑能力已验收。024 已用 DeepSeek 官方 API 运行四版各一个单层真实样本，均未完整通过：先后暴露 API HTTP 400、A 场地语义、E 不完整响应和道路被错误当作建筑场地。四版失败分别保留，尚无真实模型 WIR/目标导出；其余三类场景未启动，暂停新增付费样本等待契约分型和服务端错误留证改进。029—038 均 planned，实施入口为 029。035 首批 profile 可先交付，032/030 随后推进；038 负责历史状态核对。完整依赖见总规划的“当前实施路线”，IFC 不属于必经阶段。
+023、025、026 完成固定 A—F 原型及只读应用，不能代表自然场景或编辑能力已验收。024 的 DeepSeek v1—v15 隔离诊断均未完整通过，失败分别保留；041 的 v16 紧凑 E 单层例首次取得真实 API→WIR→Unity/Minecraft 文件及精确回放。它只证明最小机器闭环，不证明 F 文本审查正确、目标加载/实走或四例通过；024 仍 `in_progress`。029 已开始独立分型草案；030—038 仍 planned。035 首批 profile 可先交付，032/030 随后推进；038 负责历史状态核对。完整依赖见总规划的“当前实施路线”，IFC 不属于必经阶段。
+
+2026-10-12 的续测、账量和边界见 [024](024_api_agent_live_evaluation.md) 与 [紧凑 E 子契约](../docs/contracts/compact-e-v0.1.1.md)。029 的[版本隔离需求分型草案](../docs/contracts/scene-requirements-v0.2-draft.md)尚未接线当前 API 运行时，030 未启动。
+
+2026-10-13 用户将近期目标收敛为 [042 四旧场景真实 API 观感迁移](042_api_legacy_scene_visual_parity.md)：先冻结旧基线，接通模型参数与既有详细构建器，从魔法小街区推进到四场景，优先在 Unity 查看并对比。必要契约/目标能力子项与 029/035 协调，完整通用架构不作为本阶段前置。标准建筑库及缺能力时外部资产/生成器/skill 检索保存在 [043](043_reusable_assets_and_skill_discovery.md)，安排在 042 后。初次登记均 planned；用户随后授权首例实施，042 当前 in_progress，043 仍 planned。
 
 ## 工单表
 
@@ -41,7 +45,7 @@
 | 026 | [Windows 桌面应用初版](026_windows_desktop_application.md) | done | root | 023、025 |
 | 027 | [本地主线与验证分支职责调整](027_branch_role_alignment.md) | done | root | 023、025、026 |
 | 028 | [场景搭建后续工单规划](028_followup_work_order_planning.md) | done | root | 027 |
-| 029 | [通用场景需求与任务契约](029_scene_task_contracts.md) | planned | 待认领 | 023、028 |
+| 029 | [通用场景需求与任务契约](029_scene_task_contracts.md) | in_progress | root | 023、028 |
 | 030 | [能力驱动的任务调度与作用域返工](030_capability_task_runtime.md) | planned | 待认领 | 029、035 |
 | 031 | [自然景观资产与分布构建](031_natural_scene_assets.md) | planned | 待认领 | 029、030、032、035 |
 | 032 | [稳定世界身份与任务依赖存储](032_world_revision_identity.md) | planned | 待认领 | 005、023、029 |
@@ -53,8 +57,14 @@
 | 038 | [历史工单证据与当前职责核对](038_historical_work_order_reconciliation.md) | planned | 待认领 | 027、028 |
 | 039 | [核心文档与协作入口对齐](039_core_document_alignment.md) | done | root | 027、028 |
 | 040 | [全部更改推送与远端分支职责同步](040_remote_branch_publication.md) | done | root | 027、028、039 |
+| 041 | [紧凑建筑设计契约与受检几何桥接](041_compact_building_design_bridge.md) | done | root | 023、024 |
+| 042 | [真实 API 四个旧场景的观感迁移](042_api_legacy_scene_visual_parity.md) | in_progress | root | 023、041；协调 029/035，证据归 024 |
+| 043 | [可复用建筑资产与外部生成能力补充](043_reusable_assets_and_skill_discovery.md) | planned | 待认领 | 042 后；029、030、032、035；协调 031/036 |
+| 044 | [DeepSeek 实验与首个 Unity 街区分支发布](044_deepseek_branch_publication.md) | in_progress | root | 024、041、042；043 仅发布计划 |
 
-下一个可分配编号：041。编号由协调者串行分配，避免并行碰撞。
+下一个可分配编号：045。编号由协调者串行分配，避免并行碰撞。
+
+042 首个魔法小街区已启动并取得真实参数、有效 WIR/GLB、精确回放和 Unity 导入/同设置截图；目标实走与用户观感复核单独留证。[查看入口与证据](../docs/10_style042_arcane_street.md)。042 仍涵盖四个场景，首例交付不将整个工单置为 done；043 保持 planned。
 
 ## 执行约定
 

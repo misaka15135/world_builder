@@ -1,6 +1,6 @@
 # 项目文档索引
 
-更新日期：2026-10-11。先辨明文档描述的是当前目标、现有行为还是历史证据，再用于设计和执行。
+更新日期：2026-10-13。先辨明文档描述的是当前目标、现有行为还是历史证据，再用于设计和执行。
 
 ## 当前入口
 
@@ -10,10 +10,17 @@
 | [05 Agent 流水线](05_api_agent_pipeline.md) | 当前 0.1.0 固定 A—F 的运行、API、回放与限制 |
 | [06 网页测试台](06_web_workbench.md) | HTTP API v1、只读预览、任务与历史管理 |
 | [07 桌面应用](07_desktop_application.md) | Windows 0.1.0 便携包、数据目录、依赖和构建 |
-| [08 真实 API 首批评估](08_live_evaluation_024.md) | 024 的 DeepSeek 四例预登记、预算、无回显密钥输入及分层验收 |
+| [08 真实 API 评估](08_live_evaluation_024.md) | 024 的 DeepSeek 隔离批次、真实调用、失败留证、v16 最小机器闭环及分层验收 |
+| [024 输出可靠性调研](research/024_live_output_reliability.md) | 真实失败与官方资料、029/030 结构化契约及返修建议；建议不等于已实现 |
 | [Agent JSON 契约](contracts/api-agents-v0.1.md) | 023 已实现的严格请求/响应与几何规则 |
+| [场景需求分型草案](contracts/scene-requirements-v0.2-draft.md) | 029 的独立分型和引用校验；尚未接入当前 API 流水线 |
+| [紧凑 E 子契约](contracts/compact-e-v0.1.1.md) | 041 单栋单层、单房间实验模式；默认逐构件 E 未替换 |
 | [WIR 契约](contracts/wir-v0.1.md) / [存储入口](../storage/README.md) | 源世界、版本、事务、资源与交换边界 |
 | [工单索引](../work_order/README.md) / [总规划](../work_order/000_project_master_plan.md) | 任务状态、依赖、验收与当前实施顺序 |
+| [042 四旧场景真实 API 观感迁移](../work_order/042_api_legacy_scene_visual_parity.md) | 首个魔法小街区已交付机器/目标证据，四场景仍 in_progress |
+| [043 可复用资产与外部能力补充](../work_order/043_reusable_assets_and_skill_discovery.md) | 042 后的标准建筑库、生成器与外部 skill 检索思路；planned |
+| [10 详细魔法街区](10_style042_arcane_street.md) | 042 的首个真实 API 小街区、独立 Unity 查看与验证证据 |
+| [042 参数化街区契约](contracts/style042-v0.1.1.md) | 独立布局/建筑参数与详细源几何桥接；默认 0.1.0 入口保持原口径 |
 
 文档中的版本按其各自模块理解：Agent 0.1.0、WIR 0.1、HTTP API v1 和桌面 0.1.0 不是一次统一升级。029 等后续工单尚未改变当前 Schema、运行 skills 或 API。
 

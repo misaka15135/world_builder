@@ -1,0 +1,23 @@
+{
+  "batch_id": "024-deepseek-official-v8-responses-envelope",
+  "date_registered": "2026-10-12",
+  "reason": "v7's structured Responses API accepted A-D but E twice exceeded the 4 m local Z envelope while treating global site Z as additional height. This separate diagnostic adds opt-in E local-envelope arithmetic guidance, leaving the v7 provider, input, A projection, limits and schema unchanged. The supervisor still rejects overlap, inaccessible rooms and other geometry failures.",
+  "scope": "One existing 0.1.0 fixed A-F single-storey building case; not general typed-scene support.",
+  "config": "config/agents.deepseek-024-responses-envelope.json",
+  "sample_count": 1,
+  "sample_policy": "One run; all started calls count, including failures. Preserve v1-v7. Any further live fix requires a new batch.",
+  "success": {
+    "machine": "result.json succeeds, source geometry validates, WIR package round-trips, Unity GLB and Minecraft schematic are produced from the same revision, and exact offline replay reproduces package and target hashes.",
+    "human": "Inspect one single-storey timber house, connected street-facing entrance and reachable interior. Target import and actual walking are separate levels.",
+    "report": "Record calls, failures, elapsed time and provider usage. One diagnostic pass is not reliability proof."
+  },
+  "cases": [
+    {
+      "id": "single_storey",
+      "prompt": "在一块32米见方的平坦区域内，沿一条可步行的街道建造一栋单层木屋。木屋需要一个面向街道的入口和一间能够从街道进入的室内房间。",
+      "region_m": 32,
+      "seed": 41,
+      "manual_focus": ["一栋木屋", "单层", "入口接街道", "室内可进入"]
+    }
+  ]
+}

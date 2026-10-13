@@ -1,0 +1,84 @@
+{
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "concept": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 800
+    },
+    "road_y": {
+      "type": "integer",
+      "minimum": 20,
+      "maximum": 34
+    },
+    "road_width": {
+      "type": "integer",
+      "minimum": 4,
+      "maximum": 8
+    },
+    "sites": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,47}$"
+          },
+          "type": {
+            "enum": [
+              "residence",
+              "shop",
+              "plaza"
+            ]
+          },
+          "bank": {
+            "enum": [
+              "north",
+              "south"
+            ]
+          },
+          "x": {
+            "type": "integer",
+            "minimum": 2,
+            "maximum": 50
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 12,
+            "maximum": 20
+          },
+          "depth": {
+            "type": "integer",
+            "minimum": 10,
+            "maximum": 18
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "bank",
+          "x",
+          "width",
+          "depth"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 5,
+      "maxItems": 5
+    }
+  },
+  "required": [
+    "title",
+    "concept",
+    "road_y",
+    "road_width",
+    "sites"
+  ],
+  "additionalProperties": false
+}

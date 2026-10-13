@@ -1,0 +1,26 @@
+{
+  "contract_version": "0.1.0",
+  "endpoint": "https://api.deepseek.com/responses",
+  "model": "deepseek-flash",
+  "api_key_env": "WORLD_BUILDER_API_KEY",
+  "protocol": "responses",
+  "response_format": "json_schema",
+  "token_parameter": "max_tokens",
+  "deepseek_reasoning": "none",
+  "brief_normalization": "single_site_road_v1",
+  "stage_models": {"A": "yourapi", "B": "yourapi", "C": "yourapi", "D": "yourapi", "E": "yourapi", "F": "yourapi"},
+  "limits": {
+    "max_calls": 12,
+    "max_total_tokens": 100000,
+    "max_output_tokens": 16000,
+    "max_response_bytes": 2000000,
+    "timeout_s": 180,
+    "wall_time_s": 900,
+    "attempts": 2,
+    "review_rounds": 1,
+    "workers": 2,
+    "max_sites": 1,
+    "max_parts": 2000,
+    "max_voxels": 500000
+  }
+}

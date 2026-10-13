@@ -1,0 +1,57 @@
+{
+  "type": "object",
+  "properties": {
+    "verdict": {
+      "enum": [
+        "accept",
+        "revise"
+      ]
+    },
+    "evidence": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1200
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "site_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,47}$"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 600
+          }
+        },
+        "required": [
+          "site_id",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 5
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 600
+      },
+      "minItems": 0,
+      "maxItems": 12
+    }
+  },
+  "required": [
+    "verdict",
+    "evidence",
+    "issues",
+    "limitations"
+  ],
+  "additionalProperties": false
+}

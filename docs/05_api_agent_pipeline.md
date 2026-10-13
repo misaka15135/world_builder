@@ -6,6 +6,12 @@
 
 本文描述 main 已实现的 0.1.0 原型，固定阶段和建筑场地约束仍有效。产品目标及后续通用任务架构见 [当前项目基线](00_project_baseline.md)；029/030/031/035 尚未改变此版本，032/033 的稳定修订与用户修改也尚未实现。文中回放与 F 返工不等于用户可持续编辑同一世界。
 
+029 的[场景需求分型草案](contracts/scene-requirements-v0.2-draft.md)已有独立 Schema、校验器和人工样例，但没有接线到本页描述的 API 运行入口；运行本页命令仍使用 0.1.0，不能据此宣称真实模型道路分类已修复。
+
+024/041 另有**可选**的 [`0.1.1-e-shell` 紧凑 E 子契约](contracts/compact-e-v0.1.1.md)：只在隔离配置启用，模型给单层单房蓝图，本地投影受检几何。2026-10-12 的一次 DeepSeek 真调用已生成 WIR 与双目标文件并精确回放；默认逐构件 E、旧响应和通用 0.1.0 契约未替换。该例没有在游戏/Unity 中加载或实走，而且 F 对窗、门廊、坡屋顶有过度声称，详见 [024](08_live_evaluation_024.md)。
+
+042 的 [独立参数化街区入口](10_style042_arcane_street.md)使用 `0.1.1-style042`，由 D 提交受限布局参数、E 逐场地提交建筑参数，复用详细本地构建并以本地报告输入 F，再生成细尺寸 WIR。这里的 D 汇集首例已固定需求和布局，没有声称六个阶段都独立调用模型；它也不是默认 `generate_agent_world.py` 或客户端的一键模式。真实首例及 Unity 查看证据单独记录。
+
 模型负责需求、地形、类型清单、选址、逐栋构件与整场景审查。每个 agent 有独立的阶段说明、JSON Schema、依赖快照和响应记录；可以共用一个模型，也可以通过 `stage_models` 分别指定模型。E 按场地建立独立任务。
 
 ```mermaid
@@ -54,11 +60,13 @@ python tools/generate_agent_world.py --config config/agents.local.json --prompt 
 | `endpoint` | 完整 HTTPS POST 地址，例如自己的 `/v1/chat/completions`；不自动拼接路径 |
 | `model` | 用户模型 ID；不给出未经验证的默认商业模型 |
 | `stage_models` | A—F 分别指定模型；此处值为 `yourapi` 表示继承全局 model |
-| `protocol` | `chat_completions` 或 `json_contract` |
+| `protocol` | `chat_completions`、DeepSeek 官方 `responses` 或 `json_contract` |
 | `response_format` | Chat 协议的 `json_object` 或 `json_schema`；后者要求服务支持使用的 Schema 子集 |
 | `token_parameter` | Chat 协议的 `max_completion_tokens` 或兼容服务的 `max_tokens` |
 | `api_key_env` | 保存令牌的环境变量名；配置不含实际密钥 |
 | `deepseek_thinking` | 可选，仅 DeepSeek 官方 Chat endpoint 可用；`enabled`/`disabled` 显式控制其思考模式，省略时沿用服务端默认值 |
+| `deepseek_reasoning` | 可选，仅 DeepSeek 官方 Responses endpoint 可用；v16 使用 `none` |
+| `building_projection` | 可选实验开关 `compact_shell_v1`，仅 E 读取紧凑蓝图，其余阶段和最终 E 仍按 0.1.0 校验；详见紧凑 E 子契约 |
 
 Chat 协议使用 system 消息加载本地 skill，user 消息提供请求、依赖与 Schema。服务器要返回一个完成的文本 choice 和整数 token usage；拒绝 tool calls、拒答和截断响应。JSON 模式仍需本地 Schema 校验。[OpenAI 官方 Structured Outputs 文档](https://developers.openai.com/api/docs/guides/structured-outputs)说明了 JSON 模式与 Schema 约束的区别、截断与拒答处理；访问日期 2026-09-29。此来源用于协议字段，不构成其它供应商兼容性承诺。
 
@@ -89,6 +97,8 @@ F 最多请求默认 2 轮返工。B/C 变更使 D、全部 E、F 失效；D 变
 全局预算包括调用次数、token、并发、超时、场地数、构件数与体素分配。默认 32 个场地、3 个并发工作线程、128 次调用、单响应 16,000 output tokens；这些是可调资源上限，不是质量保证。发送前用请求字节数加 output 上限保守预留 token；返回后按服务 usage 结算。无法获知 usage 的失败请求保守扣掉预留值。服务仍可能违规超发，程序会检测并停止；本地计数不能替代供应商账户费用上限。
 
 网络无隐式重试，不跟随重定向。每次重试都入账。运行设墙钟时限，请求 socket timeout 取剩余时间与单次上限的较小者，返回后再次检查。取消/错误保留请求、响应和失败记录；已发出的网络请求只能等待其传输超时，本版没有供应商端取消 API。
+
+对 Chat Completions 的不完整响应，失败记录现在保留白名单化的 `finish_reason`、choice 数和可取得的服务端 token usage；这些只用于诊断，不能让失败响应进入接受计划。若 usage 缺失，本地仍按预留预算保守扣减；即使取得 usage，失败请求的本地计账也暂不等同于供应商账单。历史 v3 未保存的数据无法追补。
 
 ## 离线验证与回放
 

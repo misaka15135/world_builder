@@ -1,0 +1,41 @@
+{
+  "type": "object",
+  "properties": {
+    "site_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{0,47}$"
+    },
+    "concept": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 800
+    },
+    "benches": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 4
+    },
+    "lamps": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 4
+    },
+    "trees": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 4
+    },
+    "fountain": {
+      "const": true
+    }
+  },
+  "required": [
+    "site_id",
+    "concept",
+    "benches",
+    "lamps",
+    "trees",
+    "fountain"
+  ],
+  "additionalProperties": false
+}

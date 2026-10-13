@@ -1,0 +1,23 @@
+{
+  "batch_id": "024-deepseek-official-v16-compact-shell",
+  "date_registered": "2026-10-12",
+  "reason": "v7-v15 repeatedly accepted the brief, terrain, catalogue and siting stages but full E cuboid proposals remained invalid despite bounded retries and geometry guidance. This separate diagnostic switches only E to a versioned compact blueprint: DeepSeek chooses concept, materials, road-facing entry side and room programme; a local deterministic projector builds a minimal single-storey, one-room shell and route, then the original strict E validator and F review still run. No old response or failure is overwritten. This intentionally trades shape freedom for a verifiable small-case API-to-WIR flow; it is not a general building designer.",
+  "scope": "One single-storey timber house under the existing A-D and F 0.1.0 contracts plus compact E sub-contract 0.1.1-e-shell. Multi-storey, multi-room, windows and arbitrary buildings are outside this diagnostic.",
+  "config": "config/agents.deepseek-024-compact-shell.json",
+  "sample_count": 1,
+  "sample_policy": "One run only; all started calls count, including schema, semantic, geometry, budget and export failures. Preserve v1-v15. Any further paid retry requires a new pre-registered batch.",
+  "success": {
+    "machine": "result.json succeeds, source geometry validates, WIR package round-trips, Unity GLB and Minecraft schematic are produced from the same revision, and exact offline replay reproduces package and target hashes.",
+    "human": "Inspect exactly one single-storey timber house, a street-facing connected entry and one reachable interior room. Report the compact-shell visual limitations. Target import and actual walking remain separate evidence levels.",
+    "report": "Record calls, projected E response, normalizations, failures, elapsed time and provider usage. One pass is not four-case or population reliability evidence."
+  },
+  "cases": [
+    {
+      "id": "single_storey",
+      "prompt": "在一块32米见方的平坦区域内，沿一条可步行的街道建造一栋单层木屋。木屋需要一个面向街道的入口和一间能够从街道进入的室内房间。",
+      "region_m": 32,
+      "seed": 41,
+      "manual_focus": ["一栋木屋", "单层", "入口接街道", "室内可进入"]
+    }
+  ]
+}

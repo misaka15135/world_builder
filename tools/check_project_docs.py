@@ -9,8 +9,8 @@ from pathlib import Path
 def main() -> int:
     root = Path(__file__).resolve().parents[1]
     errors: list[str] = []
-    unity_cache = root / "adapters" / "unity" / "sample_project" / "Library"
-    excluded = [unity_cache, *(root / name for name in (".venv", ".venv-desktop", "dist", "build"))]
+    unity_caches = [project / "Library" for project in (root / "adapters" / "unity").iterdir() if project.is_dir()]
+    excluded = [*unity_caches, *(root / name for name in (".venv", ".venv-desktop", "dist", "build"))]
     markdown_files = sorted(path for path in root.rglob("*.md")
                             if not any(path.is_relative_to(directory) for directory in excluded))
     local_links = 0

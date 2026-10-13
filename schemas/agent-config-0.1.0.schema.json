@@ -22,6 +22,7 @@
     "protocol": {
       "enum": [
         "chat_completions",
+        "responses",
         "json_contract"
       ]
     },
@@ -165,6 +166,57 @@
       "enum": [
         "enabled",
         "disabled"
+      ]
+    },
+    "brief_normalization": {
+      "enum": [
+        "single_site_road_v1"
+      ]
+    },
+    "deepseek_reasoning": {
+      "enum": [
+        "none",
+        "low",
+        "high",
+        "max"
+      ]
+    },
+    "design_guidance": {
+      "enum": [
+        "local_envelope_v1",
+        "simple_nonoverlap_v1",
+        "simple_nonoverlap_v2",
+        "simple_nonoverlap_v3"
+      ]
+    },
+    "siting_guidance": {
+      "enum": [
+        "half_open_boxes_v1"
+      ]
+    },
+    "json_repair": {
+      "enum": [
+        "bounded_syntax_v1"
+      ]
+    },
+    "catalogue_guidance": {
+      "enum": [
+        "concise_catalogue_v1"
+      ]
+    },
+    "geometry_normalization": {
+      "enum": [
+        "same_material_overlap_v1"
+      ]
+    },
+    "road_normalization": {
+      "enum": [
+        "road_min_width_v1"
+      ]
+    },
+    "building_projection": {
+      "enum": [
+        "compact_shell_v1"
       ]
     }
   },

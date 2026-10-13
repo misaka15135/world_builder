@@ -76,3 +76,21 @@ python tools/run_live_024.py --batch-version v4 --case single_storey --replay
 结果位于 `artifacts/agent-runs/live-024-deepseek-v4/`。首例后逐项检查并决定是否继续另外三例；任何已启动的 v4 案例均计入 v4 分母。
 
 v4 单层例实际在 25.11 秒内发出 7 次请求，服务端记录的输入/输出 usage 合计 21,425 token。A 首次为 `json.invalid`、C 首次为 `contract.schema`，各重试后被接受；但 A 仍把“可步行街道”单列为场地需求，C 因覆盖规则建立街道场地类型。D 两次试图把 1 m 厚的道路作为至少 3 m 高的建筑场地放置，均被 `siting.size` 拒绝。故 v4 最终失败，未形成 WIR 或目标导出；其余三例未启动。关闭思考模式缩短了耗时，但本实验不能证明流程可行，也不能推断总体模型质量。现暂停新增付费样本，待道路/建造场地在需求契约中有明确类型区分，并补足不完整响应的 finish_reason/usage 留证后再冻结后续批次。
+
+2026-10-12 起，未来的 Chat Completions 不完整响应会在该次 `calls/*/error.json` 写入受限的 `details.finish_reason`、`choice_count`，以及服务端有提供且为非负整数时的 `provider_usage`；未知或缺失用 `unknown`/`null`，不保存该失败响应的内容。此记录不改变原有保守预算扣减，也不补造 v3 缺失的历史数据。该时间点尚未发出新的付费请求；后续续测见下节。结构化契约与上游返修方案见[调研记录](research/024_live_output_reliability.md)，029/030 的通用设计仍未接线。
+
+## 2026-10-12 续测：v5—v16
+
+用户要求继续推进至真实 API 完整出包。v5—v15 各是预先登记、彼此隔离的单层例诊断，均失败且保留原始记录，不被 v16 成功冲销：v5—v6 暴露 A/C 语义或格式问题；v7—v15 在受控 JSON、提示与投影试验下多次通过 A—D，但高维逐构件 E 仍遇到局部高度、碰撞、净空、入口接路及路径问题。部分批次还在 D 或预算处停下。详细输入、差异、预算见 [`benchmarks/agent_live_024_deepseek_v5.json`](../benchmarks/agent_live_024_deepseek_v5.json) 至 [`v16`](../benchmarks/agent_live_024_deepseek_v16.json) 各自登记文件；调用记录在 Git 忽略的 `artifacts/agent-runs/` 中，不能用“有一次成功”替换历史失败分母。
+
+v16 改用 DeepSeek 官方 Responses API 的 JSON Schema 模式，并只为 E 启用独立的 [`0.1.1-e-shell` 紧凑子契约](contracts/compact-e-v0.1.1.md)。模型选择建筑概念、三种主要材料、道路侧入口及单房用途；本地确定性投影成最小受检壳体。A—D、F 与最终 E/WIR 仍用原 0.1.0 契约。安全的 A 道路合并、有限 JSON 语法修复及 D 道路宽度规范化均为可选模式，原文/投影及哈希留证；旧批次不追溯修改。
+
+唯一启动的 v16 `single_storey` 真实例发出 10 次网络调用、41.985 秒、本地计账 36,102 token；A—F 最终接受，产生有效 WIR/worldpkg、Unity GLB（72 网格）及 Minecraft schematic（1532 方块）。一次无网络离线回放复现同一修订与三个文件哈希，`replay_validation.json` 五项均通过。运行命令：
+
+```powershell
+python tools/run_live_024.py --batch-version v16 --check
+python tools/run_live_024.py --batch-version v16 --case single_storey --key-file C:\Users\rjc\Desktop\api.txt
+python tools/run_live_024.py --batch-version v16 --case single_storey --replay
+```
+
+已有目录会被脚本拒绝覆盖；复核现有结果应直接查看 `artifacts/agent-runs/live-024-deepseek-v16/single_storey/`，不要重跑同名案例。这里的 token 是程序侧计账，非账单。输出 `target_load=not_run`、`walkthrough=not_run`：没有在 Unity 或 Minecraft 中实际导入/行走。尤其需要人工复核：模型在 A 自增窗、门廊、坡屋顶要求，紧凑壳体未生成它们，F 却声称满足或近似满足。故本次证明最小 API→WIR→双导出机器闭环，不证明模型审查可靠、完整需求符合或四例成功。024 继续 `in_progress`。

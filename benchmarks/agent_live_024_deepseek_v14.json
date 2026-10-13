@@ -1,0 +1,23 @@
+{
+  "batch_id": "024-deepseek-official-v14-responses-geometry-bridge",
+  "date_registered": "2026-10-12",
+  "reason": "v13 accepted A-D but E exhausted four attempts. Its last E response had only same-wood beam/roof overlap as the first validation error; an offline lossless same-material de-dup then exposed an entry height mismatch with D's road. This diagnostic enables a bounded, journaled same-material cuboid de-dup and versioned E road-level arithmetic guidance. Different-material overlap, routes, support and all other geometry are still strictly validated. Limits and input equal v13.",
+  "scope": "One 0.1.0 fixed A-F single-storey building case. Normalization does not replace typed-scene work or prove model reliability.",
+  "config": "config/agents.deepseek-024-responses-geometry-bridge.json",
+  "sample_count": 1,
+  "sample_policy": "One run. All started calls count; v1-v13 remain intact. Register any further paid attempt independently.",
+  "success": {
+    "machine": "result.json succeeds, source geometry validates, WIR package round-trips, Unity GLB and Minecraft schematic are produced from the same revision, and exact offline replay reproduces package and target hashes.",
+    "human": "Inspect one single-storey timber house, connected street-facing entry and reachable room. Exports do not by themselves prove Unity/Minecraft import or actual walking.",
+    "report": "Record calls, normalizations, failures, elapsed time and provider usage. One pass is not general reliability evidence."
+  },
+  "cases": [
+    {
+      "id": "single_storey",
+      "prompt": "在一块32米见方的平坦区域内，沿一条可步行的街道建造一栋单层木屋。木屋需要一个面向街道的入口和一间能够从街道进入的室内房间。",
+      "region_m": 32,
+      "seed": 41,
+      "manual_focus": ["一栋木屋", "单层", "入口接街道", "室内可进入"]
+    }
+  ]
+}

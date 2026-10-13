@@ -1,0 +1,28 @@
+{
+    "status": "pass",
+    "method": "Unity_PlayMode_CharacterController_continuous_routes",
+    "error": "",
+    "expected_routes": 16,
+    "completed_routes": 16,
+    "grounded_frames": 9329,
+    "frames": 12605,
+    "completed_rooms": [
+        "home_moonbell_s0_r0",
+        "home_moonbell_s0_r1",
+        "home_moonbell_s1_r0",
+        "home_moonbell_s1_r1",
+        "home_hearthglow_s0_r0",
+        "home_hearthglow_s0_r1",
+        "home_hearthglow_s1_r0",
+        "home_hearthglow_s1_r1",
+        "shop_runeflask_s0_r0",
+        "shop_runeflask_s0_r1",
+        "shop_runeflask_s1_r0",
+        "shop_runeflask_s1_r1",
+        "shop_gildedowl_s0_r0",
+        "shop_gildedowl_s0_r1",
+        "shop_gildedowl_s1_r0",
+        "shop_gildedowl_s1_r1"
+    ],
+    "unity_version": "6000.3.24f1"
+}

@@ -1,0 +1,23 @@
+{
+  "batch_id": "024-deepseek-official-v5-single-site",
+  "date_registered": "2026-10-12",
+  "reason": "Diagnostic follow-up to v4. The input asks for exactly one building; its street, entrance and room are features rather than additional building sites. The existing 0.1.0 stage-A site budget is set to one so a street-as-site proposal is rejected at A and can use the existing bounded retry. The model, prompt, skills, wire format and per-call output ceiling remain v4-equivalent. This is a separate one-case diagnostic, not a reinterpretation of the earlier four-case batch.",
+  "scope": "Existing 0.1.0 fixed A-F building-oriented pipeline, one single-storey building. This does not validate general natural scenes, editing or all four v4 cases.",
+  "config": "config/agents.deepseek-024-single-site.json",
+  "sample_count": 1,
+  "sample_policy": "Run this case once. Any started run counts, including API, schema, geometry, budget and export failures. Preserve v1-v4 results and do not rerun into or overwrite this output directory. If a fix needs another real attempt, register a new batch first.",
+  "success": {
+    "machine": "result.json succeeds, source geometry validates, WIR package round-trips, Unity GLB and Minecraft schematic are produced from the same revision, and exact offline replay reproduces the package and target hashes.",
+    "human": "Record whether there is one single-storey timber house, an entrance facing and connected to a walkable street, and an interior room reachable from that street. File production alone is not evidence of actual target import or continuous walking.",
+    "report": "Record first-attempt success, rejections by category, retries, wall time and provider-reported tokens. A single successful diagnostic is not evidence of batch or population reliability."
+  },
+  "cases": [
+    {
+      "id": "single_storey",
+      "prompt": "在一块32米见方的平坦区域内，沿一条可步行的街道建造一栋单层木屋。木屋需要一个面向街道的入口和一间能够从街道进入的室内房间。",
+      "region_m": 32,
+      "seed": 41,
+      "manual_focus": ["一栋木屋", "单层", "入口接街道", "室内可进入"]
+    }
+  ]
+}

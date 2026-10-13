@@ -1,0 +1,23 @@
+{
+  "batch_id": "024-deepseek-official-v13-responses-clear-space",
+  "date_registered": "2026-10-12",
+  "reason": "v12 accepted A-D and three E attempts, but exhausted its 100000 local token reservation before E attempt four. Its latest E error was a clear-room box intersecting posts and furniture. This separate run retains 16 calls, 4 attempts and 900 s wall time, raises the local accounted-token ceiling to 150000, adds a versioned clear-space instruction and names intersecting parts in feedback. Geometry rules remain strict.",
+  "scope": "One 0.1.0 fixed A-F single-storey building case. Still not proof of broad production reliability.",
+  "config": "config/agents.deepseek-024-responses-clear-space.json",
+  "sample_count": 1,
+  "sample_policy": "One run. Every started call counts; v1-v12 are retained. Any further paid fix requires a new registered batch.",
+  "success": {
+    "machine": "result.json succeeds, source geometry validates, WIR package round-trips, Unity GLB and Minecraft schematic are produced from the same revision, and exact offline replay reproduces package and target hashes.",
+    "human": "Inspect one single-storey timber house, street-facing connected entry and reachable room. File exports do not prove target import or actual walking.",
+    "report": "Record calls, repairs, failures, elapsed time and provider usage. One pass is not reliability proof."
+  },
+  "cases": [
+    {
+      "id": "single_storey",
+      "prompt": "在一块32米见方的平坦区域内，沿一条可步行的街道建造一栋单层木屋。木屋需要一个面向街道的入口和一间能够从街道进入的室内房间。",
+      "region_m": 32,
+      "seed": 41,
+      "manual_focus": ["一栋木屋", "单层", "入口接街道", "室内可进入"]
+    }
+  ]
+}

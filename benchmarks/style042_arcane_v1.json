@@ -1,0 +1,13 @@
+{
+  "batch_id":"042-arcane-street-deepseek-v1",
+  "date_registered":"2026-10-13",
+  "contract":"0.1.0-style042",
+  "builder":"legacy-detail-042.1",
+  "config":"config/agents.deepseek-style042.json",
+  "input":"examples/style042_baseline.json",
+  "scope":"One 64m magic street: two residences, two two-storey shops and one furnished fountain plaza. Model D chooses layout, E chooses per-site parameters, F reviews actual local feature report. Local construction uses existing detailed single-building geometry, not legacy scene planning.",
+  "sample_count":1,
+  "policy":"Run exactly one original case, preserving every started request/failure. No overwrite. New paid retry after exhaustion requires another registration. Baseline and exact replay are offline and separate from the real sample.",
+  "success":"Valid source WIR/worldpkg and detailed GLB, exact zero-network replay, Unity actual load/reopen and same-camera baseline/API screenshots; test streets, entrances and required upper floors in the target. F alone cannot certify target or appearance.",
+  "limitations":"One fixed-scope case is not general city generation or population reliability. Minecraft and full castle are deferred. Colour-only materials and stepped roofs remain visible. Human appearance review pending until user sees comparison."
+}

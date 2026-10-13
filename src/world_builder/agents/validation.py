@@ -191,8 +191,10 @@ def validate_design(design, plans, scope_id):
     require(not set(parts) & set(spaces), "identity.duplicate", "Part and space IDs collide")
     for p in parts.values():
         require(inside(p["bounds"], envelope), "design.envelope", f"{p['id']} outside local envelope")
-    for a, b in combinations(parts.values(), 2):
-        require(not overlaps(a["bounds"], b["bounds"]), "design.overlap", f"{a['id']} intersects {b['id']}")
+    collisions = [(a["id"], b["id"]) for a, b in combinations(parts.values(), 2)
+                  if overlaps(a["bounds"], b["bounds"])]
+    require(not collisions, "design.overlap",
+            "Overlapping solid parts (first 12): " + ", ".join(f"{a}/{b}" for a, b in collisions[:12]))
     for space in spaces.values():
         require(inside(space["bounds"], envelope), "design.space", "Space outside envelope")
         require(space["bounds"]["max"][2] - space["bounds"]["min"][2] >= 2,
@@ -200,8 +202,9 @@ def validate_design(design, plans, scope_id):
         require(cell_in(space["access_cell"], space["bounds"]), "design.space_access", "Access cell outside space")
         require(space["access_cell"][2] + 2 <= space["bounds"]["max"][2],
                 "design.space_access", "Access cell lacks headroom inside its declared space")
-        require(not any(overlaps(space["bounds"], p["bounds"]) for p in parts.values()),
-                "design.space_solid", "A declared clear space intersects a solid component")
+        occupied_by = [p["id"] for p in parts.values() if overlaps(space["bounds"], p["bounds"])]
+        require(not occupied_by, "design.space_solid",
+                f"Clear space {space['id']} intersects solid parts: {', '.join(occupied_by[:12])}")
     require(not any(overlaps(a["bounds"], b["bounds"]) for a, b in combinations(spaces.values(), 2)),
             "design.space_overlap", "Declared spaces overlap")
     t = next(t for t in plans["C"]["types"] if t["id"] == site["type_id"])

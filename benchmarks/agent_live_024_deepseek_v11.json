@@ -1,0 +1,23 @@
+{
+  "batch_id": "024-deepseek-official-v11-responses-concise",
+  "date_registered": "2026-10-12",
+  "reason": "v10 reached C after A repair but two C responses exceeded design_brief maxLength=3000. This diagnostic adds opt-in concise C guidance and short, non-echoing maxLength feedback. It also permits up to 3 attempts per stage and 14 total calls, while retaining the 100000 locally accounted-token ceiling and 900 s wall limit. All other v10 settings, case input and safety checks remain.",
+  "scope": "One 0.1.0 fixed A-F single-storey building case; no claim about four-case reliability or general scenes.",
+  "config": "config/agents.deepseek-024-responses-concise.json",
+  "sample_count": 1,
+  "sample_policy": "One run; every started call and failure counts. Preserve v1-v10. New live retries require a separately frozen batch.",
+  "success": {
+    "machine": "result.json succeeds, source geometry validates, WIR package round-trips, Unity GLB and Minecraft schematic are produced from the same revision, and exact offline replay reproduces package and target hashes.",
+    "human": "Inspect one single-storey timber house, street-facing connected entry and reachable room. Target import and actual walking are not inferred from files.",
+    "report": "Record calls, repairs, failures, elapsed time and provider usage. One pass is not reliability proof."
+  },
+  "cases": [
+    {
+      "id": "single_storey",
+      "prompt": "在一块32米见方的平坦区域内，沿一条可步行的街道建造一栋单层木屋。木屋需要一个面向街道的入口和一间能够从街道进入的室内房间。",
+      "region_m": 32,
+      "seed": 41,
+      "manual_focus": ["一栋木屋", "单层", "入口接街道", "室内可进入"]
+    }
+  ]
+}

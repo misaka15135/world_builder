@@ -1,0 +1,83 @@
+{
+  "fixture_version": "0.2.0-draft.1",
+  "description": "Hand-authored contract examples, not model responses or generated worlds.",
+  "cases": {
+    "street": {
+      "brief": {
+        "contract_version": "0.2.0-draft.1",
+        "title": "Shop beside a walkable street",
+        "region_m": 32,
+        "units": "m",
+        "axes": "RH_X_east_Y_north_Z_up",
+        "style": "Small mixed-use streetscape",
+        "requirements": [
+          {"id": "shop", "kind": "site", "description": "One accessible shop", "necessity": "required", "programme": "shop", "interior_required": true, "min_count": 1, "max_count": 1},
+          {"id": "street", "kind": "road_network", "description": "Walkable street connected to the shop", "necessity": "required", "connects": ["shop"]},
+          {"id": "shop_room", "kind": "interior_space", "description": "Accessible retail room", "necessity": "required", "parent_site_id": "shop", "min_count": 1, "max_count": 1}
+        ],
+        "relations": [{"subject_id": "shop", "predicate": "alongside", "object_id": "street"}],
+        "acceptance_criteria": [
+          {"id": "street_access", "requirement_ids": ["shop", "street"], "description": "Shop touches a walkable street"},
+          {"id": "room_access", "requirement_ids": ["shop_room"], "description": "Room has a usable entry"}
+        ]
+      },
+      "links": {
+        "contract_version": "0.2.0-draft.1",
+        "catalogue": [{"id": "shop_type", "requirement_id": "shop", "kind": "site"}],
+        "sites": [{"id": "shop_01", "catalogue_id": "shop_type"}],
+        "roads": [{"id": "street_01", "requirement_id": "street"}],
+        "interior_spaces": [{"id": "room_01", "requirement_id": "shop_room", "site_id": "shop_01"}],
+        "natural_objects": []
+      }
+    },
+    "forest": {
+      "brief": {
+        "contract_version": "0.2.0-draft.1",
+        "title": "Forest and creek",
+        "region_m": 32,
+        "units": "m",
+        "axes": "RH_X_east_Y_north_Z_up",
+        "style": "Temperate woodland",
+        "requirements": [
+          {"id": "creek", "kind": "terrain_condition", "description": "A shallow creek crosses the area", "necessity": "required"},
+          {"id": "trees", "kind": "natural_object", "description": "Two trees near the creek", "necessity": "required", "min_count": 2, "max_count": 2}
+        ],
+        "relations": [{"subject_id": "trees", "predicate": "near", "object_id": "creek"}],
+        "acceptance_criteria": [{"id": "forest_coverage", "requirement_ids": ["creek", "trees"], "description": "Creek and trees are represented"}]
+      },
+      "links": {
+        "contract_version": "0.2.0-draft.1",
+        "catalogue": [{"id": "tree_type", "requirement_id": "trees", "kind": "natural_object"}],
+        "sites": [],
+        "roads": [],
+        "interior_spaces": [],
+        "natural_objects": [{"id": "tree_01", "catalogue_id": "tree_type"}, {"id": "tree_02", "catalogue_id": "tree_type"}]
+      }
+    },
+    "camp": {
+      "brief": {
+        "contract_version": "0.2.0-draft.1",
+        "title": "Woodland camp",
+        "region_m": 32,
+        "units": "m",
+        "axes": "RH_X_east_Y_north_Z_up",
+        "style": "Quiet forest camp",
+        "requirements": [
+          {"id": "cabin", "kind": "site", "description": "One small cabin", "necessity": "required", "programme": "cabin", "interior_required": true, "min_count": 1, "max_count": 1},
+          {"id": "sleeping_area", "kind": "interior_space", "description": "Sleeping space in the cabin", "necessity": "required", "parent_site_id": "cabin", "min_count": 1, "max_count": 1},
+          {"id": "trees", "kind": "natural_object", "description": "Two retained trees", "necessity": "required", "min_count": 2, "max_count": 2}
+        ],
+        "relations": [{"subject_id": "cabin", "predicate": "near", "object_id": "trees"}],
+        "acceptance_criteria": [{"id": "camp_coverage", "requirement_ids": ["cabin", "sleeping_area", "trees"], "description": "Cabin, usable sleeping area and trees are represented"}]
+      },
+      "links": {
+        "contract_version": "0.2.0-draft.1",
+        "catalogue": [{"id": "cabin_type", "requirement_id": "cabin", "kind": "site"}, {"id": "tree_type", "requirement_id": "trees", "kind": "natural_object"}],
+        "sites": [{"id": "cabin_01", "catalogue_id": "cabin_type"}],
+        "roads": [],
+        "interior_spaces": [{"id": "sleep_01", "requirement_id": "sleeping_area", "site_id": "cabin_01"}],
+        "natural_objects": [{"id": "tree_01", "catalogue_id": "tree_type"}, {"id": "tree_02", "catalogue_id": "tree_type"}]
+      }
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "batch_id": "024-deepseek-official-v7-responses-structured",
+  "date_registered": "2026-10-12",
+  "reason": "v6 accepted A and B but C returned malformed JSON then a programme longer than the 0.1.0 schema maximum. This separate diagnostic switches to DeepSeek official stateless Responses API with text.format json_schema and reasoning effort none; supervisor still performs strict duplicate-key, schema and semantic checks. The single-site road projection remains opt-in. Prompt, model, attempts, per-call output ceiling and limits match v6.",
+  "scope": "One existing 0.1.0 fixed A-F single-storey building case. Structured output controls format, not semantic/geometry correctness. Not a general 029/030 implementation.",
+  "config": "config/agents.deepseek-024-responses-structured.json",
+  "sample_count": 1,
+  "sample_policy": "Run once; every started call and failed case remains recorded. Preserve v1-v6 and register any further fix as another batch.",
+  "success": {
+    "machine": "result.json succeeds, source geometry validates, WIR package round-trips, Unity GLB and Minecraft schematic are produced from the same revision, and exact offline replay reproduces package and target hashes.",
+    "human": "Inspect one single-storey timber house, a connected street-facing entrance and an interior reachable from the street. Target import and actual walk are separate unverified levels until executed.",
+    "report": "Record calls, failure categories, elapsed time and provider usage; one pass is not reliability proof."
+  },
+  "cases": [
+    {
+      "id": "single_storey",
+      "prompt": "在一块32米见方的平坦区域内，沿一条可步行的街道建造一栋单层木屋。木屋需要一个面向街道的入口和一间能够从街道进入的室内房间。",
+      "region_m": 32,
+      "seed": 41,
+      "manual_focus": ["一栋木屋", "单层", "入口接街道", "室内可进入"]
+    }
+  ]
+}

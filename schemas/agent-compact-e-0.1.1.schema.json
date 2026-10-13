@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "contract_version": {
+      "const": "0.1.1-e-shell"
+    },
+    "stage": {
+      "const": "E"
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "scope_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{0,47}$"
+    },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "site_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,47}$"
+        },
+        "concept": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1200
+        },
+        "floor_material": {
+          "enum": [
+            "wood",
+            "stone",
+            "brick"
+          ]
+        },
+        "wall_material": {
+          "enum": [
+            "wood",
+            "stone",
+            "brick"
+          ]
+        },
+        "roof_material": {
+          "enum": [
+            "wood",
+            "stone",
+            "brick"
+          ]
+        },
+        "entry_side": {
+          "enum": [
+            "south",
+            "north",
+            "west",
+            "east"
+          ]
+        },
+        "room_programme": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "site_id",
+        "concept",
+        "floor_material",
+        "wall_material",
+        "roof_material",
+        "entry_side",
+        "room_programme"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "contract_version",
+    "stage",
+    "request_id",
+    "scope_id",
+    "payload"
+  ],
+  "additionalProperties": false
+}

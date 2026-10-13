@@ -1,0 +1,23 @@
+{
+  "batch_id": "024-deepseek-official-v6-single-site-normalized",
+  "date_registered": "2026-10-12",
+  "reason": "v5 exhausted A after a street-as-site proposal and a duplicate JSON key. This separate diagnostic enables an opt-in, fail-closed legacy A road projection: only a clearly named non-building road with exactly one building site is moved into the site's description and scene acceptance criteria. The raw response, transformation hashes and IDs are journaled. Ambiguous cases and malformed JSON still fail. The input, provider, token ceiling and limits match v5.",
+  "scope": "Existing 0.1.0 fixed A-F building-oriented pipeline, one single-storey building. Projection is an opt-in supervisor behavior, not the unfinished 0.2 typed contract or general scene support.",
+  "config": "config/agents.deepseek-024-single-site-normalized.json",
+  "sample_count": 1,
+  "sample_policy": "Run this case once. Any started run counts, including API, schema, normalization, geometry, budget and export failures. Preserve v1-v5 results; any further fix requires a new registered batch.",
+  "success": {
+    "machine": "result.json succeeds, source geometry validates, WIR package round-trips, Unity GLB and Minecraft schematic are produced from the same revision, and exact offline replay reproduces the package and target hashes.",
+    "human": "Record one single-storey timber house, street-facing connected entrance and reachable interior. File production does not prove actual target import or continuous walking.",
+    "report": "Record first-attempt success, rejections, retries, elapsed time and provider-reported tokens. One diagnostic pass is not a four-case or population reliability pass."
+  },
+  "cases": [
+    {
+      "id": "single_storey",
+      "prompt": "在一块32米见方的平坦区域内，沿一条可步行的街道建造一栋单层木屋。木屋需要一个面向街道的入口和一间能够从街道进入的室内房间。",
+      "region_m": 32,
+      "seed": 41,
+      "manual_focus": ["一栋木屋", "单层", "入口接街道", "室内可进入"]
+    }
+  ]
+}

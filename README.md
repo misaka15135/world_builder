@@ -18,6 +18,12 @@
 
 GLB 输出不包含新增的自动 Unity 场景导入、碰撞体或 NavMesh；schematic 需要目标侧工具放置。当前文件导出不能证明场景在游戏中可用。旧规则路径的城堡、船只等功能及目标侧样件证据不自动代表 Agent 主线能力。
 
+### DeepSeek 实验分支的阶段成果
+
+`codex/deepseek-live-eval` 保留 024 的真实 API 诊断、041 的紧凑单房构建桥接，以及 042 的首个 64m 魔法街区。042 使用独立 `0.1.1-style042` 入口，固定简报后由 D/E/F 模型提交布局、逐场地参数和审查，本地复用详细构件生成 WIR；不将其称为通用 A—F 四场景能力完成。
+
+首街区已有真实参数、646 网格 GLB、Unity 加载/重开及 16/16 房间实走证据，人工观感待复核。分支包含可直接打开的独立 Unity 项目和 [精选结果/对照图](examples/style042_delivery/README.md)；无需密钥即可查看。操作见 [042 查看说明](docs/10_style042_arcane_street.md)。原始 API 调用目录、密钥及缓存不随 Git 上传；发布边界见 [044](work_order/044_deepseek_branch_publication.md)。
+
 ## 启动与验证
 
 网页：双击 [start_workbench.cmd](start_workbench.cmd)，或在项目根目录运行：
@@ -43,4 +49,4 @@ python tools/generate_agent_world.py --prompt '一条街旁的一栋两层木构
 
 2026-10-10 的分支职责：`main` 为 Agent 产品主线，由原 `codex/api-agent-pipeline` 更名；`codex/local-validation` 保留原 `main` 的规则生成与本地验证对照。两条分支已推送并追踪对应 origin 分支，GitHub 默认分支为 main，旧 Agent 远端分支保留。调整见 [027](work_order/027_branch_role_alignment.md)，推送记录见 [040](work_order/040_remote_branch_publication.md)。旧规则路径的运行方式与证据见 [006 说明](docs/contracts/generation-v0.1.md)，不是当前产品默认入口。
 
-每次工作先读 [AGENTS.md](AGENTS.md)、[工单索引](work_order/README.md)、[总规划](work_order/000_project_master_plan.md) 和当前工单。实施入口为 [029 通用场景契约](work_order/029_scene_task_contracts.md)；024 随能力推进积累真实效果证据，038 单独核对历史工单。IFC 是独立可选扩展。早期 01—04 方案保留作历史参考，当前目标与路线以项目基线和总规划的当前部分为准。
+每次工作先读 [AGENTS.md](AGENTS.md)、[工单索引](work_order/README.md)、[总规划](work_order/000_project_master_plan.md) 和当前工单。近期优先 [042 四旧场景观感迁移](work_order/042_api_legacy_scene_visual_parity.md)，通用任务契约由 [029](work_order/029_scene_task_contracts.md) 继续推进；024 随能力推进积累真实效果证据，038 单独核对历史工单，043 标准资产复用/外部 skill 检索后置。IFC 是独立可选扩展。早期 01—04 方案保留作历史参考，当前目标与路线以项目基线和总规划的当前部分为准。

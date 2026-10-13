@@ -17,8 +17,9 @@ MATERIALS = ("stone", "wood", "glass", "brick", "metal", "grass", "white", "wate
 
 
 class AgentError(ValueError):
-    def __init__(self, code: str, message: str):
+    def __init__(self, code: str, message: str, *, details: dict | None = None):
         self.code = code
+        self.details = details
         super().__init__(message)
 
 
@@ -115,11 +116,23 @@ PAYLOADS = {
              limitations=arr(string(2000), 0, 32)),
 }
 
+COMPACT_E_VERSION = "0.1.1-e-shell"
+COMPACT_E_PAYLOAD = obj(site_id=ID, concept=string(1200),
+                        floor_material=enum("wood", "stone", "brick"),
+                        wall_material=enum("wood", "stone", "brick"),
+                        roof_material=enum("wood", "stone", "brick"),
+                        entry_side=enum("south", "north", "west", "east"),
+                        room_programme=string(100))
 
-def response_schema(stage: str, request_id: str | None = None, scope_id: str | None = None) -> dict:
-    result = obj(contract_version={"const": VERSION}, stage={"const": stage},
+
+def response_schema(stage: str, request_id: str | None = None, scope_id: str | None = None,
+                    *, compact_e: bool = False) -> dict:
+    if compact_e and stage != "E":
+        raise ValueError("compact E schema is only valid for stage E")
+    result = obj(contract_version={"const": COMPACT_E_VERSION if compact_e else VERSION}, stage={"const": stage},
                  request_id={"const": request_id} if request_id else {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
-                 scope_id={"const": scope_id} if scope_id else ID, payload=PAYLOADS[stage])
+                 scope_id={"const": scope_id} if scope_id else ID,
+                 payload=COMPACT_E_PAYLOAD if compact_e and stage == "E" else PAYLOADS[stage])
     return {"$schema": "https://json-schema.org/draft/2020-12/schema", **result}
 
 
@@ -131,7 +144,13 @@ def validate_schema(value, schema, code="contract.schema"):
         raise AgentError(code, "Value is not finite canonical JSON") from exc
     errors = sorted(Draft202012Validator(schema).iter_errors(value), key=lambda e: str(e.path))
     if errors:
-        messages = [f"/{'/'.join(map(str, e.absolute_path))}: {e.message}" for e in errors[:8]]
+        messages = []
+        for error in errors[:8]:
+            path = f"/{'/'.join(map(str, error.absolute_path))}"
+            if error.validator == "maxLength" and isinstance(error.instance, str):
+                messages.append(f"{path}: string length {len(error.instance)} exceeds maxLength {error.validator_value}")
+            else:
+                messages.append(f"{path}: {error.message}")
         raise AgentError(code, "\n".join(messages)[:6000])
 
 
@@ -144,7 +163,7 @@ def contract_document():
 CONFIG_SCHEMA = obj(
     contract_version={"const": VERSION}, endpoint=string(2048), model=string(200),
     api_key_env={"type": "string", "pattern": "^[A-Z][A-Z0-9_]{0,127}$"},
-    protocol=enum("chat_completions", "json_contract"),
+    protocol=enum("chat_completions", "responses", "json_contract"),
     response_format=enum("json_object", "json_schema"),
     token_parameter=enum("max_completion_tokens", "max_tokens"),
     stage_models=obj(**{stage: string(200) for stage in STAGES}),
@@ -156,6 +175,15 @@ CONFIG_SCHEMA = obj(
                max_parts=integer(1, 16000), max_voxels=integer(1000, 20000000)))
 # Optional, DeepSeek-specific wire control. Old provider configs remain valid.
 CONFIG_SCHEMA["properties"]["deepseek_thinking"] = enum("enabled", "disabled")
+CONFIG_SCHEMA["properties"]["brief_normalization"] = enum("single_site_road_v1")
+CONFIG_SCHEMA["properties"]["deepseek_reasoning"] = enum("none", "low", "high", "max")
+CONFIG_SCHEMA["properties"]["design_guidance"] = enum("local_envelope_v1", "simple_nonoverlap_v1", "simple_nonoverlap_v2", "simple_nonoverlap_v3")
+CONFIG_SCHEMA["properties"]["siting_guidance"] = enum("half_open_boxes_v1")
+CONFIG_SCHEMA["properties"]["json_repair"] = enum("bounded_syntax_v1")
+CONFIG_SCHEMA["properties"]["catalogue_guidance"] = enum("concise_catalogue_v1")
+CONFIG_SCHEMA["properties"]["geometry_normalization"] = enum("same_material_overlap_v1")
+CONFIG_SCHEMA["properties"]["road_normalization"] = enum("road_min_width_v1")
+CONFIG_SCHEMA["properties"]["building_projection"] = enum("compact_shell_v1")
 
 HASH = {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
 E_MAP = {"type": "object", "patternProperties": {ID["pattern"]: PAYLOADS["E"]},

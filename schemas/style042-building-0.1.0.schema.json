@@ -1,0 +1,80 @@
+{
+  "type": "object",
+  "properties": {
+    "site_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{0,47}$"
+    },
+    "concept": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 800
+    },
+    "storeys": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 2
+    },
+    "storey_height_m": {
+      "type": "number",
+      "minimum": 3.4,
+      "maximum": 4
+    },
+    "roof": {
+      "enum": [
+        "flat",
+        "gable",
+        "spire"
+      ]
+    },
+    "roof_height_m": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 2.5
+    },
+    "wall_material": {
+      "enum": [
+        "stone",
+        "plaster"
+      ]
+    },
+    "roof_material": {
+      "enum": [
+        "wood",
+        "slate"
+      ]
+    },
+    "room_uses": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "enum": [
+            "hearth",
+            "bed",
+            "store",
+            "counter",
+            "stall",
+            "kitchen"
+          ]
+        },
+        "minItems": 2,
+        "maxItems": 2
+      },
+      "minItems": 1,
+      "maxItems": 2
+    }
+  },
+  "required": [
+    "site_id",
+    "concept",
+    "storeys",
+    "storey_height_m",
+    "roof",
+    "roof_height_m",
+    "wall_material",
+    "roof_material",
+    "room_uses"
+  ],
+  "additionalProperties": false
+}

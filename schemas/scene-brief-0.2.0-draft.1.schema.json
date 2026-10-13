@@ -1,0 +1,329 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "contract_version": {
+      "const": "0.2.0-draft.1"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "region_m": {
+      "type": "integer",
+      "minimum": 32,
+      "maximum": 512
+    },
+    "units": {
+      "const": "m"
+    },
+    "axes": {
+      "const": "RH_X_east_Y_north_Z_up"
+    },
+    "style": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "requirements": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{0,47}$"
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              "necessity": {
+                "enum": [
+                  "required",
+                  "optional"
+                ]
+              },
+              "kind": {
+                "const": "site"
+              },
+              "programme": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "interior_required": {
+                "type": "boolean"
+              },
+              "min_count": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1024
+              },
+              "max_count": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1024
+              }
+            },
+            "required": [
+              "id",
+              "description",
+              "necessity",
+              "kind",
+              "programme",
+              "interior_required",
+              "min_count",
+              "max_count"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{0,47}$"
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              "necessity": {
+                "enum": [
+                  "required",
+                  "optional"
+                ]
+              },
+              "kind": {
+                "const": "road_network"
+              },
+              "connects": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]{0,47}$"
+                },
+                "minItems": 0,
+                "maxItems": 32
+              }
+            },
+            "required": [
+              "id",
+              "description",
+              "necessity",
+              "kind",
+              "connects"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{0,47}$"
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              "necessity": {
+                "enum": [
+                  "required",
+                  "optional"
+                ]
+              },
+              "kind": {
+                "const": "terrain_condition"
+              }
+            },
+            "required": [
+              "id",
+              "description",
+              "necessity",
+              "kind"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{0,47}$"
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              "necessity": {
+                "enum": [
+                  "required",
+                  "optional"
+                ]
+              },
+              "kind": {
+                "const": "interior_space"
+              },
+              "parent_site_id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{0,47}$"
+              },
+              "min_count": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1024
+              },
+              "max_count": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1024
+              }
+            },
+            "required": [
+              "id",
+              "description",
+              "necessity",
+              "kind",
+              "parent_site_id",
+              "min_count",
+              "max_count"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{0,47}$"
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              "necessity": {
+                "enum": [
+                  "required",
+                  "optional"
+                ]
+              },
+              "kind": {
+                "const": "natural_object"
+              },
+              "min_count": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1024
+              },
+              "max_count": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1024
+              }
+            },
+            "required": [
+              "id",
+              "description",
+              "necessity",
+              "kind",
+              "min_count",
+              "max_count"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 128
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "subject_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,47}$"
+          },
+          "predicate": {
+            "enum": [
+              "near",
+              "inside",
+              "connected_to",
+              "away_from",
+              "alongside"
+            ]
+          },
+          "object_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,47}$"
+          }
+        },
+        "required": [
+          "subject_id",
+          "predicate",
+          "object_id"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 128
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,47}$"
+          },
+          "requirement_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,47}$"
+            },
+            "minItems": 1,
+            "maxItems": 128
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "id",
+          "requirement_ids",
+          "description"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 128
+    }
+  },
+  "required": [
+    "contract_version",
+    "title",
+    "region_m",
+    "units",
+    "axes",
+    "style",
+    "requirements",
+    "relations",
+    "acceptance_criteria"
+  ],
+  "additionalProperties": false
+}

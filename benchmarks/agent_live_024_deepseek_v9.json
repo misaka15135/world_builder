@@ -1,0 +1,23 @@
+{
+  "batch_id": "024-deepseek-official-v9-responses-geometry",
+  "date_registered": "2026-10-12",
+  "reason": "v8's D proposal treated site Z as a one-metre slab and road Z as zero thickness despite C allowing a five-metre building. This diagnostic adds opt-in half-open-box arithmetic and valid D examples alongside v8's E local-envelope guidance. The user input, provider, schema and per-case budgets are unchanged; invalid geometry remains rejected.",
+  "scope": "One 0.1.0 fixed A-F single-storey building case, not general scene support.",
+  "config": "config/agents.deepseek-024-responses-geometry.json",
+  "sample_count": 1,
+  "sample_policy": "One run; all started calls count. Keep v1-v8 unchanged; further fixes require a new registered batch.",
+  "success": {
+    "machine": "result.json succeeds, source geometry validates, WIR package round-trips, Unity GLB and Minecraft schematic are produced from the same revision, and exact offline replay reproduces package and target hashes.",
+    "human": "Inspect one single-storey timber house, connected street-facing entrance and reachable interior. Target import and actual walking remain separate evidence levels.",
+    "report": "Record calls, failures, elapsed time and provider usage; one pass is not reliability proof."
+  },
+  "cases": [
+    {
+      "id": "single_storey",
+      "prompt": "在一块32米见方的平坦区域内，沿一条可步行的街道建造一栋单层木屋。木屋需要一个面向街道的入口和一间能够从街道进入的室内房间。",
+      "region_m": 32,
+      "seed": 41,
+      "manual_focus": ["一栋木屋", "单层", "入口接街道", "室内可进入"]
+    }
+  ]
+}

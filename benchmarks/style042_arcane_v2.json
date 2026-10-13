@@ -1,0 +1,14 @@
+{
+  "batch_id":"042-arcane-street-deepseek-v2",
+  "date_registered":"2026-10-13",
+  "contract":"0.1.1-style042",
+  "builder":"legacy-detail-042.1",
+  "config":"config/agents.deepseek-style042.json",
+  "input":"examples/style042_baseline.json",
+  "reason":"v1 failed D after three actual calls: model reversed entrance sides and independently computed invalid depths. v2 returns bounded road/side/x/width/depth parameters; a recorded deterministic projection computes rectangles and entry orientation, then checks the same coverage/clearance/frontage requirements. Old response/error records remain unchanged.",
+  "scope":"One 64m magic street: two residences, two two-storey shops and one furnished fountain plaza. Model D selects layout parameters, E selects per-site designs, F reviews local evidence. Existing detailed geometry executes accepted parameters.",
+  "sample_count":1,
+  "policy":"One original case, preserve all started calls and failures, never overwrite. Further paid retries after exhaustion require a new registration. Offline baseline and replay are not real samples.",
+  "success":"WIR/worldpkg and detailed GLB, exact zero-network replay, Unity actual load/reopen, collision/traversal and same-camera baseline/API screenshots. User appearance review remains separate.",
+  "limitations":"No full castle/city, Minecraft target test, textures, animation or population reliability estimate. Colour materials and stepped roofs."
+}

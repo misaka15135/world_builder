@@ -50,7 +50,7 @@ def verify_replay(original: Path, replay: Path) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true", help="validate setup without API access")
-    parser.add_argument("--batch-version", choices=("v1", "v2", "v3", "v4"), default="v1",
+    parser.add_argument("--batch-version", choices=("v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12", "v13", "v14", "v15", "v16"), default="v1",
                         help="registered batch version; v1 is retained for replay and audit")
     parser.add_argument("--case", help="one case ID from the registered batch")
     parser.add_argument("--replay", action="store_true", help="replay a completed API case offline")
@@ -65,17 +65,40 @@ def main() -> int:
     config = load_config(config_path)
     if len(cases) != batch["sample_count"] or len(cases) != len(batch["cases"]):
         parser.error("registered sample count or IDs do not match")
-    if config["endpoint"] != "https://api.deepseek.com/chat/completions" or config["model"] != "deepseek-flash":
+    structured = args.batch_version in ("v7", "v8", "v9", "v10", "v11", "v12", "v13", "v14", "v15", "v16")
+    endpoint = "https://api.deepseek.com/responses" if structured else "https://api.deepseek.com/chat/completions"
+    if config["endpoint"] != endpoint or config["model"] != "deepseek-flash":
         parser.error("this registered batch requires the official DeepSeek Flash endpoint and model")
-    if config["token_parameter"] != "max_tokens" or config["response_format"] != "json_object":
+    if config["token_parameter"] != "max_tokens" or config["response_format"] != ("json_schema" if structured else "json_object"):
         parser.error("DeepSeek wire configuration differs from the registered batch")
-    if config.get("deepseek_thinking") != ("disabled" if args.batch_version == "v4" else None):
+    if config.get("deepseek_thinking") != ("disabled" if args.batch_version in ("v4", "v5", "v6") else None):
         parser.error("DeepSeek thinking setting differs from the registered batch")
+    if config.get("brief_normalization") != ("single_site_road_v1" if args.batch_version in ("v6", "v7", "v8", "v9", "v10", "v11", "v12", "v13", "v14", "v15", "v16") else None):
+        parser.error("A-stage normalization differs from the registered batch")
+    if config["protocol"] != ("responses" if structured else "chat_completions"):
+        parser.error("DeepSeek protocol differs from the registered batch")
+    if config.get("deepseek_reasoning") != ("none" if structured else None):
+        parser.error("DeepSeek reasoning setting differs from the registered batch")
+    design_guidance = "simple_nonoverlap_v3" if args.batch_version in ("v14", "v15") else "simple_nonoverlap_v2" if args.batch_version == "v13" else "simple_nonoverlap_v1" if args.batch_version == "v12" else "local_envelope_v1" if args.batch_version in ("v8", "v9", "v10", "v11") else None
+    if config.get("design_guidance") != design_guidance:
+        parser.error("E-stage guidance differs from the registered batch")
+    if config.get("siting_guidance") != ("half_open_boxes_v1" if args.batch_version in ("v9", "v10", "v11", "v12", "v13", "v14", "v15", "v16") else None):
+        parser.error("D-stage guidance differs from the registered batch")
+    if config.get("json_repair") != ("bounded_syntax_v1" if args.batch_version in ("v10", "v11", "v12", "v13", "v14", "v15", "v16") else None):
+        parser.error("JSON repair differs from the registered batch")
+    if config.get("catalogue_guidance") != ("concise_catalogue_v1" if args.batch_version in ("v11", "v12", "v13", "v14", "v15", "v16") else None):
+        parser.error("C-stage guidance differs from the registered batch")
+    if config.get("geometry_normalization") != ("same_material_overlap_v1" if args.batch_version in ("v14", "v15") else None):
+        parser.error("E-stage geometry normalization differs from the registered batch")
+    if config.get("road_normalization") != ("road_min_width_v1" if args.batch_version in ("v15", "v16") else None):
+        parser.error("D-stage road normalization differs from the registered batch")
+    if config.get("building_projection") != ("compact_shell_v1" if args.batch_version == "v16" else None):
+        parser.error("E-stage building projection differs from the registered batch")
     if args.check:
         print(json.dumps({"status": "ready", "batch_id": batch["batch_id"],
                           "case_ids": list(cases), "model": config["model"],
                           "max_calls_per_case": config["limits"]["max_calls"],
-                          "thinking": config.get("deepseek_thinking", "provider_default"),
+                          "thinking": config.get("deepseek_thinking", config.get("deepseek_reasoning", "provider_default")),
                           "key_present": bool(os.environ.get(config["api_key_env"]))}, ensure_ascii=False))
         return 0
     if args.case not in cases:

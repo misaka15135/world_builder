@@ -1,10 +1,10 @@
 # 029 通用场景需求与任务契约
 
-- 状态：planned
+- 状态：in_progress
 - 创建日期：2026-10-10
-- 执行者：待认领
+- 执行者：root
 - 依赖：023、028；参考 005
-- 修改范围：`src/world_builder/agents/contracts.py`、新版 `schemas/agent-*.schema.json`、契约生成工具、新旧响应样例、`docs/contracts/`、A—F 运行 skills 与契约测试。运行调度归 030，目标 profile 内容归 035。
+- 修改范围：`src/world_builder/agents/contracts.py`、新版 `schemas/agent-*.schema.json`、契约生成工具、新旧响应样例、`docs/contracts/`、A—F 运行 skills 与契约测试。运行调度归 030，目标 profile 内容归 035。本轮先建立版本隔离的需求分型契约、校验器和离线正负例，不切换当前 0.1.0 运行入口，不启动 030 或付费 API 调用。
 
 ## 目标与范围
 
@@ -34,6 +34,8 @@
 | 日期 | 执行者 | 动作 | 结果与证据 | 下一步 |
 |---|---|---|---|---|
 | 2026-10-10 | root | 依据 028 创建实施工单 | planned；当前 D 接路与 E 建筑通路规则尚未推广 | 冻结契约与能力边界，再交接 030/032/035 |
+| 2026-10-12 | root | 用户批准按 024 调研方案开始实施，先建立新版需求类别和引用校验的离线基础 | 范围限 029 的版本化契约与测试；现有 0.1.0 请求/响应、回放和 WIR 路径保持原样。030 上游返修待新版契约及目标能力输入明确后实施；不调用付费 API、不推送 GitHub | 定义并验证新版分型与兼容拒绝规则 |
+| 2026-10-12 | root | 交付独立的 0.2.0-draft.1 分型基础及人工正负例 | `scene_requirements.py` 定义 site/road_network/interior_space/terrain_condition/natural_object 五类及数量、归属、关系和验收引用；`scene-links` 投影拒绝道路变场地、错归属、缺必需对象；生成两份版本化 Schema，保留旧 0.1.0 文件。街景、纯森林、营地人工例和负例共 20 项通过；连同旧 API 回归 63 passed。文档检查 90 Markdown、409 链接、零错误；Schema 同步与 diff 检查通过。未连接真实运行时、未证明开放文本分类正确 | 完成任务建议/能力/依赖/密度契约和完整阶段输出后交接 030，另冻真实评估批次 |
 
 ## 交接说明
 

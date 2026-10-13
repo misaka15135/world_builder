@@ -1,0 +1,23 @@
+{
+  "batch_id": "024-deepseek-official-v10-responses-bounded",
+  "date_registered": "2026-10-12",
+  "reason": "v9's A Responses API outputs had an extra closing brace; the second also duplicated an identical region_m key. A bounded, opt-in syntax repair accepts only one extra closing brace and/or equal-valued duplicate keys. Raw bytes and repaired hashes are journaled; conflicting duplicates, unknown syntax faults, schema errors and semantic faults still fail. The first v9 A response is locally proven parseable and classifiable under this rule. Input, provider, D/E guidance and budgets match v9.",
+  "scope": "One 0.1.0 fixed A-F single-storey building case, not general structured-output reliability.",
+  "config": "config/agents.deepseek-024-responses-bounded.json",
+  "sample_count": 1,
+  "sample_policy": "One run. All started calls count; v1-v9 records are immutable. Any further real retry requires another pre-registered batch.",
+  "success": {
+    "machine": "result.json succeeds, source geometry validates, WIR package round-trips, Unity GLB and Minecraft schematic are produced from the same revision, and exact offline replay reproduces package and target hashes.",
+    "human": "Inspect one single-storey timber house, connected street-facing entrance and reachable interior. Target import and actual walking remain separate evidence levels.",
+    "report": "Record calls, repaired responses, failures, elapsed time and provider usage; one pass is not reliability proof."
+  },
+  "cases": [
+    {
+      "id": "single_storey",
+      "prompt": "在一块32米见方的平坦区域内，沿一条可步行的街道建造一栋单层木屋。木屋需要一个面向街道的入口和一间能够从街道进入的室内房间。",
+      "region_m": 32,
+      "seed": 41,
+      "manual_focus": ["一栋木屋", "单层", "入口接街道", "室内可进入"]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "batch_id":"042-arcane-street-deepseek-v3-resumed",
+  "date_registered":"2026-10-13",
+  "contract":"0.1.1-style042",
+  "builder":"legacy-detail-042.1",
+  "config":"config/agents.deepseek-style042.json",
+  "input":"examples/style042_baseline.json",
+  "reuse_from":"artifacts/style042/arcane-v2",
+  "reason":"v2's one D and five E real API responses passed contract and design validation; the source route graph falsely rejected a 12m-wide shop because its .25m sampling skipped .2m stair treads. Offline .1m sampling restores all room routes without changing geometry or model parameters. v3 reuses those SIX byte/hash-matching requests and pays only for previously missing F review; v2 remains a failed original sample. v3 is a resumed result, not an independent reliability sample.",
+  "scope":"One model-authored magic street with four detailed buildings and one fountain plaza; same layout/design request bodies and physical builder as v2.",
+  "sample_count":1,
+  "policy":"Preserve all prior failures. Recorded-prefix reuse requires exact request/hash match; missing IDs may call the API within budget. Count new network calls separately from six reused calls. Exact final replay uses no network. No overwrite.",
+  "success":"WIR/worldpkg, detailed GLB and exact replay; Unity actual import/reopen, collision/traversal checks and baseline/API images. User appearance review separate.",
+  "limitations":"Resumed diagnostic only; no population success rate, complete city/castle or Minecraft test. Solid-colour materials, simple vegetation and stepped roofs."
+}

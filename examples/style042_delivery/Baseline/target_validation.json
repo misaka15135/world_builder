@@ -1,0 +1,13 @@
+{
+    "status": "pass",
+    "target_load": "pass",
+    "collision": "pass",
+    "error": "",
+    "source_revision_id": "revision_19ec4bd7d56b43e72a1f4c1c",
+    "glb_sha256": "sha256:a00c6ded377727f2d570dfc3d87ff838584a04fc2eba201727d13bfc318dceb5",
+    "unity_version": "6000.3.24f1",
+    "expected_pieces": 555,
+    "mapped_pieces": 555,
+    "mesh_colliders": 551,
+    "bounds_checked": 555
+}

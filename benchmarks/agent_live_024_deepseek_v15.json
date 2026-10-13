@@ -1,0 +1,23 @@
+{
+  "batch_id": "024-deepseek-official-v15-responses-road-bridge",
+  "date_registered": "2026-10-12",
+  "reason": "v14 accepted A-C but D exhausted four attempts with a too-large site and 1 m or zero-width frontage roads. One v14 D response becomes fully valid if the 1 m frontage expands by exactly 1 m toward the main street. This diagnostic adds opt-in candidate generation for roads narrower than 2 m (or zero thickness), accepting a change only after the entire original D validator passes. Sites, other geometry, user constraints and budgets remain v14-equivalent.",
+  "scope": "One 0.1.0 fixed A-F single-storey building case. Road projection is bounded and journaled, not general semantic repair.",
+  "config": "config/agents.deepseek-024-responses-road-bridge.json",
+  "sample_count": 1,
+  "sample_policy": "One run. All started calls count; v1-v14 remain intact. Later paid attempts require separate registration.",
+  "success": {
+    "machine": "result.json succeeds, source geometry validates, WIR package round-trips, Unity GLB and Minecraft schematic are produced from the same revision, and exact offline replay reproduces package and target hashes.",
+    "human": "Inspect one single-storey timber house, connected street-facing entry and reachable room. Exports do not prove target import or actual walking.",
+    "report": "Record calls, normalizations, failures, elapsed time and provider usage. One pass is not general reliability evidence."
+  },
+  "cases": [
+    {
+      "id": "single_storey",
+      "prompt": "在一块32米见方的平坦区域内，沿一条可步行的街道建造一栋单层木屋。木屋需要一个面向街道的入口和一间能够从街道进入的室内房间。",
+      "region_m": 32,
+      "seed": 41,
+      "manual_focus": ["一栋木屋", "单层", "入口接街道", "室内可进入"]
+    }
+  ]
+}

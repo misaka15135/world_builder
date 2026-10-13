@@ -15,6 +15,11 @@ import time
 from .contracts import AgentError, CONFIG_SCHEMA, REQUEST_SCHEMA, ROOT, STAGES, VERSION, canonical, digest, response_schema, strict_json
 from .contracts import validate_schema
 from .validation import check_plan, require
+from .brief_normalization import normalize_single_site_road
+from .bounded_json import parse_bounded_json
+from .geometry_normalization import deduplicate_same_material
+from .road_normalization import widen_short_roads
+from .compact_building import project_compact_building
 
 SKILLS = {stage: f"world-agent-{stage.lower()}" for stage in STAGES}
 
@@ -28,6 +33,19 @@ def write_json(path, value):
 
 
 class Supervisor:
+    contract_version = VERSION
+    geometry = "integer_cuboids_v1"
+
+    def request_schema(self):
+        return REQUEST_SCHEMA
+
+    def response_contract(self, stage, plans, request_id=None, scope_id=None):
+        return response_schema(stage, request_id, scope_id,
+                               compact_e=stage == "E" and self.config.get("building_projection") == "compact_shell_v1")
+
+    def validate_payload(self, stage, payload, plans, scope_id):
+        check_plan(stage, payload, plans, region_m=self.region_m, limits=self.limits, scope_id=scope_id)
+
     def __init__(self, provider, config, output, *, region_m=128, seed=1, clock=time.monotonic,
                  cancelled=lambda: False):
         validate_schema(config, CONFIG_SCHEMA, "config.schema")
@@ -44,7 +62,21 @@ class Supervisor:
         self.lock = Lock()
         self.calls = self.network_calls = self.token_usage = self.reserved = 0
         self.skills = {s: (ROOT / "skills" / SKILLS[s] / "SKILL.md").read_text("utf-8") for s in STAGES}
+        if self.config.get("catalogue_guidance") == "concise_catalogue_v1":
+            self.skills["C"] += "\n\n" + (ROOT / "skills" / SKILLS["C"] / "references" / "concise-catalogue-v1.md").read_text("utf-8")
+        if self.config.get("siting_guidance") == "half_open_boxes_v1":
+            self.skills["D"] += "\n\n" + (ROOT / "skills" / SKILLS["D"] / "references" / "half-open-boxes-v1.md").read_text("utf-8")
         self.skills["E"] += "\n\n" + (ROOT / "skills" / SKILLS["E"] / "references" / "design-principles.md").read_text("utf-8")
+        if self.config.get("design_guidance") in ("local_envelope_v1", "simple_nonoverlap_v1", "simple_nonoverlap_v2", "simple_nonoverlap_v3"):
+            self.skills["E"] += "\n\n" + (ROOT / "skills" / SKILLS["E"] / "references" / "local-envelope-v1.md").read_text("utf-8")
+        if self.config.get("design_guidance") in ("simple_nonoverlap_v1", "simple_nonoverlap_v2", "simple_nonoverlap_v3"):
+            self.skills["E"] += "\n\n" + (ROOT / "skills" / SKILLS["E"] / "references" / "simple-nonoverlap-v1.md").read_text("utf-8")
+        if self.config.get("design_guidance") in ("simple_nonoverlap_v2", "simple_nonoverlap_v3"):
+            self.skills["E"] += "\n\n" + (ROOT / "skills" / SKILLS["E"] / "references" / "clear-space-v1.md").read_text("utf-8")
+        if self.config.get("design_guidance") == "simple_nonoverlap_v3":
+            self.skills["E"] += "\n\n" + (ROOT / "skills" / SKILLS["E"] / "references" / "road-level-v1.md").read_text("utf-8")
+        if self.config.get("building_projection") == "compact_shell_v1":
+            self.skills["E"] = (ROOT / "skills" / SKILLS["E"] / "references" / "compact-shell-v1.md").read_text("utf-8")
         self.accepted = {}
 
     def event(self, event, **data):
@@ -67,16 +99,17 @@ class Supervisor:
         last_error = None
         for attempt in range(1, self.limits["attempts"] + 1):
             timeout = self.checkpoint()
-            body = {"contract_version": VERSION, "stage": stage, "scope_id": scope_id,
+            compact_e = stage == "E" and self.config.get("building_projection") == "compact_shell_v1"
+            body = {"contract_version": self.contract_version, "stage": stage, "scope_id": scope_id,
                     "prompt": self.prompt, "seed": self.seed, "region_m": self.region_m,
-                    "units": "m", "axes": "RH_X_east_Y_north_Z_up", "geometry": "integer_cuboids_v1",
+                    "units": "m", "axes": "RH_X_east_Y_north_Z_up", "geometry": self.geometry,
                     "limits": self.limits, "attempt": attempt, "revision_round": revision,
                     "dependencies": dependencies, "feedback": feedback,
-                    "instructions": self.skills[stage], "response_schema": response_schema(stage)}
+                    "instructions": self.skills[stage], "response_schema": self.response_contract(stage, plans)}
             request_id = digest(body)
             request = {**body, "request_id": request_id,
-                       "response_schema": response_schema(stage, request_id, scope_id)}
-            validate_schema(request, REQUEST_SCHEMA, "request.schema")
+                       "response_schema": self.response_contract(stage, plans, request_id, scope_id)}
+            validate_schema(request, self.request_schema(), "request.schema")
             # Conservative byte-based preflight reservation. Actual provider
             # usage is still checked, including hidden completion tokens.
             reservation = len(canonical(request)) + self.limits["max_output_tokens"] + 1024
@@ -94,6 +127,9 @@ class Supervisor:
             raw = None
             try:
                 completion = self.provider.complete(request, timeout_s=timeout)
+                if self.provider.network and completion.source == "replay":
+                    with self.lock:
+                        self.network_calls -= 1
                 raw = completion.raw
                 require(isinstance(raw, bytes) and len(raw) <= self.limits["max_response_bytes"],
                         "api.response_size", "Provider returned invalid or oversized bytes")
@@ -108,10 +144,58 @@ class Supervisor:
                 self.checkpoint()
                 require(charged <= reservation and completion.output_tokens <= self.limits["max_output_tokens"],
                         "budget.provider_usage", "Provider exceeded reserved/requested token allowance")
-                response = strict_json(raw)
+                if self.config.get("json_repair") == "bounded_syntax_v1":
+                    response, repair = parse_bounded_json(raw)
+                    if repair:
+                        write_json(call_dir / "syntax_repair.json", repair)
+                        self.event("syntax_repaired", stage=stage, scope_id=scope_id,
+                                   request_id=request_id, extra_closing_brace=repair["extra_closing_brace"],
+                                   equal_duplicate_keys=repair["equal_duplicate_keys"])
+                else:
+                    response = strict_json(raw)
                 validate_schema(response, request["response_schema"])
                 payload = response["payload"]
-                check_plan(stage, payload, plans, region_m=self.region_m, limits=self.limits, scope_id=scope_id)
+                if stage == "A" and self.config.get("brief_normalization") == "single_site_road_v1":
+                    normalized, moved = normalize_single_site_road(payload)
+                    if moved:
+                        write_json(call_dir / "normalization.json",
+                                   {"mode": "single_site_road_v1", "moved_requirement_ids": moved,
+                                    "raw_payload_sha256": digest(payload),
+                                    "accepted_payload_sha256": digest(normalized)})
+                        self.event("normalized", stage=stage, scope_id=scope_id,
+                                   request_id=request_id, moved_requirement_ids=moved)
+                        payload = normalized
+                if stage == "E" and self.config.get("geometry_normalization") == "same_material_overlap_v1":
+                    normalized, manifest = deduplicate_same_material(payload)
+                    if manifest:
+                        write_json(call_dir / "geometry_normalization.json",
+                                   {**manifest, "raw_payload_sha256": digest(payload),
+                                    "accepted_payload_sha256": digest(normalized)})
+                        self.event("geometry_normalized", stage=stage, scope_id=scope_id,
+                                   request_id=request_id, trimmed_ids=manifest["trimmed_ids"])
+                        payload = normalized
+                if stage == "D" and self.config.get("road_normalization") == "road_min_width_v1":
+                    normalized, manifest = widen_short_roads(payload, plans, region_m=self.region_m,
+                                                             limits=self.limits)
+                    if manifest:
+                        write_json(call_dir / "road_normalization.json",
+                                   {**manifest, "raw_payload_sha256": digest(payload),
+                                    "accepted_payload_sha256": digest(normalized)})
+                        self.event("road_normalized", stage=stage, scope_id=scope_id,
+                                   request_id=request_id, changed_road_ids=manifest["changed_road_ids"])
+                        payload = normalized
+                if compact_e:
+                    projected = project_compact_building(payload, plans, scope_id)
+                    write_json(call_dir / "building_projection.json",
+                               {"mode": "compact_shell_v1", "blueprint_version": response["contract_version"],
+                                "blueprint_sha256": digest(payload), "projected_sha256": digest(projected),
+                                "entry_side": payload["entry_side"]})
+                    self.event("building_projected", stage=stage, scope_id=scope_id,
+                               request_id=request_id, projected_sha256=digest(projected))
+                    payload = projected
+                validated = self.validate_payload(stage, payload, plans, scope_id)
+                if validated is not None:
+                    payload = validated
                 with self.lock:
                     self.accepted[f"{stage}:{scope_id}"] = {"request_id": request_id,
                                                            "response_sha256": meta["response_sha256"]}
@@ -120,13 +204,19 @@ class Supervisor:
                 return deepcopy(payload)
             except AgentError as exc:
                 last_error = exc
-                write_json(call_dir / "error.json", {"code": exc.code, "message": str(exc)})
+                error = {"code": exc.code, "message": str(exc)}
+                if exc.details is not None:
+                    error["details"] = exc.details
+                write_json(call_dir / "error.json", error)
                 self.event("rejected", stage=stage, scope_id=scope_id, request_id=request_id, code=exc.code)
                 if exc.code.startswith(("budget.", "execution.", "replay.", "fixture.")):
                     raise
                 # Bad data is quoted as user-context data on the next attempt.
+                rejected_response = raw.decode("utf-8", errors="replace")[:12000] if raw else None
+                if exc.code == "contract.schema" and "maxLength" in str(exc):
+                    rejected_response = None
                 feedback = [*(feedback[-2:]), {"code": exc.code, "message": str(exc),
-                            "rejected_response": raw.decode("utf-8", errors="replace")[:12000] if raw else None}]
+                            "rejected_response": rejected_response}]
             finally:
                 with self.lock:
                     self.reserved -= reservation
@@ -189,6 +279,8 @@ class Supervisor:
                               "region_m": self.region_m, "plans": plans,
                               "accepted_responses": dict(sorted(self.accepted.items())),
                               "skill_hashes": {s: digest(self.skills[s]) for s in STAGES}}
+                    if self.config.get("building_projection"):
+                        result["building_projection"] = self.config["building_projection"]
                     write_json(self.root / "accepted.json", result)
                     self.event("planning_completed", plans_sha256=digest(plans))
                     return result
