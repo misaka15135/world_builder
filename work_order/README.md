@@ -60,9 +60,11 @@
 | 041 | [紧凑建筑设计契约与受检几何桥接](041_compact_building_design_bridge.md) | done | root | 023、024 |
 | 042 | [真实 API 四个旧场景的观感迁移](042_api_legacy_scene_visual_parity.md) | in_progress | root | 023、041；协调 029/035，证据归 024 |
 | 043 | [可复用建筑资产与外部生成能力补充](043_reusable_assets_and_skill_discovery.md) | planned | 待认领 | 042 后；029、030、032、035；协调 031/036 |
-| 044 | [DeepSeek 实验与首个 Unity 街区分支发布](044_deepseek_branch_publication.md) | in_progress | root | 024、041、042；043 仅发布计划 |
+| 044 | [DeepSeek 实验与首个 Unity 街区分支发布](044_deepseek_branch_publication.md) | done | root | 024、041、042；043 仅发布计划 |
 
 下一个可分配编号：045。编号由协调者串行分配，避免并行碰撞。
+
+2026-10-13 按用户确认完成 [044 筛选发布](044_deepseek_branch_publication.md)：现有成果和首例可打开的 Unity 项目已推至 `codex/deepseek-live-eval` 并追踪同名远端，main 未修改；密钥、原始调用、缓存及旧 Unity 用户修改留本地。024/042 继续 in_progress，043 保持 planned。
 
 042 首个魔法小街区已启动并取得真实参数、有效 WIR/GLB、精确回放和 Unity 导入/同设置截图；目标实走与用户观感复核单独留证。[查看入口与证据](../docs/10_style042_arcane_street.md)。042 仍涵盖四个场景，首例交付不将整个工单置为 done；043 保持 planned。
 
