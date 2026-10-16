@@ -65,9 +65,11 @@
 | 046 | [起伏地形与非规则聚落地图](046_organic_terrain_map.md) | done | root | 045、042、024 |
 | 047 | [客户端山谷生成与受限调整](047_client_nature_generation_and_adjustments.md) | done | root | 025、026、046 |
 | 048 | [客户端密钥跨重启保存与设置简化](048_client_saved_api_credentials.md) | done | root | 047 |
-| 049 | [山谷客户端与密钥保存版本分支发布](049_client048_branch_publication.md) | in_progress | root | 045—048 |
+| 049 | [山谷客户端与密钥保存版本分支发布](049_client048_branch_publication.md) | done | root | 045—048 |
 
 下一个可分配编号：050。编号由协调者串行分配，避免并行碰撞。
+
+2026-10-16 [049筛选发布](049_client048_branch_publication.md)done：功能5086114已推至codex/deepseek-live-eval，main仍244e3f2；113文件/约0.85MiB，045/046依赖、047客户端、048密钥保存及精选截图/汇总已发布，密钥/DPAPI、完整calls、缓存/安装包和用户Unity临时文件未上传。168项干净暂存副本回归及9425网格零API山谷重建通过，worldpkg/GLB与基准一致。此前“未推送”保留历史语境；[源码启动](../docs/14_client048_saved_credentials.md)。
 
 2026-10-16 [048设置修订](048_client_saved_api_credentials.md)done：Windows当前用户DPAPI加密保存/端点隔离/清除，移除TXT导入；168项回归通过，WorldBuilder048包内样例及实际进程关闭重开保存状态验证通过，合成凭据已清除。用户TXT保留，真实密钥需手动保存一次；未新增付费调用，不提交/推送。
 
