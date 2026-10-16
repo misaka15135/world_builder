@@ -1,0 +1,72 @@
+{
+  "type": "object",
+  "properties": {
+    "archetypes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "enum": [
+              "home_a",
+              "home_b",
+              "home_c",
+              "home_d",
+              "shop_a",
+              "shop_b",
+              "shop_c",
+              "shop_d"
+            ]
+          },
+          "type": {
+            "enum": [
+              "residence",
+              "shop"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "intent": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "name",
+          "intent"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 8,
+      "maxItems": 8
+    },
+    "trees": {
+      "type": "integer",
+      "minimum": 80,
+      "maximum": 140
+    },
+    "lamps": {
+      "type": "integer",
+      "minimum": 20,
+      "maximum": 36
+    },
+    "concept": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 600
+    }
+  },
+  "required": [
+    "archetypes",
+    "trees",
+    "lamps",
+    "concept"
+  ],
+  "additionalProperties": false
+}

@@ -15,6 +15,7 @@ venv/
 # User API configuration, credentials and model run transcripts stay local.
 .env
 .env.*
+*.dpapi
 config/agents.local.json
 artifacts/agent-runs/
 
@@ -77,6 +78,10 @@ artifacts/unity-sample/v1/
 
 # 042 local API transcripts and isolated Unity verification project caches.
 artifacts/style042/
+artifacts/city045/
+artifacts/nature046/
+artifacts/client047/
+artifacts/client048/
 adapters/unity/style042_project/Library/
 adapters/unity/style042_project/Temp/
 adapters/unity/style042_project/Logs/

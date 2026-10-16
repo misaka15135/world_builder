@@ -61,8 +61,21 @@
 | 042 | [真实 API 四个旧场景的观感迁移](042_api_legacy_scene_visual_parity.md) | in_progress | root | 023、041；协调 029/035，证据归 024 |
 | 043 | [可复用建筑资产与外部生成能力补充](043_reusable_assets_and_skill_discovery.md) | planned | 待认领 | 042 后；029、030、032、035；协调 031/036 |
 | 044 | [DeepSeek 实验与首个 Unity 街区分支发布](044_deepseek_branch_publication.md) | done | root | 024、041、042；043 仅发布计划 |
+| 045 | [真实 API 魔法城邦大地图](045_api_arcane_large_map.md) | done | root | 042、024、008 |
+| 046 | [起伏地形与非规则聚落地图](046_organic_terrain_map.md) | done | root | 045、042、024 |
+| 047 | [客户端山谷生成与受限调整](047_client_nature_generation_and_adjustments.md) | done | root | 025、026、046 |
+| 048 | [客户端密钥跨重启保存与设置简化](048_client_saved_api_credentials.md) | done | root | 047 |
+| 049 | [山谷客户端与密钥保存版本分支发布](049_client048_branch_publication.md) | in_progress | root | 045—048 |
 
-下一个可分配编号：045。编号由协调者串行分配，避免并行碰撞。
+下一个可分配编号：050。编号由协调者串行分配，避免并行碰撞。
+
+2026-10-16 [048设置修订](048_client_saved_api_credentials.md)done：Windows当前用户DPAPI加密保存/端点隔离/清除，移除TXT导入；168项回归通过，WorldBuilder048包内样例及实际进程关闭重开保存状态验证通过，合成凭据已清除。用户TXT保留，真实密钥需手动保存一次；未新增付费调用，不提交/推送。
+
+2026-10-16 [047本周客户端](047_client_nature_generation_and_adjustments.md)限定交付完成：新版桌面接入768m山谷API/离线生成、31项受限参数调整、真实三角网预览/下载/来源历史。4次真实DeepSeek调用（6489计账tokens）及零网络精确回放通过；实际v2客户端388→410树调整49.093s、0API，9491网格、原版保留，下载/重开恢复通过；153项回归与22项交付核对通过。[启动与说明](../docs/13_client047_weekly_delivery.md)。仅本地未提交/推送；新变体Unity实走未做，任意场景与局部编辑仍为后续目标。
+
+2026-10-16 [046自然版子交付](046_organic_terrain_map.md)完成限定实现：768m起伏山谷、64栋错落房屋、城堡/两桥/388树，71.086m高差；9425网格Unity加载/重开、45代表物理路线、220源房间图/69室外路线和精确回放通过，101项回归通过。[查看入口](../docs/12_nature046_organic_map.md)。累计6新调用、10379服务端报告token，E沿用045真配方；旧场景保留，本轮未提交/推送，人工观感待复核。
+
+2026-10-16 [045 大地图子交付](045_api_arcane_large_map.md)已完成限定范围：真实API生成512m魔法城邦，48栋普通建筑、城堡、四广场/四桥；9768源网格的Unity加载/重开与39条代表物理路线通过，172源房间路线检查与零网络精确回放通过。[查看入口](../docs/11_city045_arcane_map.md)。仅本地更改未提交/推送；人工观感待反馈，042/024仍in_progress，043仍planned。
 
 2026-10-13 按用户确认完成 [044 筛选发布](044_deepseek_branch_publication.md)：现有成果和首例可打开的 Unity 项目已推至 `codex/deepseek-live-eval` 并追踪同名远端，main 未修改；密钥、原始调用、缓存及旧 Unity 用户修改留本地。024/042 继续 in_progress，043 保持 planned。
 

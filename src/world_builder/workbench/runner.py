@@ -8,6 +8,8 @@ from world_builder.agents.runtime import Supervisor, write_json
 
 
 def provider_for(mode, config, *, api_key=None, replay_path=None):
+    if mode == "adjust":
+        return None  # Explicit parameter rebuild, never an API fallback.
     if mode == "fixture":
         return FixtureProvider(ROOT / "examples/agent_scene.responses.json")
     if mode == "replay":
@@ -16,6 +18,9 @@ def provider_for(mode, config, *, api_key=None, replay_path=None):
 
 
 def execute(spec, config, provider, output, cancelled, on_phase):
+    if spec.get("pipeline") == "nature047":
+        from .nature import execute as execute_nature
+        return execute_nature(spec, config, provider, output, cancelled, on_phase)
     supervisor = Supervisor(provider, config, output, region_m=spec["region_m"],
                             seed=spec["seed"], cancelled=cancelled)
     try:

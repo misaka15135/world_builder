@@ -4,6 +4,12 @@
 
 ## 当前入口
 
+049发布用[精选截图/验证摘要](../examples/client048_delivery/README.md)及[干净源码启动说明](14_client048_saved_credentials.md)。旧文档artifacts/和dist/引用若未上传，属于作者本地历史证据，不保证新克隆存在。
+
+2026-10-16：[048密钥保存与设置简化](14_client048_saved_credentials.md)，重启复用当前Windows用户加密密钥、移除TXT导入；不改模型/几何契约。
+
+2026-10-16新增：[047本周客户端](13_client047_weekly_delivery.md) / [客户端profile契约](contracts/client047-v0.1.0.md)。桌面 `0.1.1-client047` 实际接入山谷生成/受限调整，旧025/026说明保留原版本，新增行为以上述文档为准。
+
 | 文档 | 用途 |
 |---|---|
 | [00 当前项目基线](00_project_baseline.md) | 产品目的、场景边界、当前原型、后续架构与负责工单 |
@@ -21,6 +27,8 @@
 | [043 可复用资产与外部能力补充](../work_order/043_reusable_assets_and_skill_discovery.md) | 042 后的标准建筑库、生成器与外部 skill 检索思路；planned |
 | [10 详细魔法街区](10_style042_arcane_street.md) | 042 的首个真实 API 小街区、独立 Unity 查看与验证证据 |
 | [042 参数化街区契约](contracts/style042-v0.1.1.md) | 独立布局/建筑参数与详细源几何桥接；默认 0.1.0 入口保持原口径 |
+| [11 魔法城邦大地图](11_city045_arcane_map.md) | 045 的 512m 地图、独立 Unity 查看及分层验证 |
+| [045 城邦契约](contracts/city045-v0.1.0.md) | 48 地块、八模型配方、城堡和有限道路/河道参数的独立版本 |
 
 文档中的版本按其各自模块理解：Agent 0.1.0、WIR 0.1、HTTP API v1 和桌面 0.1.0 不是一次统一升级。029 等后续工单尚未改变当前 Schema、运行 skills 或 API。
 
@@ -35,6 +43,8 @@
 | [生成证据](research/002_generation_evidence.md) / [表示证据](research/003_representation_evidence.md) / [独立审查](research/004_review.md) | 按原访问日期、证据等级及适用边界引用；没有在本轮重新调研或复现 |
 
 ## 契约与目标验证的使用边界
+
+新增 [046自然版地图](12_nature046_organic_map.md) / [独立契约](contracts/nature046-v0.1.0.md)：768m起伏山谷、非行列聚落，保留045原平地图；新B/D/F与复用真实E明确分工，源端/Unity/观感分别验收。
 
 [模块接口](contracts/module-interfaces.md) 与 [目标能力矩阵](contracts/target-capability-matrix.md)包含跨模块设计约定，不能据此断言全部功能已实现。实际 Agent 行为以当前契约、Schema、代码与对应验收证据为准；稳定身份/修改接口和 target profile 分别在 032/033 与 035 落地。
 

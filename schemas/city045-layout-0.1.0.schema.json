@@ -1,0 +1,125 @@
+{
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "concept": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 600
+    },
+    "castle_x": {
+      "enum": [
+        336,
+        352
+      ]
+    },
+    "sites": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "slot": {
+            "enum": [
+              "row0_col0_south",
+              "row0_col0_north",
+              "row0_col1_south",
+              "row0_col1_north",
+              "row0_col2_south",
+              "row0_col2_north",
+              "row0_col3_south",
+              "row0_col3_north",
+              "row0_col4_south",
+              "row0_col4_north",
+              "row0_col5_south",
+              "row0_col5_north",
+              "row1_col0_south",
+              "row1_col0_north",
+              "row1_col1_south",
+              "row1_col1_north",
+              "row1_col2_south",
+              "row1_col2_north",
+              "row1_col3_south",
+              "row1_col3_north",
+              "row1_col4_south",
+              "row1_col4_north",
+              "row1_col5_south",
+              "row1_col5_north",
+              "row2_col0_south",
+              "row2_col0_north",
+              "row2_col1_south",
+              "row2_col1_north",
+              "row2_col2_south",
+              "row2_col2_north",
+              "row2_col3_south",
+              "row2_col3_north",
+              "row2_col4_south",
+              "row2_col4_north",
+              "row2_col5_south",
+              "row2_col5_north",
+              "row3_col0_south",
+              "row3_col0_north",
+              "row3_col1_south",
+              "row3_col1_north",
+              "row3_col2_south",
+              "row3_col2_north",
+              "row3_col3_south",
+              "row3_col3_north",
+              "row3_col4_south",
+              "row3_col4_north",
+              "row3_col5_south",
+              "row3_col5_north"
+            ]
+          },
+          "recipe_id": {
+            "enum": [
+              "home_a",
+              "home_b",
+              "home_c",
+              "home_d",
+              "shop_a",
+              "shop_b",
+              "shop_c",
+              "shop_d"
+            ]
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 16,
+            "maximum": 24
+          },
+          "depth": {
+            "type": "integer",
+            "minimum": 14,
+            "maximum": 20
+          },
+          "x_shift": {
+            "type": "integer",
+            "minimum": -4,
+            "maximum": 4
+          }
+        },
+        "required": [
+          "slot",
+          "recipe_id",
+          "width",
+          "depth",
+          "x_shift"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 48,
+      "maxItems": 48
+    }
+  },
+  "required": [
+    "title",
+    "concept",
+    "castle_x",
+    "sites"
+  ],
+  "additionalProperties": false
+}

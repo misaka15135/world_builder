@@ -1,5 +1,9 @@
 # Windows 桌面应用 0.1.0
 
+同日后续版 `0.1.2-client048`（WorldBuilder048）增加当前Windows用户DPAPI密钥保存并移除TXT导入，详见[048说明](14_client048_saved_credentials.md)。新增行为覆盖下文历史“一次性密钥”口径，旧包不更新。
+
+2026-10-16已有独立新版 `0.1.1-client047`，启动 [start_client047.cmd](../start_client047.cmd)；包名 `WorldBuilder047v2`，实际山谷生成/受限调整/三角网预览与验收见[047说明](13_client047_weekly_delivery.md)。打包增加自然skills、录制参数/配方、背景资源和显式_socket；支持 `--name` 保留不同构建，摘要为 `build-info-{name}.json`。新增 `--self-test-nature` 无API重建完整山谷；旧 `--self-test` 仍验证小例及回放。下文保留026原始交付和依赖边界，不代表旧exe会自动更新。
+
 适用范围（2026-10-10）：当前 main 中 026 已实现的桌面宿主，复用 [网页测试台](06_web_workbench.md) 与固定 A—F 流水线。产品定位见 [项目基线](00_project_baseline.md)；029—037 的能力尚未进入本版。已有便携包是构建时快照，本次文档对齐没有重新构建或升级该产物。
 
 ## 启动与使用

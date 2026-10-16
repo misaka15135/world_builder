@@ -1,0 +1,100 @@
+{
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "concept": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 600
+    },
+    "districts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "enum": [
+              "west_low",
+              "west_high",
+              "east_low",
+              "east_high"
+            ]
+          },
+          "x": {
+            "type": "integer",
+            "minimum": 140,
+            "maximum": 610
+          },
+          "y": {
+            "type": "integer",
+            "minimum": 180,
+            "maximum": 520
+          },
+          "radius": {
+            "type": "integer",
+            "minimum": 98,
+            "maximum": 112
+          },
+          "home_percent": {
+            "type": "integer",
+            "minimum": 40,
+            "maximum": 60
+          },
+          "yaw_jitter": {
+            "type": "integer",
+            "minimum": 12,
+            "maximum": 28
+          }
+        },
+        "required": [
+          "id",
+          "x",
+          "y",
+          "radius",
+          "home_percent",
+          "yaw_jitter"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 4,
+      "maxItems": 4
+    },
+    "castle": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "integer",
+          "minimum": 580,
+          "maximum": 650
+        },
+        "y": {
+          "type": "integer",
+          "minimum": 650,
+          "maximum": 680
+        },
+        "yaw": {
+          "type": "integer",
+          "minimum": -22,
+          "maximum": 22
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "yaw"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "title",
+    "concept",
+    "districts",
+    "castle"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,68 @@
+{
+  "type": "object",
+  "properties": {
+    "site_id": {
+      "const": "castle"
+    },
+    "concept": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 600
+    },
+    "tower_height_m": {
+      "type": "integer",
+      "minimum": 18,
+      "maximum": 26
+    },
+    "tower_roof_m": {
+      "type": "integer",
+      "minimum": 4,
+      "maximum": 7
+    },
+    "wall_height_m": {
+      "type": "integer",
+      "minimum": 6,
+      "maximum": 8
+    },
+    "gate_width_m": {
+      "type": "integer",
+      "minimum": 6,
+      "maximum": 10
+    },
+    "keep_width_m": {
+      "type": "integer",
+      "minimum": 26,
+      "maximum": 38
+    },
+    "keep_depth_m": {
+      "type": "integer",
+      "minimum": 18,
+      "maximum": 24
+    },
+    "keep_roof": {
+      "enum": [
+        "gable",
+        "spire"
+      ]
+    },
+    "roof_material": {
+      "enum": [
+        "wood",
+        "slate"
+      ]
+    }
+  },
+  "required": [
+    "site_id",
+    "concept",
+    "tower_height_m",
+    "tower_roof_m",
+    "wall_height_m",
+    "gate_width_m",
+    "keep_width_m",
+    "keep_depth_m",
+    "keep_roof",
+    "roof_material"
+  ],
+  "additionalProperties": false
+}

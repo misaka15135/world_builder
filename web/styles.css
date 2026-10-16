@@ -1309,3 +1309,13 @@ details textarea {
   gap:8px;
   flex-wrap:wrap
 }
+
+#pipeline {width:100%;padding:10px;margin-bottom:14px;border:1px solid #d9dece;border-radius:6px;background:#fafaf5}
+.nature-adjust-panel {margin:20px 0;padding:24px}
+.adjust-fields {display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:20px 0}
+.adjust-group {border:1px solid #d9dece;border-radius:6px;padding:14px;align-self:start}
+.adjust-group .field-pair {margin-top:12px;row-gap:12px}
+.adjust-group input {width:100%}
+#mesh-scene {width:100%;height:100%;display:block;touch-action:none}
+.remember-key-option {display:flex;align-items:center;gap:8px}
+.remember-key-option input {width:auto;flex:none}

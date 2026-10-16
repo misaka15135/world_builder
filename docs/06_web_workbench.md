@@ -2,6 +2,8 @@
 
 版本：HTTP API v1 / UI 0.1；工单：[025](../work_order/025_modular_web_workbench.md)。
 
+2026-10-16扩展：[047客户端说明](13_client047_weekly_delivery.md)与[profile契约](contracts/client047-v0.1.0.md)。bootstrap新增nature/config_fields；创建任务新增pipeline/source_id/changes及adjust模式。nature047固定768m，使用实际GLB的WebGL2预览并支持受限参数全图重建；本页下文描述旧legacy入口，32—512m/盒体示意等限制不应用到新增profile。通用局部编辑仍未实现。
+
 适用范围（2026-10-10）：当前 main 的只读场景构建与诊断入口，产品定位见 [项目基线](00_project_baseline.md)。[034](../work_order/034_feedback_workbench.md) 将接入后端局部修改服务，007 保留完整手工编辑；这些规划尚未扩展本文的 HTTP API v1。当前预览中的拾取只显示对象信息，不会修改世界。
 
 ## 启动与使用

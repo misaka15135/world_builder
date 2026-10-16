@@ -26,6 +26,7 @@
         <section class="panel brief-panel">
           <div class="section-title"><h2><span class="section-number">01</span> 场景简报</h2><span class="muted small">BRIEF</span></div>
           <form id="composer">
+            <label class="field-label" for="pipeline">生成入口</label><select id="pipeline"><option value="nature047">本周 · 魔法山谷聚落</option><option value="legacy">旧版 · A—F 实验流程</option></select>
             <div class="mode-switch" role="group" aria-label="运行模式"><button type="button" data-mode="fixture" class="selected">离线样例</button><button type="button" data-mode="api">我的 API</button></div>
             <div id="mode-note" class="mode-note"></div>
             <label class="field-label" for="prompt">你想构建怎样的世界？</label>
@@ -43,6 +44,7 @@
           <div id="selection" class="selection">选择构件可查看类型、材质、尺寸与源 ID。</div>
         </section>
       </div>
+      <section id="nature-adjust-panel" class="panel nature-adjust-panel" hidden><div class="section-title"><h2>受限参数调整</h2><button id="load-adjust" class="button quiet" type="button">调整此版本（不调用 API）</button></div><p id="adjust-note" class="small muted">在原范围内重建一个新版本，保留旧结果；不是局部编辑。</p><form id="nature-adjust-form" hidden><div id="adjust-fields" class="adjust-fields"></div><button id="apply-adjust" class="button primary" type="submit">生成调整版本 · 0 次 API</button></form></section>
       <section class="panel pipeline-panel"><div class="section-title"><h2><span class="section-number">03</span> 智能体流水线</h2><div class="inline-actions"><span id="job-status" class="pill">尚未运行</span><button id="cancel-run" class="button danger small-button" hidden>取消运行</button><button id="replay-run" class="button quiet small-button" hidden>回放此运行 ↻</button></div></div><div id="stages" class="stages"></div><div class="pipeline-foot"><span id="run-meta">A → B / C 并行 → D → 多个 E → F → 本地编译</span><span id="usage">调用记录会实时显示</span></div><div id="job-error" class="error-box" hidden></div></section>
       <div class="results-grid"><section class="panel"><div class="section-title"><h2><span class="section-number">04</span> 运行记录</h2><span class="muted small">LIVE JOURNAL</span></div><div id="event-list" class="event-list"><p class="empty-note">开始构建后，在这里查看每个阶段的接受、拒绝与返工。</p></div></section><section class="panel"><div class="section-title"><h2><span class="section-number">05</span> 交付与诊断</h2><span id="resource-count" class="muted small">0 个文件</span></div><div id="artifacts" class="artifact-list"><p class="empty-note">完成后可下载世界包、目标文件与运行记录。</p></div><div class="document-tools"><label for="document-select">检查 JSON 契约与响应</label><div><select id="document-select"><option value="">选择运行文件</option></select><button id="inspect-document" class="button quiet small-button">查看</button></div></div></section></div>
       <footer class="page-footer"><span>模型负责设计，本地规则负责验证。</span><span>预览是源几何示意；目标引擎效果与实际通行需单独验证。</span></footer>
@@ -50,7 +52,19 @@
     <section id="page-history" class="page" hidden><div class="page-heading"><div><p class="eyebrow">EVERY ITERATION MATTERS</p><h1>运行档案<span>。</span></h1><p class="subtitle">保存每一次尝试，回到任何一个可追溯的结果。</p></div><button id="refresh-history" class="button quiet">刷新档案 ↻</button></div><div id="history-list" class="history-list"></div></section>
     <section id="page-agents" class="page" hidden><div class="page-heading"><div><p class="eyebrow">SIX ROLES. ONE SHARED CONTRACT.</p><h1>各司其职，共建世界<span>。</span></h1><p class="subtitle">每个阶段独立加载 skill，通过版本化 JSON 交换计划。本地校验始终生效。</p></div></div><div id="agent-cards" class="agent-cards"></div><div class="architecture-note"><h3>为后续更新保留清晰边界</h3><p>网页模块 → HTTP API v1 → 任务服务 → 流水线适配层 → A—F 监督器</p><p>API 配置、任务状态、空间预览与产物检查可独立替换。当前预览只读；完整语义编辑另行实现。</p></div></section>
   </main>
-  <dialog id="settings-dialog" class="settings-dialog"><form id="settings-form"><div class="dialog-heading"><div><p class="eyebrow">CONNECTION & LIMITS</p><h2>连接与运行设置</h2></div><button type="button" class="close-button" data-close="settings-dialog" aria-label="关闭设置">×</button></div><p class="dialog-description">支持兼容 Chat Completions 的 API 或自建 JSON 网关。</p><label>API 完整地址<input id="setting-endpoint" type="url" placeholder="https://yourapi/v1/chat/completions" required></label><div class="field-pair"><label>模型 ID<input id="setting-model" required placeholder="yourapi"></label><label>协议<select id="setting-protocol"><option value="chat_completions">Chat Completions</option><option value="json_contract">JSON Contract</option></select></label></div><label>API 密钥 <span class="muted">仅下次运行使用；留空则读取服务端环境变量</span><input id="setting-key" type="password" autocomplete="off" placeholder="yourapi"></label><div id="credential-note" class="small muted"></div><details><summary>各阶段模型与预算</summary><p class="small muted">阶段模型填写 yourapi 即继承主模型。高级配置保存到此浏览器，不含密钥。</p><textarea id="advanced-config" rows="12" spellcheck="false" aria-label="高级 JSON 配置"></textarea></details><p id="settings-error" class="error-text" role="alert"></p><div class="dialog-actions"><button id="reset-settings" type="button" class="button quiet">恢复服务端默认值</button><button type="submit" class="button primary">保存设置</button></div></form></dialog>
+  <dialog id="settings-dialog" class="settings-dialog"><form id="settings-form">
+    <div class="dialog-heading"><div><p class="eyebrow">CONNECTION & LIMITS</p><h2>连接与运行设置</h2></div><button type="button" class="close-button" data-close="settings-dialog" aria-label="关闭设置">×</button></div>
+    <p class="dialog-description">支持Responses、Chat Completions或JSON网关。山谷模式最多6次模型调用。</p>
+    <button id="deepseek-preset" type="button" class="button quiet">使用 DeepSeek 官方预设</button>
+    <label>API 完整地址<input id="setting-endpoint" type="url" required></label>
+    <div class="field-pair"><label>模型 ID<input id="setting-model" required></label><label>协议<select id="setting-protocol"><option value="responses">Responses</option><option value="chat_completions">Chat Completions</option><option value="json_contract">JSON Contract</option></select></label></div>
+    <label>API 密钥 <span class="muted">已保存时留空即可复用；输入新密钥可替换</span><input id="setting-key" type="password" autocomplete="off" placeholder="粘贴密钥；不会显示已保存的密钥"></label>
+    <label class="small remember-key-option"><input id="remember-key" type="checkbox">记住API密钥（Windows当前用户加密，重启可用）</label>
+    <div id="credential-note" class="small muted"></div>
+    <button id="clear-key" type="button" class="button quiet">清除当前API地址已保存的密钥</button>
+    <details><summary>各阶段模型与预算</summary><p class="small muted">阶段模型yourapi继承主模型。山谷只调用A范围检查、B/D规划与F审查，E配方复用；设置不含密钥。</p><textarea id="advanced-config" rows="12" spellcheck="false" aria-label="高级 JSON 配置"></textarea></details>
+    <p id="settings-error" class="error-text" role="alert"></p><div class="dialog-actions"><button id="reset-settings" type="button" class="button quiet">恢复默认值</button><button type="submit" class="button primary">保存设置</button></div>
+  </form></dialog>
   <dialog id="document-dialog" class="document-dialog"><div class="dialog-heading"><h2 id="document-title">运行文件</h2><button class="close-button" data-close="document-dialog" aria-label="关闭文档">×</button></div><pre id="document-content"></pre></dialog>
 </body>
 </html>

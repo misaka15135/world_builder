@@ -1,0 +1,47 @@
+{
+  "type": "object",
+  "properties": {
+    "river_x": {
+      "enum": [
+        248,
+        256,
+        264
+      ]
+    },
+    "river_width": {
+      "enum": [
+        12,
+        16,
+        20
+      ]
+    },
+    "street_y": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 70,
+        "maximum": 384
+      },
+      "minItems": 4,
+      "maxItems": 4
+    },
+    "street_width": {
+      "type": "integer",
+      "minimum": 6,
+      "maximum": 10
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 600
+    }
+  },
+  "required": [
+    "river_x",
+    "river_width",
+    "street_y",
+    "street_width",
+    "rationale"
+  ],
+  "additionalProperties": false
+}

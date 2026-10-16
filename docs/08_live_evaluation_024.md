@@ -4,6 +4,8 @@
 
 ## 服务与预算
 
+2026-10-16 追加结果：独立 [045 大地图批次](11_city045_arcane_map.md)使用单独冻结的 `0.1.0-city045` 契约与 Responses 配置，不改变本页历史首批输入或分母。一次真实512m地图、14网络调用、48912本地计账token、295.657s，生成48普通建筑、城堡、四广场/四桥；WIR、精确回放、Unity9768网格加载/重开及39条代表路线物理检查通过，源172房间路线检查通过。C首次超长拒绝保留；它是一个样本而非可靠性估计，人工观感及其他场景仍待验。新增内容只留本地。
+
 使用 DeepSeek 官方 `https://api.deepseek.com/chat/completions`、`deepseek-flash`、非流式 Chat Completions、`json_object` 和 `max_tokens`。实际模型由响应的 `model` 字段留证；官方文档截至 2026-10-11 见[首次调用](https://api-docs.deepseek.com/guides/codex)、[JSON 输出](https://api-docs.deepseek.com/guides/json_mode/)、[模型与价格](https://api-docs.deepseek.com/quick_start/pricing/)。当前模型默认启用 thinking；本项目的通用 Provider 不额外传 thinking 开关，故该行为计入本批配置。
 
 [无密钥配置](../config/agents.deepseek-024.json)规定每例最多 12 次请求、50 万本地计账 token、单次最多 1.6 万输出 token、最多两次尝试及一次 F 返工，墙钟上限 30 分钟。四例每例各运行一次。以上是程序侧停止条件，**不是供应商账单硬限**；包括超时且无法取得 usage 的请求在内，实际费用以 DeepSeek 控制台为准。先运行单层案例，查看实际 token 和失败分类，再依序运行另三例；不因首例表现修改冻结输入后继续把结果算作同批。

@@ -13,8 +13,12 @@ export const api = {
   jobs: () => request('/jobs'), job: id => request(`/jobs/${id}`),
   validateConfig: config => request('/config/validate', config), contract: stage => request(`/contracts/${stage}`),
   savePreferences: config => request('/preferences', config),
+  credentialStatus: endpoint => request('/credentials/status', {endpoint}),
+  saveCredential: (endpoint, api_key) => request('/credentials/save', {endpoint, api_key}),
+  clearCredential: endpoint => request('/credentials/clear', {endpoint}),
   create: body => request('/jobs', body), cancel: id => request(`/jobs/${id}/cancel`, {}),
   document: (id, path) => request(`/jobs/${id}/document?path=${encodeURIComponent(path)}`),
   scene: id => request(`/jobs/${id}/scene`),
   download: (id, path) => `/api/v1/jobs/${id}/file?path=${encodeURIComponent(path)}`,
+  async resource(id,path){const response=await fetch(`/api/v1/jobs/${id}/file?path=${encodeURIComponent(path)}`);if(!response.ok)throw new ApiError('无法加载场景资源','preview.resource',response.status);return response.arrayBuffer();},
 };

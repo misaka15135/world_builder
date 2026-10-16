@@ -1,0 +1,62 @@
+{
+  "type": "object",
+  "properties": {
+    "west_height": {
+      "type": "integer",
+      "minimum": 30,
+      "maximum": 70
+    },
+    "north_height": {
+      "type": "integer",
+      "minimum": 45,
+      "maximum": 95
+    },
+    "east_height": {
+      "type": "integer",
+      "minimum": 25,
+      "maximum": 65
+    },
+    "river_bend": {
+      "type": "integer",
+      "minimum": 24,
+      "maximum": 46
+    },
+    "river_width": {
+      "type": "integer",
+      "minimum": 18,
+      "maximum": 28
+    },
+    "river_phase_deg": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 90
+    },
+    "valley_width": {
+      "type": "integer",
+      "minimum": 96,
+      "maximum": 144
+    },
+    "trees": {
+      "type": "integer",
+      "minimum": 300,
+      "maximum": 440
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 600
+    }
+  },
+  "required": [
+    "west_height",
+    "north_height",
+    "east_height",
+    "river_bend",
+    "river_width",
+    "river_phase_deg",
+    "valley_width",
+    "trees",
+    "rationale"
+  ],
+  "additionalProperties": false
+}

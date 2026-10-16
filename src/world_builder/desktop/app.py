@@ -17,6 +17,7 @@ from world_builder.agents.runtime import write_json
 from world_builder.workbench.jobs import JobService, TERMINAL
 from world_builder.workbench.server import RootLock, WorkbenchServer
 from . import VERSION
+from .credentials import CredentialStore
 
 
 def user_directory():
@@ -33,7 +34,8 @@ class DesktopSession:
         try:
             path = self.root / "preferences.json"
             config = load_config(path if path.exists() else ROOT / "config/agents.example.json")
-            self.service = JobService(self.root / "runs", config, preferences_path=path)
+            self.service = JobService(self.root / "runs", config, preferences_path=path,
+                                      credential_store=CredentialStore(self.root / 'credentials'))
             self.server = WorkbenchServer(("127.0.0.1", 0), self.service)
             self.thread = Thread(target=self.server.serve_forever, kwargs={"poll_interval": .2}, daemon=True)
             self.thread.start()
@@ -62,14 +64,15 @@ class DesktopSession:
             self.lock.close()
 
 
-def self_test(session):
+def self_test(session, nature=False):
     """Explicit packaging check: actual bundled fixture, replay and exports."""
     results = []
-    for body in ({"mode": "fixture"}, {"mode": "replay"}):
+    bodies=({'mode':'fixture','pipeline':'nature047'},) if nature else ({"mode": "fixture"}, {"mode": "replay"})
+    for body in bodies:
         if results:
             body["replay_id"] = results[0]["id"]
         job = session.service.create(body)
-        deadline = time.monotonic() + 60
+        deadline = time.monotonic() + (1200 if nature else 60)
         while time.monotonic() < deadline:
             detail = session.service.detail(job["id"])
             if detail["status"] in TERMINAL:
@@ -78,7 +81,7 @@ def self_test(session):
         if detail["status"] != "succeeded":
             raise RuntimeError(f"Bundled self-test failed: {detail.get('error')}")
         results.append(detail)
-    if results[0]["result"]["worldpkg_sha256"] != results[1]["result"]["worldpkg_sha256"]:
+    if len(results)>1 and results[0]["result"]["worldpkg_sha256"] != results[1]["result"]["worldpkg_sha256"]:
         raise RuntimeError("Replay world package differs")
     report = {"version": VERSION, "status": "pass", "resource_root": str(ROOT),
               "runs": [{"id": job["id"], "result": job["result"]} for job in results]}
@@ -93,6 +96,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="World Builder desktop application")
     parser.add_argument("--data-dir", type=Path, default=user_directory())
     parser.add_argument("--self-test", action="store_true")
+    parser.add_argument('--self-test-nature',action='store_true',help='Rebuild the actual bundled 768m reference without API calls')
     args = parser.parse_args(argv)
     args.data_dir.mkdir(parents=True, exist_ok=True)
     logging.basicConfig(filename=args.data_dir / "desktop.log", level=logging.WARNING,
@@ -100,13 +104,13 @@ def main(argv=None):
     session = None
     try:
         session = DesktopSession(args.data_dir)
-        if args.self_test:
-            self_test(session)
+        if args.self_test or args.self_test_nature:
+            self_test(session,nature=args.self_test_nature)
             return 0
         import webview
         webview.settings["ALLOW_DOWNLOADS"] = True
         webview.settings["ALLOW_FILE_URLS"] = False
-        window = webview.create_window("World Builder · 世界构建器", session.server.origin,
+        window = webview.create_window("World Builder · 世界构建器 [048]", session.server.origin,
                                        width=1440, height=960, min_size=(960, 700),
                                        text_select=True, background_color="#f5f5ee")
         closing = Event()
@@ -133,7 +137,7 @@ def main(argv=None):
         return 0
     except Exception as exc:
         logging.exception("Desktop startup or execution failed")
-        if args.self_test:
+        if args.self_test or args.self_test_nature:
             write_json(args.data_dir / "self-test.json", {"status": "failed", "error": str(exc)})
         else:
             show_error(f"{exc}\n\n请确认本机已安装 Microsoft Edge WebView2 Runtime。\n日志：{args.data_dir / 'desktop.log'}")

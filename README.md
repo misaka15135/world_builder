@@ -26,6 +26,14 @@ GLB 输出不包含新增的自动 Unity 场景导入、碰撞体或 NavMesh；s
 
 ## 启动与验证
 
+049发布版本包括山谷客户端与Windows加密记住密钥/移除TXT导入。源码、参考参数、录制配方及[精选截图/摘要](examples/client048_delivery/README.md)随Git提供；EXE/原始API调用/运行历史/新大场景不上传。干净克隆请按[源码启动与密钥使用](docs/14_client048_saved_credentials.md)准备环境，已有本地启动入口保持可用。下方“未提交/推送”属于045—048原开发记录，最新发布状态见[049](work_order/049_client048_branch_publication.md)。
+
+本周新版客户端：双击 [start_client047.cmd](start_client047.cmd)，接入768m山谷的API生成、离线重建、31项受限参数调整、真实三角网预览与历史/导出；用法和证据见 [047客户端说明](docs/13_client047_weekly_delivery.md)。这是限定场景全图重建，不是任意场景或稳定世界局部编辑；旧入口仍可选，本轮未提交/推送。
+
+本地 045 大地图：双击 [512m 城邦 Unity 查看入口](tools/open_city045_unity.cmd)，操作和分层证据见 [大地图说明](docs/11_city045_arcane_map.md)。真实 API 生成48栋普通建筑、城堡、四广场及河道四桥；9768源网格加载/重开、172源房间路线、39条代表物理路线与精确回放通过，观感待用户复核。该新增内容尚未提交/推送，City 派生资源仅在当前本地目录，不是 Git 克隆后已有内容。
+
+本地 046 自然版：针对045过于规整的反馈，新增 [768m山谷聚落说明](docs/12_nature046_organic_map.md)与 [Unity查看入口](tools/open_nature046_unity.cmd)。真实起伏地形、弯曲河道、64栋非行列房屋和山地城堡；新模型B/D/F配合复用045的E配方，源码/目标证据独立登记。旧City场景保留；本轮未提交/推送。
+
 网页：双击 [start_workbench.cmd](start_workbench.cmd)，或在项目根目录运行：
 
 ```powershell
