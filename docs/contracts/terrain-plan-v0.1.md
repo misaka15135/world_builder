@@ -2,7 +2,7 @@
 
 版本：0.1.0。日期：2026-09-26。实现：`src/world_builder/planning/terrain.py`、`settings/*/terrain.json`、`tools/plan_terrain.py`。状态：**离线规则路径已实现并测试；它不是水文或工程地质模型。**
 
-本文是流水线阶段 B（[014](../../work_order/014_terrain_plan.md)）的合同。背景见 [04_scene_pipeline.md](../04_scene_pipeline.md)，简报与目录见 [scene-brief-v0.1.md](scene-brief-v0.1.md)。
+本文是流水线阶段 B（[014](../../work_order/archive/legacy/014_terrain_plan.md)）的合同。背景见 [04_scene_pipeline.md](../04_scene_pipeline.md)，简报与目录见 [scene-brief-v0.1.md](scene-brief-v0.1.md)。
 
 ## 1. 它替掉了什么
 

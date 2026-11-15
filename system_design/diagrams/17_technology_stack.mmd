@@ -1,0 +1,20 @@
+flowchart TB
+ subgraph client["本地工作台 / Windows 桌面"]
+  react["React 19 · TypeScript 7 · Vite 8"]
+  viewport["Three.js 0.187 · WebGL2"]
+  host["pywebview 6.2 · Edge WebView2"]
+  react --> viewport
+  host --> react
+ end
+ react -->|"HTTP JSON / 事件游标"| api["FastAPI 0.162 · Uvicorn 0.54 · 单 worker"]
+ api --> application["Pydantic 2 · jsonschema · 应用服务"]
+ application --> runtime["Python 3.12 · asyncio · 持久状态机"]
+ runtime --> provider["HTTPX 0.28 · 双协议适配"]
+ runtime --> gateway["本地工具网关 · MCP SDK 2.3"]
+ runtime --> writer["专用 DB 线程 · sqlite3"]
+ writer --> db["SQLite · WAL / FTS5 / RTree"]
+ gateway --> workers["spawn 几何 / 预览 / 导出子进程"]
+ workers --> blob["SHA-256 候选与资源文件"]
+ application --> writer
+ provider --> model["用户配置的外部 LLM"]
+ gateway --> mcp["受限知识 / 资产 MCP 服务"]

@@ -1,5 +1,10 @@
 # Windows 桌面应用 0.1.0
 
+工单入口更新（2026-10-29）：文内 001—046 编号为已归档的原始实现/规划记录，当前执行改由 [048—052 主工单](../work_order/README.md)承接；本版本运行行为不变。
+
+适用范围更新（2026-10-29）：本文继续描述当前已实现版本；[Agent 目标架构](08_agent_target_architecture.md)与[迁移方案](09_agent_migration_plan.md)均为待实施设计。新增工具循环、MCP、知识检索和局部修订不能按本文宣称已支持；D01/D02 已确认分阶段交付和首批双协议，但尚未改变本版本。
+
+
 适用范围（2026-10-10）：当前 main 中 026 已实现的桌面宿主，复用 [网页测试台](06_web_workbench.md) 与固定 A—F 流水线。产品定位见 [项目基线](00_project_baseline.md)；029—037 的能力尚未进入本版。已有便携包是构建时快照，本次文档对齐没有重新构建或升级该产物。
 
 ## 启动与使用
@@ -53,7 +58,7 @@ python -m venv .venv-desktop
 .\dist\WorldBuilder\WorldBuilder.exe --self-test --data-dir artifacts/agent-runs/my-desktop-check
 ```
 
-它执行包内人工样例与回放，写 `self-test.json`。源码测试命令与实际结果见 [026 工单](../work_order/026_windows_desktop_application.md)；验证摘要见 [validation.json](../artifacts/desktop-026/validation.json)。
+它执行包内人工样例与回放，写 `self-test.json`。源码测试命令与实际结果见 [026 工单](../work_order/archive/legacy/026_windows_desktop_application.md)；验证摘要见 [validation.json](../artifacts/desktop-026/validation.json)。
 
 ## 实现依据
 

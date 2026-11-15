@@ -1,0 +1,18 @@
+sequenceDiagram
+ actor User as 用户
+ participant API as 修改服务
+ participant Repo as Repository
+ participant Runtime as 运行时
+ User->>API: 修改 object_id / base_revision / locks
+ API->>Repo: 查询精确对象、邻域与依赖
+ Repo-->>API: 读集 / 写域 / 锁版本
+ API->>Runtime: 新 Operation / 受影响任务
+ Runtime->>Runtime: 复用无关对象，重做受影响任务
+ Runtime->>Repo: 候选 + 本地检查 + CAS
+ Repo-->>User: 新修订与对象差异
+ User->>API: 撤销并复用历史快照
+ API->>Repo: 检查期望头与代数 / 锁策略 / 创建审计修订
+ Repo-->>User: 复用历史内容的新修订，不调用模型
+ User->>API: 重做
+ API->>Repo: 若分支未分叉，复用重做内容创建修订
+ Repo-->>User: 结果或分叉诊断

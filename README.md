@@ -4,6 +4,12 @@
 
 项目定位与实施边界见 [当前项目基线](docs/00_project_baseline.md)，文档用途见 [文档索引](docs/README.md)。
 
+## Agent 迁移目标（待实现）
+
+目标是用户接入受支持的外部 LLM 后，由系统组织专业角色、按需检索知识和调用工具，依据执行结果修正候选，经过本地验收保存世界修订，再反馈修改和导出。现有 0.1.0 仍是固定阶段 JSON 原型，尚不支持模型工具调用循环或 MCP/RAG。
+
+[目标架构](docs/08_agent_target_architecture.md)明确模型、运行时、工具和世界仓库的职责；[迁移方案与已确认决策](docs/09_agent_migration_plan.md)列出工程检查点、需求映射和 D01/D02。已确认按“单栋闭环 → 小场景 → 局部修改”分阶段交付，首个交付同时支持原生工具调用与行动 JSON，两条路径分别验收。当前产品工作由 048—052 五张主工单承接，本轮文档更新不代表功能交付。
+
 ## 当前可运行原型
 
 当前版本 0.1.0 使用固定流程：A 需求 → B 地形与 C 风物清单并发 → D 选址 → 每个场地独立 E 设计 → F 整场景审查与有限返工。API 模型提交结构化计划，本地程序执行严格校验、几何编译、WIR 存档与导出；配置缺失时明确失败，不回退旧规则规划器。
@@ -13,8 +19,8 @@
 | 场景生成 | 轴对齐整米盒体、格状地形、静态水和有限材质；场地仍受建筑、支撑和道路连接约束 |
 | 数据与导出 | 自包含 `.worldpkg`、Unity 静态 GLB、Minecraft Sponge v3 schematic 与映射/损失报告 |
 | 本地应用 | 网页测试台、Windows 桌面壳、只读旋转/剖切/拾取、阶段记录、历史回放和下载 |
-| 现有证据 | 人工响应样例验证程序闭环；真实 API 质量、成本及其生成场景在目标中的加载/通行仍待 024 验收 |
-| 后续规划 | 按能力调度、自然资产、稳定修订、用户反馈修改与目标能力配置均尚未实现，见 029—037 |
+| 现有证据 | 人工响应样例验证程序闭环；真实 API 质量、成本及其生成场景在目标中的加载/通行在各交付阶段分别验收 |
+| 后续规划 | 按能力调度、自然资产、稳定修订、用户反馈修改与目标能力配置均尚未实现，见当前 048—052 主工单 |
 
 GLB 输出不包含新增的自动 Unity 场景导入、碰撞体或 NavMesh；schematic 需要目标侧工具放置。当前文件导出不能证明场景在游戏中可用。旧规则路径的城堡、船只等功能及目标侧样件证据不自动代表 Agent 主线能力。
 
@@ -41,6 +47,6 @@ python tools/generate_agent_world.py --prompt '一条街旁的一栋两层木构
 
 ## 分支与协作入口
 
-2026-10-10 的分支职责：`main` 为 Agent 产品主线，由原 `codex/api-agent-pipeline` 更名；`codex/local-validation` 保留原 `main` 的规则生成与本地验证对照。两条分支已推送并追踪对应 origin 分支，GitHub 默认分支为 main，旧 Agent 远端分支保留。调整见 [027](work_order/027_branch_role_alignment.md)，推送记录见 [040](work_order/040_remote_branch_publication.md)。旧规则路径的运行方式与证据见 [006 说明](docs/contracts/generation-v0.1.md)，不是当前产品默认入口。
+2026-10-10 的分支职责：`main` 为 Agent 产品主线，由原 `codex/api-agent-pipeline` 更名；`codex/local-validation` 保留原 `main` 的规则生成与本地验证对照。两条分支已推送并追踪对应 origin 分支，GitHub 默认分支为 main，旧 Agent 远端分支保留。调整见 [027](work_order/archive/legacy/027_branch_role_alignment.md)，推送记录见 [040](work_order/archive/legacy/040_remote_branch_publication.md)。旧规则路径的运行方式与证据见 [006 说明](docs/contracts/generation-v0.1.md)，不是当前产品默认入口。
 
-每次工作先读 [AGENTS.md](AGENTS.md)、[工单索引](work_order/README.md)、[总规划](work_order/000_project_master_plan.md) 和当前工单。实施入口为 [029 通用场景契约](work_order/029_scene_task_contracts.md)；024 随能力推进积累真实效果证据，038 单独核对历史工单。IFC 是独立可选扩展。早期 01—04 方案保留作历史参考，当前目标与路线以项目基线和总规划的当前部分为准。
+日常从 [当前工单入口](work_order/README.md)开始，下一步是 [048 统一契约与世界基础](work_order/048_agent_foundations.md)。五张主工单依次交付基础、运行时、单栋、小场景和局部修改；状态与证据只在各工单维护。[旧工单归档](work_order/archive/README.md)和[条件性后续清单](work_order/BACKLOG.md)按需查阅，完整编辑器、IFC、新平台等不作为隐含前置。

@@ -2,7 +2,7 @@
 
 版本：0.1.0。日期：2026-09-26。实现：`src/world_builder/planning/assembler.py`、`tools/assemble_scene.py`。状态：**已产出通过 WIR 0.1 合同的包；目标适配器尚未接入。**
 
-本文是流水线阶段 F（[018](../../work_order/018_assembler_pipeline.md)）的合同。
+本文是流水线阶段 F（[018](../../work_order/archive/legacy/018_assembler_pipeline.md)）的合同。
 
 ## 1. 做什么
 

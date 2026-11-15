@@ -1,0 +1,15 @@
+flowchart TB
+ params["版本化参数 / 配方 / 资产"] --> schema["Schema / 单位 / 坐标 / 能力检查"]
+ schema --> build["确定性编译 · 稳定对象 ID"]
+ build --> local["局部几何 / 支撑 / 净空"]
+ local --> assembly["隔离候选装配"]
+ assembly --> spatial["跨对象碰撞 / 水线 / 通路"]
+ spatial --> coverage["必需覆盖 / 目标可表达性"]
+ coverage --> review["F 风格与整体审查"]
+ review --> commit["本地最终校验 / 事务接受"]
+ schema --> diag["Diagnostic: 规则 / 对象 / 位置 / 严重性"]
+ local --> diag
+ spatial --> diag
+ coverage --> diag
+ diag --> repair["受限任务返工 / 有限预算"]
+ repair --> params

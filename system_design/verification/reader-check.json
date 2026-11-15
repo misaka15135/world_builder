@@ -1,0 +1,22 @@
+{
+  "checked_at": "2026-11-12",
+  "before": {
+    "articles": 20,
+    "images": 32,
+    "brokenImages": 0,
+    "overflow": false
+  },
+  "search": {
+    "visible": 4
+  },
+  "nav": {
+    "hash": "#16_technology_stack",
+    "hidden": 0,
+    "search": ""
+  },
+  "mobile": {
+    "width": 390,
+    "scrollWidth": 390
+  },
+  "pageErrors": []
+}

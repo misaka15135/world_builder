@@ -1,0 +1,13 @@
+flowchart TB
+ project["项目 / 世界列表"] --> connect["连接能力与目标"]
+ connect --> compose["描述 / 约束 / 预算"]
+ compose --> run["任务进度 / 诊断 / 取消"]
+ run --> choice["明确待答选择"]
+ choice --> run
+ run --> candidate["候选预览 / 差异 / 损失"]
+ candidate --> accepted["已接受修订"]
+ accepted --> selection["对象选择 / 锁 / 局部修改"]
+ selection --> run
+ accepted --> history["修订历史 / 撤销重做"]
+ history --> accepted
+ accepted --> export["目标导出 / 证据状态"]

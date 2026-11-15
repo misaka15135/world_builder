@@ -1,0 +1,15 @@
+flowchart TB
+ subgraph host["用户本机"]
+ ui["浏览器 / 桌面宿主"] --> service["Loopback API / 会话令牌"]
+ service --> control["单控制进程 / 调度 / 接受"]
+ control --> db["本地盘 SQLite / 执行账本"]
+ control --> blob["本地盘内容寻址资源"]
+ control --> workers["受限 Geometry / Preview / Export 进程"]
+ control --> secrets["系统凭据存储"]
+ end
+ control --> llm["允许的 LLM endpoint"]
+ control --> mcp["按需 MCP 连接"]
+ db --> backup["一致性备份 / 校验清单"]
+ blob --> backup
+ backup --> share["SMB 可存完整备份包"]
+ source["SMB 源码工作区"] -.-> service

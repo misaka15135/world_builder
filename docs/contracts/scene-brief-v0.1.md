@@ -2,7 +2,7 @@
 
 版本：0.1.0。日期：2026-09-26。实现：`src/world_builder/planning/{brief,catalogue}.py`、`settings/*/`、`tools/compile_brief.py`。状态：**离线规则路径已实现并测试；模型路径只有契约与本地 fixture，真实服务未接入。**
 
-本文是流水线阶段 A（[013](../../work_order/013_scene_brief.md)）与阶段 C（[015](../../work_order/015_landmark_catalogue.md)）的合同。方案背景见 [04_scene_pipeline.md](../04_scene_pipeline.md)。
+本文是流水线阶段 A（[013](../../work_order/archive/legacy/013_scene_brief.md)）与阶段 C（[015](../../work_order/archive/legacy/015_landmark_catalogue.md)）的合同。方案背景见 [04_scene_pipeline.md](../04_scene_pipeline.md)。
 
 ## 1. 为什么先做这两个阶段
 

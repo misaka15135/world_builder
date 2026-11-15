@@ -1,0 +1,4 @@
+# Install after backend.requirements.txt in an isolated development environment.
+pytest==8.4.2
+ruff==0.17.4
+mypy==2.4.1

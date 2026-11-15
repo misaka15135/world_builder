@@ -1,0 +1,303 @@
+{
+  "contract_version": "design-2026-11-11",
+  "available_capabilities": [
+    "world.query",
+    "building.construct",
+    "scene.review",
+    "terrain.construct",
+    "asset.lookup",
+    "layout.solve",
+    "nature.scatter"
+  ],
+  "valid": [
+    {
+      "name": "single_building",
+      "required": [
+        "building",
+        "entry"
+      ],
+      "tasks": [
+        {
+          "task_id": "query",
+          "capability": "world.query",
+          "depends_on": [],
+          "covers": []
+        },
+        {
+          "task_id": "building",
+          "capability": "building.construct",
+          "depends_on": [
+            "query"
+          ],
+          "covers": [
+            "building",
+            "entry"
+          ]
+        },
+        {
+          "task_id": "review",
+          "capability": "scene.review",
+          "depends_on": [
+            "building"
+          ],
+          "covers": []
+        }
+      ],
+      "final_review_task_ids": [
+        "review"
+      ]
+    },
+    {
+      "name": "forest_no_buildings_no_roads",
+      "required": [
+        "terrain",
+        "stream",
+        "trees",
+        "rocks"
+      ],
+      "tasks": [
+        {
+          "task_id": "terrain",
+          "capability": "terrain.construct",
+          "depends_on": [],
+          "covers": [
+            "terrain",
+            "stream"
+          ]
+        },
+        {
+          "task_id": "assets",
+          "capability": "asset.lookup",
+          "depends_on": [],
+          "covers": []
+        },
+        {
+          "task_id": "layout",
+          "capability": "layout.solve",
+          "depends_on": [
+            "terrain",
+            "assets"
+          ],
+          "covers": []
+        },
+        {
+          "task_id": "scatter",
+          "capability": "nature.scatter",
+          "depends_on": [
+            "layout"
+          ],
+          "covers": [
+            "trees",
+            "rocks"
+          ]
+        },
+        {
+          "task_id": "review",
+          "capability": "scene.review",
+          "depends_on": [
+            "scatter"
+          ],
+          "covers": []
+        }
+      ],
+      "final_review_task_ids": [
+        "review"
+      ]
+    },
+    {
+      "name": "forest_camp",
+      "required": [
+        "terrain",
+        "trees",
+        "shelter",
+        "entry"
+      ],
+      "tasks": [
+        {
+          "task_id": "terrain",
+          "capability": "terrain.construct",
+          "depends_on": [],
+          "covers": [
+            "terrain"
+          ]
+        },
+        {
+          "task_id": "assets",
+          "capability": "asset.lookup",
+          "depends_on": [],
+          "covers": []
+        },
+        {
+          "task_id": "layout",
+          "capability": "layout.solve",
+          "depends_on": [
+            "terrain",
+            "assets"
+          ],
+          "covers": []
+        },
+        {
+          "task_id": "trees",
+          "capability": "nature.scatter",
+          "depends_on": [
+            "layout"
+          ],
+          "covers": [
+            "trees"
+          ]
+        },
+        {
+          "task_id": "shelter",
+          "capability": "building.construct",
+          "depends_on": [
+            "layout"
+          ],
+          "covers": [
+            "shelter",
+            "entry"
+          ]
+        },
+        {
+          "task_id": "review",
+          "capability": "scene.review",
+          "depends_on": [
+            "trees",
+            "shelter"
+          ],
+          "covers": []
+        }
+      ],
+      "final_review_task_ids": [
+        "review"
+      ]
+    }
+  ],
+  "invalid": [
+    {
+      "name": "missing_required",
+      "required": [
+        "trees"
+      ],
+      "tasks": [
+        {
+          "task_id": "review",
+          "capability": "scene.review",
+          "depends_on": [],
+          "covers": []
+        }
+      ],
+      "final_review_task_ids": [
+        "review"
+      ]
+    },
+    {
+      "name": "cycle",
+      "required": [
+        "terrain"
+      ],
+      "tasks": [
+        {
+          "task_id": "a",
+          "capability": "terrain.construct",
+          "depends_on": [
+            "b"
+          ],
+          "covers": [
+            "terrain"
+          ]
+        },
+        {
+          "task_id": "b",
+          "capability": "scene.review",
+          "depends_on": [
+            "a"
+          ],
+          "covers": []
+        }
+      ],
+      "final_review_task_ids": [
+        "b"
+      ]
+    },
+    {
+      "name": "false_capability_coverage",
+      "required": [
+        "trees"
+      ],
+      "tasks": [
+        {
+          "task_id": "review",
+          "capability": "scene.review",
+          "depends_on": [],
+          "covers": [
+            "trees"
+          ]
+        }
+      ],
+      "final_review_task_ids": [
+        "review"
+      ]
+    },
+    {
+      "name": "missing_final_review",
+      "required": [
+        "trees"
+      ],
+      "tasks": [
+        {
+          "task_id": "trees",
+          "capability": "nature.scatter",
+          "depends_on": [],
+          "covers": [
+            "trees"
+          ]
+        }
+      ],
+      "final_review_task_ids": []
+    },
+    {
+      "name": "disconnected_final_review",
+      "required": [
+        "trees"
+      ],
+      "tasks": [
+        {
+          "task_id": "trees",
+          "capability": "nature.scatter",
+          "depends_on": [],
+          "covers": [
+            "trees"
+          ]
+        },
+        {
+          "task_id": "review",
+          "capability": "scene.review",
+          "depends_on": [],
+          "covers": []
+        }
+      ],
+      "final_review_task_ids": [
+        "review"
+      ]
+    }
+  ],
+  "capability_outputs": {
+    "world.query": [],
+    "building.construct": [
+      "building",
+      "entry",
+      "shelter"
+    ],
+    "scene.review": [],
+    "terrain.construct": [
+      "terrain",
+      "stream"
+    ],
+    "asset.lookup": [],
+    "layout.solve": [],
+    "nature.scatter": [
+      "trees",
+      "rocks"
+    ]
+  }
+}

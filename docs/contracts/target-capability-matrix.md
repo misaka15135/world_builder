@@ -1,6 +1,6 @@
 # WIR 0.1 目标能力矩阵
 
-适用范围（2026-10-10）：本表是 005 的预期映射设计，列出的软件版本来自当时的目标环境约定，不能视为最新版本建议或逐项兼容性验收。当前 Agent 0.1.0 仅支持整米盒体、格状地形和有限材质，输出静态 GLB / schematic；没有新增自动 Unity 碰撞体或通用资产映射。准确边界见 [Agent 说明](../05_api_agent_pipeline.md)。首批可执行 target profile 由 [035](../../work_order/035_target_profiles_and_selection.md) 定义，[036](../../work_order/036_unity_minecraft_scene_adapters.md) 接通，真实模型结果由 024 验收；IFC 属于可选专业扩展。
+适用范围（2026-10-10）：本表是 005 的预期映射设计，列出的软件版本来自当时的目标环境约定，不能视为最新版本建议或逐项兼容性验收。当前 Agent 0.1.0 仅支持整米盒体、格状地形和有限材质，输出静态 GLB / schematic；没有新增自动 Unity 碰撞体或通用资产映射。准确边界见 [Agent 说明](../05_api_agent_pipeline.md)。首批可执行 target profile 由 [048](../../work_order/048_agent_foundations.md) 定义，[051](../../work_order/051_scene_delivery_m2.md) 接通，真实模型结果在 050/051/052 各交付阶段验收；IFC 属于可选专业扩展。
 
 映射分类含义：`保留` 表示设计上预期直接表示；`近似` 表示需量化或替代；`源端` 表示仅在 WIR 保留；`拒绝` 表示缺失必要信息时导出失败。它们不是通过验收的状态；实际软件验证须另附版本、输入、修订及证据。
 

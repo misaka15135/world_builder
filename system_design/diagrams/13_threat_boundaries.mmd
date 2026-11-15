@@ -1,0 +1,22 @@
+flowchart TB
+ subgraph untrusted["外部不可信输入"]
+ prompt["用户文件 / 检索内容 / 模型行动"]
+ remote["MCP 返回 / 远程资产"]
+ end
+ subgraph policy["本地验证与策略边界"]
+ intake["大小 / 路径 / MIME / 摘要 / 来源检查"]
+ gateway["工具白名单 / Scope / 预算 / 网络策略"]
+ candidate["隔离候选 / 资源限制"]
+ validation["硬约束 / 锁 / CAS 接受"]
+ end
+ subgraph trusted["正式状态与凭据边界"]
+ repo["WIR / Revision / Audit"]
+ secret["凭据存储 · 仅连接适配器访问"]
+ end
+ prompt --> intake
+ remote --> intake
+ intake --> gateway
+ gateway --> candidate
+ candidate --> validation
+ validation --> repo
+ secret -.-> gateway

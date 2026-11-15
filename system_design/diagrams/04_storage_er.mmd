@@ -1,0 +1,41 @@
+erDiagram
+ WORLDS ||--o{ REVISIONS : owns
+ WORLDS ||--o{ OPERATIONS : receives
+ REVISIONS ||--o{ REVISION_OBJECTS : contains
+ OBJECT_VERSIONS ||--o{ REVISION_OBJECTS : references
+ OPERATIONS ||--o{ TASKS : schedules
+ TASKS ||--o{ TOOL_CALLS : invokes
+ TASKS }o--o{ CANDIDATES : contributes
+ OPERATIONS ||--o{ CANDIDATES : owns
+ CANDIDATES ||--o{ READ_DEPENDENCIES : records
+ CANDIDATES ||--o{ WRITE_INTENTS : proposes
+ ARTIFACTS ||--o{ ARTIFACT_REFS : retained_by
+ WORLDS ||--o{ LOCKS : restricts
+ OPERATIONS ||--o{ EVENTS : emits
+ WORLDS {
+ string world_id PK
+ string head_revision_id FK
+ int head_generation
+ }
+ REVISIONS {
+ string revision_id PK
+ string world_id FK
+ string parent_revision_id FK
+ string snapshot_hash
+ }
+ OBJECT_VERSIONS {
+ string object_id PK
+ string content_hash PK
+ }
+ TOOL_CALLS {
+ string call_id PK
+ string args_hash
+ string state
+ string receipt_ref
+ }
+ CANDIDATES {
+ string candidate_id PK
+ string base_revision_id FK
+ string state
+ string patch_hash
+ }

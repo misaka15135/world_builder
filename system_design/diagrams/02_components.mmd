@@ -1,0 +1,19 @@
+flowchart TB
+ ui["Workbench"] --> api["Application Service"]
+ api --> rt["Runtime / Scheduler / Budget"]
+ rt <--> adapter["Model Adapter"]
+ rt --> context["Context / Retrieval"]
+ rt --> gateway["Tool Gateway / Receipts"]
+ registry["Capability Registry / Profiles"] --> rt
+ registry --> gateway
+ gateway --> worker["Geometry / Preview Workers"]
+ gateway --> mcp["MCP Client"]
+ worker --> cand["Candidate Workspace"]
+ cand --> validation["Validation / F Review"]
+ validation --> commit["Commit Service"]
+ api --> commit
+ commit --> repo["Repository / Revisions / Locks"]
+ repo --> context
+ repo --> exports["Export Service"]
+ repo --> events["Durable Events"]
+ events --> ui

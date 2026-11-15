@@ -1,0 +1,7 @@
+flowchart TB
+ design["053 详细设计 / UML / 契约草案"] --> foundation["048 契约 / 世界 / profile 冻结"]
+ foundation --> runtime["049 双协议运行时 / 网关"]
+ runtime --> m1["050 M1 单栋 · 两协议真实闭环"]
+ m1 --> m2["051 M2 小场景 · 同源双目标"]
+ m2 --> m3["052 M3 修改 · 锁 / 撤销 / 工作台"]
+ m3 -.-> backlog["条件扩展 · 大世界 / IFC / 新平台"]

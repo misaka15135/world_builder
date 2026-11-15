@@ -1,0 +1,57 @@
+{
+  "checked_at": "2026-11-12",
+  "scope": "isolated candidate dependency imports, ASGI DTOs, configuration and in-memory SQL; no product/model/MCP server/target execution",
+  "python": "3.12.15",
+  "platform": "macOS-27.0.1-arm64-arm-64bit",
+  "sqlite": "3.54.1",
+  "versions": {
+    "fastapi": "0.162.5",
+    "uvicorn": "0.54.0",
+    "pydantic": "2.14.3",
+    "jsonschema": "4.26.0",
+    "httpx": "0.28.1",
+    "mcp": "2.3.0",
+    "keyring": "25.7.0",
+    "platformdirs": "4.14.5"
+  },
+  "checks": [
+    "toml_schema_positive",
+    "multiple_http_workers_rejected",
+    "redirects_rejected",
+    "unknown_field_rejected",
+    "invalid_budget_rejected",
+    "configuration_cross_field_invariants",
+    "fastapi_httpx_asgi_roundtrip",
+    "pydantic_strict_and_extra_rejection",
+    "sqlite_json_fts5_rtree_strict",
+    "mcp_sdk_import_and_protocol_constant",
+    "pip_dependency_consistency"
+  ],
+  "sql_design": {
+    "scope": "SQL design illustration in isolated in-memory SQLite; not a product migration or runtime test",
+    "sqlite_version": "3.54.1",
+    "tables": 17,
+    "checks": [
+      "successful_probe_without_world_revision",
+      "successful_probe_requires_result",
+      "candidate_multi_task_aggregation",
+      "cross_operation_candidate_task",
+      "cross_world_base",
+      "stale_generation",
+      "immutable_revision",
+      "unvalidated_candidate_accept",
+      "invalid_task_state",
+      "immutable_task_definition",
+      "duplicate_call_idempotency",
+      "success_requires_receipt",
+      "unknown_budget_stays_reserved",
+      "over_budget_reservation",
+      "observed_overrun_preserved",
+      "duplicate_event_cursor",
+      "invalid_spatial_bounds",
+      "invalid_field_lock"
+    ],
+    "errors": []
+  },
+  "errors": []
+}

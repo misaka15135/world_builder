@@ -1,0 +1,13 @@
+flowchart TB
+ user["创作者 / 玩家"] --> ui["工作台 / 桌面宿主"]
+ subgraph local["World Builder 本地信任边界"]
+ ui --> runtime["Agent 运行时与工具网关"]
+ runtime --> candidate["隔离候选与本地校验"]
+ candidate --> repo["WIR 世界与不可变修订"]
+ repo --> export["目标导出与损失报告"]
+ end
+ runtime <--> model["外部 LLM · 不持有接受权"]
+ runtime <--> mcp["可选 MCP · 受限能力"]
+ export --> unity["Unity 消费端"]
+ export --> minecraft["Minecraft 消费端"]
+ repo --> package["worldpkg / 离线归档"]

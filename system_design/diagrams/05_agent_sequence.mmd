@@ -1,0 +1,29 @@
+sequenceDiagram
+ actor User as 用户
+ participant App as 应用服务
+ participant RT as 运行时
+ participant LLM as 模型适配器
+ participant GW as 工具网关
+ participant Repo as 候选与仓库
+ User->>App: 创建请求 / 预算 / 目标
+ App->>RT: 持久化 Operation
+ RT->>LLM: 需求与可用能力
+ LLM-->>RT: 任务图建议
+ RT->>RT: 检查 DAG / 必需覆盖 / 预算
+ loop 受预算约束的行动循环
+ RT->>LLM: 上下文与真实观察
+ LLM-->>RT: Action(tool_call)
+ RT->>GW: 校验后分派
+ GW->>Repo: 构建或检查隔离候选
+ Repo-->>GW: 候选引用 / 定位诊断
+ GW-->>RT: 持久 ToolResult
+ end
+ LLM-->>RT: submit_candidate
+ RT->>Repo: 局部与整体检查 / CAS 接受
+ alt 满足本地策略
+ Repo-->>App: revision_id 与持久事件
+ App-->>User: 已接受修订
+ else 失败 / 冲突 / 取消
+ Repo-->>App: 诊断，世界头不变
+ App-->>User: 失败与可恢复操作
+ end

@@ -1,0 +1,20 @@
+sequenceDiagram
+ participant RT as 运行时
+ participant Blob as 内容存储
+ participant V as 校验器
+ participant DB as Repository
+ RT->>Blob: 写临时文件 / 校验摘要 / 原子落盘
+ RT->>V: 冻结候选与基础修订
+ V-->>RT: 规则版本 / 依赖 / 诊断摘要
+ RT->>DB: BEGIN IMMEDIATE
+ DB->>DB: 验证取消代数与接受权限
+ DB->>DB: 核对 head_generation / 基础修订
+ DB->>DB: 核对锁、读依赖与空间边界
+ alt 全部满足
+ DB->>DB: 插入 Revision / 资源引用 / 审计事件
+ DB->>DB: CAS 推进 head 与 generation
+ DB-->>RT: COMMIT / revision_id
+ else 冲突或取消
+ DB-->>RT: ROLLBACK / 定位诊断
+ end
+ RT->>Blob: 后续按可达性清理孤立资源

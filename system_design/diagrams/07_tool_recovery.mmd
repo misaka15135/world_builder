@@ -1,0 +1,22 @@
+sequenceDiagram
+ participant RT as 运行时
+ participant Ledger as 调用账本
+ participant GW as 网关
+ participant Tool as 工具
+ RT->>Ledger: 预留预算，保存 call_id 与参数摘要
+ RT->>GW: 执行 call_id
+ GW->>Tool: 幂等键 / 限定作用域
+ Tool--xGW: 超时或进程中断
+ GW->>Ledger: 标记 unknown
+ RT->>GW: 恢复查询同一 call_id
+ GW->>Tool: 查询回执
+ alt 已完成
+ Tool-->>GW: 原始结果引用
+ GW->>Ledger: 保存 succeeded 回执
+ else 确认未执行且允许幂等重试
+ GW->>Tool: 同键重试
+ else 无法确定外部副作用
+ GW->>Ledger: 保持 unknown 并阻断依赖
+ end
+ RT->>RT: 校验取消代数与任务版本
+ RT->>RT: 迟到结果只归档，不提交

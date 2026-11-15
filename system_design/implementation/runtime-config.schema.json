@@ -1,0 +1,399 @@
+{
+  "type": "object",
+  "properties": {
+    "config_version": {
+      "const": "stack-2026-11-12"
+    },
+    "server": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "const": "127.0.0.1"
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "workers": {
+          "const": 1
+        },
+        "loop": {
+          "const": "asyncio"
+        },
+        "http": {
+          "const": "h11"
+        },
+        "session_auth": {
+          "const": "X-Workbench-Token"
+        }
+      },
+      "required": [
+        "host",
+        "port",
+        "workers",
+        "loop",
+        "http",
+        "session_auth"
+      ],
+      "additionalProperties": false
+    },
+    "storage": {
+      "type": "object",
+      "properties": {
+        "path_policy": {
+          "const": "platformdirs-local"
+        },
+        "network_filesystem": {
+          "const": "reject"
+        },
+        "journal_mode": {
+          "type": "string",
+          "minLength": 1
+        },
+        "synchronous": {
+          "type": "string",
+          "minLength": 1
+        },
+        "busy_timeout_ms": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "foreign_keys": {
+          "const": true
+        },
+        "sqlite_min_version": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "path_policy",
+        "network_filesystem",
+        "journal_mode",
+        "synchronous",
+        "busy_timeout_ms",
+        "foreign_keys",
+        "sqlite_min_version"
+      ],
+      "additionalProperties": false
+    },
+    "runtime": {
+      "type": "object",
+      "properties": {
+        "max_operations": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_model_concurrency": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_tool_concurrency": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "worker_processes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_model_calls": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_tool_calls": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_total_tokens": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_output_tokens": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "operation_deadline_seconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "model_deadline_seconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tool_deadline_seconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "cancel_grace_seconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_attempts_per_call": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "max_operations",
+        "max_model_concurrency",
+        "max_tool_concurrency",
+        "worker_processes",
+        "max_model_calls",
+        "max_tool_calls",
+        "max_total_tokens",
+        "max_output_tokens",
+        "operation_deadline_seconds",
+        "model_deadline_seconds",
+        "tool_deadline_seconds",
+        "cancel_grace_seconds",
+        "max_attempts_per_call"
+      ],
+      "additionalProperties": false
+    },
+    "transport": {
+      "type": "object",
+      "properties": {
+        "connect_timeout_seconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "read_timeout_seconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "write_timeout_seconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "pool_timeout_seconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "follow_redirects": {
+          "const": false
+        },
+        "trust_env": {
+          "type": "boolean"
+        },
+        "verify_tls": {
+          "const": true
+        },
+        "max_connections": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_keepalive_connections": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_response_bytes": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "connect_timeout_seconds",
+        "read_timeout_seconds",
+        "write_timeout_seconds",
+        "pool_timeout_seconds",
+        "follow_redirects",
+        "trust_env",
+        "verify_tls",
+        "max_connections",
+        "max_keepalive_connections",
+        "max_response_bytes"
+      ],
+      "additionalProperties": false
+    },
+    "limits": {
+      "type": "object",
+      "properties": {
+        "max_request_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_blob_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_candidate_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "worker_memory_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_instances": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_triangles": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_region_m": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "max_request_bytes",
+        "max_blob_bytes",
+        "max_candidate_bytes",
+        "worker_memory_bytes",
+        "max_instances",
+        "max_triangles",
+        "max_region_m"
+      ],
+      "additionalProperties": false
+    },
+    "preview": {
+      "type": "object",
+      "properties": {
+        "width_px": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "height_px": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_pixel_ratio": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "poll_interval_ms": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "hidden_poll_interval_ms": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "width_px",
+        "height_px",
+        "max_pixel_ratio",
+        "poll_interval_ms",
+        "hidden_poll_interval_ms"
+      ],
+      "additionalProperties": false
+    },
+    "provider": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "adapter": {
+          "type": "string",
+          "minLength": 1
+        },
+        "protocol": {
+          "enum": [
+            "native_tools",
+            "action_json"
+          ]
+        },
+        "endpoint": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1
+        },
+        "credential_ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "enabled",
+        "adapter",
+        "protocol",
+        "endpoint",
+        "model",
+        "credential_ref"
+      ],
+      "additionalProperties": false
+    },
+    "mcp": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "protocol_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "transport": {
+          "type": "string",
+          "minLength": 1
+        },
+        "server_registration": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "enabled",
+        "protocol_version",
+        "transport",
+        "server_registration"
+      ],
+      "additionalProperties": false
+    },
+    "retention": {
+      "type": "object",
+      "properties": {
+        "log_max_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "log_backups": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "cache_days": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "source_gc_automatic": {
+          "const": false
+        },
+        "raw_secret_logging": {
+          "const": false
+        }
+      },
+      "required": [
+        "log_max_bytes",
+        "log_backups",
+        "cache_days",
+        "source_gc_automatic",
+        "raw_secret_logging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "config_version",
+    "server",
+    "storage",
+    "runtime",
+    "transport",
+    "limits",
+    "preview",
+    "provider",
+    "mcp",
+    "retention"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:world-builder:stack-2026-11-12:config",
+  "title": "Unreleased runtime configuration"
+}

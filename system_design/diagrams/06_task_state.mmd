@@ -1,0 +1,21 @@
+stateDiagram-v2
+ [*] --> active
+ state active {
+  [*] --> waiting_dependencies
+  waiting_dependencies --> ready: 依赖接受
+  ready --> running: 预算与租约就绪
+  running --> waiting_tool: 调用工具
+  waiting_tool --> running
+  running --> waiting_user: 必要选择
+  waiting_user --> ready: 明确答复
+  running --> validating: 提交候选
+  validating --> running
+ }
+ active --> invalidated: 依赖变化并撤销旧租约
+ active --> cancelled: 取消并隔离迟到结果
+ active --> failed: 不可恢复或耗尽预算
+ validating --> accepted: 本地检查通过
+ accepted --> invalidated: 依赖版本变化
+ failed --> [*]
+ cancelled --> [*]
+ invalidated --> [*]

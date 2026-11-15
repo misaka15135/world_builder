@@ -2,7 +2,7 @@
 
 版本：0.1.0。日期：2026-09-26。实现：`src/world_builder/planning/designer.py`、`settings/*/designs.json`、`tools/design_buildings.py`。状态：**离线规则路径已实现并测试；只覆盖有模板的类型，其余如实跳过。**
 
-本文是流水线阶段 E（[017](../../work_order/017_building_designer.md)）的合同。上游是 [districts-v0.1.md](districts-v0.1.md) 的场址包络与 [scene-brief-v0.1.md](scene-brief-v0.1.md) 的目录。
+本文是流水线阶段 E（[017](../../work_order/archive/legacy/017_building_designer.md)）的合同。上游是 [districts-v0.1.md](districts-v0.1.md) 的场址包络与 [scene-brief-v0.1.md](scene-brief-v0.1.md) 的目录。
 
 ## 1. 它做什么
 

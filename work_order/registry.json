@@ -1,0 +1,626 @@
+{
+  "version": 1,
+  "date": "2026-11-15",
+  "active": [
+    "000",
+    "047",
+    "048",
+    "049",
+    "050",
+    "051",
+    "052",
+    "053",
+    "054"
+  ],
+  "backlog": [
+    "B01",
+    "B02",
+    "B03",
+    "B04",
+    "B05",
+    "B06",
+    "B07"
+  ],
+  "archived": [
+    {
+      "id": "001",
+      "original_path": "work_order/001_problem_and_proposal.md",
+      "path": "work_order/archive/legacy/001_problem_and_proposal.md",
+      "status_at_archive": "done",
+      "disposition": "evidence",
+      "successors": [],
+      "open_items": 0,
+      "original_sha256": "0019ee7cc9d989e4c2f52ea3436b4c5273b2205f8854a70c58955ff20ac8fe83",
+      "archive_sha256": "0019ee7cc9d989e4c2f52ea3436b4c5273b2205f8854a70c58955ff20ac8fe83"
+    },
+    {
+      "id": "002",
+      "original_path": "work_order/002_generation_research.md",
+      "path": "work_order/archive/legacy/002_generation_research.md",
+      "status_at_archive": "done",
+      "disposition": "evidence",
+      "successors": [],
+      "open_items": 0,
+      "original_sha256": "230d0efc0150f89322cc35ea9fc7f9c8aaf89369e4fbda5da9030e9e4d092f14",
+      "archive_sha256": "431bd2d125e77872ad9f3ced2d7ec0b8b889909755b3f87ce1a8005a8202e8e3"
+    },
+    {
+      "id": "003",
+      "original_path": "work_order/003_representation_research.md",
+      "path": "work_order/archive/legacy/003_representation_research.md",
+      "status_at_archive": "done",
+      "disposition": "evidence",
+      "successors": [],
+      "open_items": 0,
+      "original_sha256": "78c4895db7c125e569390172b87c8ec77420a6f620bfdef4b85bc6aeb928951c",
+      "archive_sha256": "7a56b6b5f5bbfc6717886cca5c4368f99e57e968b2123ec5b4e54c5d2ae54bda"
+    },
+    {
+      "id": "004",
+      "original_path": "work_order/004_proposal_review.md",
+      "path": "work_order/archive/legacy/004_proposal_review.md",
+      "status_at_archive": "done",
+      "disposition": "evidence",
+      "successors": [],
+      "open_items": 0,
+      "original_sha256": "54b54fccde0741767a82bd5942bd1f54517e03bbf625f3c45b1bd5a9bb56f75c",
+      "archive_sha256": "8ab99ecc4ed4f66d665b04cb375459b3c73b7668ae6e661828230ee3ef304da7"
+    },
+    {
+      "id": "005",
+      "original_path": "work_order/005_wir_contract.md",
+      "path": "work_order/archive/legacy/005_wir_contract.md",
+      "status_at_archive": "done",
+      "disposition": "evidence",
+      "successors": [],
+      "open_items": 0,
+      "original_sha256": "638076d454b22d289667d8885ef70b6a1c4631b93ffd501f686d15b6475966d0",
+      "archive_sha256": "638076d454b22d289667d8885ef70b6a1c4631b93ffd501f686d15b6475966d0"
+    },
+    {
+      "id": "006",
+      "original_path": "work_order/006_generation_vertical_slice.md",
+      "path": "work_order/archive/legacy/006_generation_vertical_slice.md",
+      "status_at_archive": "in_progress",
+      "disposition": "transferred",
+      "successors": [
+        "048",
+        "049",
+        "050",
+        "051",
+        "B04",
+        "B05"
+      ],
+      "open_items": 7,
+      "original_sha256": "528234afec84a89036aa49f86bef7808bfc38b86bf7a9209e3daa53d7d6f19d1",
+      "archive_sha256": "f2494b693d962f9e36bdf6efb696d821446da53314e7c5fe2563bf000b8868c1"
+    },
+    {
+      "id": "007",
+      "original_path": "work_order/007_local_viewer_editor.md",
+      "path": "work_order/archive/legacy/007_local_viewer_editor.md",
+      "status_at_archive": "planned",
+      "disposition": "transferred",
+      "successors": [
+        "052",
+        "B01"
+      ],
+      "open_items": 7,
+      "original_sha256": "2f4574433927a1c334c1e5649451a3d3af7ae9a3fcc0208cf73defe11829bdae",
+      "archive_sha256": "2f4574433927a1c334c1e5649451a3d3af7ae9a3fcc0208cf73defe11829bdae"
+    },
+    {
+      "id": "008",
+      "original_path": "work_order/008_unity_export.md",
+      "path": "work_order/archive/legacy/008_unity_export.md",
+      "status_at_archive": "in_progress",
+      "disposition": "transferred",
+      "successors": [
+        "050",
+        "051",
+        "052",
+        "B04"
+      ],
+      "open_items": 6,
+      "original_sha256": "3848eb9d78fea1f2d147e7a237dfff3e48b4df0f9f5cad9fcf77b443f2fa79a2",
+      "archive_sha256": "3848eb9d78fea1f2d147e7a237dfff3e48b4df0f9f5cad9fcf77b443f2fa79a2"
+    },
+    {
+      "id": "009",
+      "original_path": "work_order/009_minecraft_schematic_export.md",
+      "path": "work_order/archive/legacy/009_minecraft_schematic_export.md",
+      "status_at_archive": "in_progress",
+      "disposition": "transferred",
+      "successors": [
+        "050",
+        "051",
+        "B02"
+      ],
+      "open_items": 8,
+      "original_sha256": "911aab963959881fae5d3f75f47dde8fc7f667f26a92904fcc55c472dd4dffed",
+      "archive_sha256": "f185fe1948f375d9101402dea034b1ea63da6a66a94a8b9bbd42140127ab2924"
+    },
+    {
+      "id": "010",
+      "original_path": "work_order/010_minecraft_world_export.md",
+      "path": "work_order/archive/legacy/010_minecraft_world_export.md",
+      "status_at_archive": "planned",
+      "disposition": "transferred",
+      "successors": [
+        "B02"
+      ],
+      "open_items": 5,
+      "original_sha256": "8926e4882691965502bddcbcb17ce92cfc6ec8a18c7f17b8d7c7626f650c966d",
+      "archive_sha256": "8926e4882691965502bddcbcb17ce92cfc6ec8a18c7f17b8d7c7626f650c966d"
+    },
+    {
+      "id": "011",
+      "original_path": "work_order/011_ifc_concept_export.md",
+      "path": "work_order/archive/legacy/011_ifc_concept_export.md",
+      "status_at_archive": "planned",
+      "disposition": "transferred",
+      "successors": [
+        "B03"
+      ],
+      "open_items": 7,
+      "original_sha256": "44b85eb9eb5d638bbd3d809297da67fb9c6876f620773f9951c4edbfe05db1b0",
+      "archive_sha256": "44b85eb9eb5d638bbd3d809297da67fb9c6876f620773f9951c4edbfe05db1b0"
+    },
+    {
+      "id": "012",
+      "original_path": "work_order/012_large_world_benchmarks.md",
+      "path": "work_order/archive/legacy/012_large_world_benchmarks.md",
+      "status_at_archive": "planned",
+      "disposition": "transferred",
+      "successors": [
+        "B04"
+      ],
+      "open_items": 6,
+      "original_sha256": "d0e8b09bd19facf41d959a37b66d000a1d94b9c399fe2caea731b8023820c2b3",
+      "archive_sha256": "d0e8b09bd19facf41d959a37b66d000a1d94b9c399fe2caea731b8023820c2b3"
+    },
+    {
+      "id": "013",
+      "original_path": "work_order/013_scene_brief.md",
+      "path": "work_order/archive/legacy/013_scene_brief.md",
+      "status_at_archive": "in_progress",
+      "disposition": "transferred",
+      "successors": [
+        "051"
+      ],
+      "open_items": 0,
+      "original_sha256": "287bef39a63b06272a2ce00e09a6e5346ff8b3f355894de214b5545066de68c5",
+      "archive_sha256": "252c77a560d1ce70b9bd8a5a60804f3eb02321833433684805b1a6cf1c503dd6"
+    },
+    {
+      "id": "014",
+      "original_path": "work_order/014_terrain_plan.md",
+      "path": "work_order/archive/legacy/014_terrain_plan.md",
+      "status_at_archive": "in_progress",
+      "disposition": "transferred",
+      "successors": [
+        "051",
+        "B05"
+      ],
+      "open_items": 2,
+      "original_sha256": "00e1406f159c437879aeb3aecba5feade3f3e160ca4effa1a52efae57de6c110",
+      "archive_sha256": "48da650e7608acfe2636d13ea33c963eee7e0863843a895985a04b4562dffc32"
+    },
+    {
+      "id": "015",
+      "original_path": "work_order/015_landmark_catalogue.md",
+      "path": "work_order/archive/legacy/015_landmark_catalogue.md",
+      "status_at_archive": "in_progress",
+      "disposition": "transferred",
+      "successors": [
+        "051"
+      ],
+      "open_items": 1,
+      "original_sha256": "3ac200d22ed8c8687cd9703010002d0fb5d0c350d953329bfa91b84322f4fe16",
+      "archive_sha256": "155a50640fdb2147611675f203a54d16b91ac850e372f4dc3214b22d63d265be"
+    },
+    {
+      "id": "016",
+      "original_path": "work_order/016_district_siting.md",
+      "path": "work_order/archive/legacy/016_district_siting.md",
+      "status_at_archive": "in_progress",
+      "disposition": "transferred",
+      "successors": [
+        "051",
+        "B05"
+      ],
+      "open_items": 1,
+      "original_sha256": "9f32b2ba450b08a66a8de1272229efe5bdab6e4fa4dfc35948b48360cccad146",
+      "archive_sha256": "6b524419071b34f969ce20ae09a04485d6b300f7f1dc5d3fd5588cc712fdafdc"
+    },
+    {
+      "id": "017",
+      "original_path": "work_order/017_building_designer.md",
+      "path": "work_order/archive/legacy/017_building_designer.md",
+      "status_at_archive": "in_progress",
+      "disposition": "transferred",
+      "successors": [
+        "050",
+        "051",
+        "B05"
+      ],
+      "open_items": 2,
+      "original_sha256": "15638a76065920906be53fb9a1a1ad439047c88ce53473fc7b6ff1edc5c3af3f",
+      "archive_sha256": "77e8f2fcc89fc679d9de43f90e2330067599c468ebd0e62e96c2b3f84fa14ab8"
+    },
+    {
+      "id": "018",
+      "original_path": "work_order/018_assembler_pipeline.md",
+      "path": "work_order/archive/legacy/018_assembler_pipeline.md",
+      "status_at_archive": "in_progress",
+      "disposition": "transferred",
+      "successors": [
+        "049",
+        "050",
+        "051"
+      ],
+      "open_items": 2,
+      "original_sha256": "0bc84b2af2781720eac98117cab264c51e03eb47d2d1172b5aae0caa3807b192",
+      "archive_sha256": "e244f4181c797d6156867d27ffad0a40f357d64cdf8868e094ab851973a016bd"
+    },
+    {
+      "id": "019",
+      "original_path": "work_order/019_minecraft_recovery.md",
+      "path": "work_order/archive/legacy/019_minecraft_recovery.md",
+      "status_at_archive": "done",
+      "disposition": "evidence",
+      "successors": [],
+      "open_items": 0,
+      "original_sha256": "e76b9b6094a321cbf4c2f56f66443508de3613b72f1210cbfa673a889f6b43f3",
+      "archive_sha256": "e76b9b6094a321cbf4c2f56f66443508de3613b72f1210cbfa673a889f6b43f3"
+    },
+    {
+      "id": "020",
+      "original_path": "work_order/020_scene_corridor_rasterization.md",
+      "path": "work_order/archive/legacy/020_scene_corridor_rasterization.md",
+      "status_at_archive": "done",
+      "disposition": "evidence",
+      "successors": [],
+      "open_items": 0,
+      "original_sha256": "e1ca583639e65601c52d82d5520897b2bf89d53207394b3d8063ecbc518ba634",
+      "archive_sha256": "d640aca56e30aae6fcca25447749d0816ac7bd0cc4e3bf75acb7b5c07dd33c50"
+    },
+    {
+      "id": "021",
+      "original_path": "work_order/021_style_building_cross_target_sample.md",
+      "path": "work_order/archive/legacy/021_style_building_cross_target_sample.md",
+      "status_at_archive": "done",
+      "disposition": "evidence",
+      "successors": [],
+      "open_items": 0,
+      "original_sha256": "f6dbc05e88645e7886e4317c321135ec720fe95aa7e9c984d4accf3e49e34e76",
+      "archive_sha256": "0009a88dfeb6957adb9887988b067ffbdf9c269d7360b6fdfdc01d8970827f5a"
+    },
+    {
+      "id": "022",
+      "original_path": "work_order/022_scene_reconstruction_new_world.md",
+      "path": "work_order/archive/legacy/022_scene_reconstruction_new_world.md",
+      "status_at_archive": "in_progress",
+      "disposition": "transferred",
+      "successors": [
+        "051",
+        "B07"
+      ],
+      "open_items": 0,
+      "original_sha256": "47419c87aa833b42e4f1367c4e92f2f7a6538c4a153bfc4e34b8fae2cacf9ed8",
+      "archive_sha256": "a1f5a608f464c771803c2d6ffbfe77e99b297993ad7f0cea278e70e908ee755f"
+    },
+    {
+      "id": "023",
+      "original_path": "work_order/023_api_agent_pipeline.md",
+      "path": "work_order/archive/legacy/023_api_agent_pipeline.md",
+      "status_at_archive": "done",
+      "disposition": "evidence",
+      "successors": [],
+      "open_items": 0,
+      "original_sha256": "1f706ddafadfe6af4c413faedb6bc6c220a1ec8c95d50cfc80fc2eb615bbd6d3",
+      "archive_sha256": "0b0e14d18b725cdb378466f5d65acf344ef8a4777f1899360f4ed868a3a45bc2"
+    },
+    {
+      "id": "024",
+      "original_path": "work_order/024_api_agent_live_evaluation.md",
+      "path": "work_order/archive/legacy/024_api_agent_live_evaluation.md",
+      "status_at_archive": "planned",
+      "disposition": "transferred",
+      "successors": [
+        "050",
+        "051",
+        "052",
+        "B07"
+      ],
+      "open_items": 10,
+      "original_sha256": "a88351a305d87b3ec4e16e96133c25e6cea88a42d999ba8c6516c88ea9279f17",
+      "archive_sha256": "293207bdec017c042f5bef51f354ba2e84a6ad59c11ee8c9e8951b0c78c7ee0d"
+    },
+    {
+      "id": "025",
+      "original_path": "work_order/025_modular_web_workbench.md",
+      "path": "work_order/archive/legacy/025_modular_web_workbench.md",
+      "status_at_archive": "done",
+      "disposition": "evidence",
+      "successors": [],
+      "open_items": 0,
+      "original_sha256": "3d424f64b364732c3eb51662febc32ddaf704f830b9f662536dec0148864e5d8",
+      "archive_sha256": "d8754e480a733855615558612f9a373d589f1b2d9545685722b2f76df3e57ce6"
+    },
+    {
+      "id": "026",
+      "original_path": "work_order/026_windows_desktop_application.md",
+      "path": "work_order/archive/legacy/026_windows_desktop_application.md",
+      "status_at_archive": "done",
+      "disposition": "evidence",
+      "successors": [],
+      "open_items": 0,
+      "original_sha256": "906cf0732d3ac5bb52408972f4af1b7ec3b7cdd2270ec1f26814dc6558934c0b",
+      "archive_sha256": "b3e699487213f123992e69b2eb96c992baaf9513fcfa1583ac8c6378f8572cda"
+    },
+    {
+      "id": "027",
+      "original_path": "work_order/027_branch_role_alignment.md",
+      "path": "work_order/archive/legacy/027_branch_role_alignment.md",
+      "status_at_archive": "done",
+      "disposition": "evidence",
+      "successors": [],
+      "open_items": 0,
+      "original_sha256": "bdc2960626776ffd0ed765e8d15d1846fd06b48b3cda8f78bab571521685dfb3",
+      "archive_sha256": "bdc2960626776ffd0ed765e8d15d1846fd06b48b3cda8f78bab571521685dfb3"
+    },
+    {
+      "id": "028",
+      "original_path": "work_order/028_followup_work_order_planning.md",
+      "path": "work_order/archive/legacy/028_followup_work_order_planning.md",
+      "status_at_archive": "done",
+      "disposition": "evidence",
+      "successors": [],
+      "open_items": 0,
+      "original_sha256": "cb44e8b0821ff66a90542b5572f71dade80d46e0c1bff05f9c38270cdd47daaf",
+      "archive_sha256": "cb44e8b0821ff66a90542b5572f71dade80d46e0c1bff05f9c38270cdd47daaf"
+    },
+    {
+      "id": "029",
+      "original_path": "work_order/029_scene_task_contracts.md",
+      "path": "work_order/archive/legacy/029_scene_task_contracts.md",
+      "status_at_archive": "planned",
+      "disposition": "transferred",
+      "successors": [
+        "048"
+      ],
+      "open_items": 10,
+      "original_sha256": "4e5e388cb5ea8c8488770b14164cabf194eb8cbc7a41e4c9309a9acc5f9bf311",
+      "archive_sha256": "a747c84a938dfe99dff3a2974612559cbc4e86bf39469dfb2d75563d9577585c"
+    },
+    {
+      "id": "030",
+      "original_path": "work_order/030_capability_task_runtime.md",
+      "path": "work_order/archive/legacy/030_capability_task_runtime.md",
+      "status_at_archive": "planned",
+      "disposition": "transferred",
+      "successors": [
+        "049",
+        "051"
+      ],
+      "open_items": 11,
+      "original_sha256": "76c49e5eee7436d031f24111fca45831d0a6658102ca8b5eda65bbc77b2d1e5f",
+      "archive_sha256": "802c7ab2fcbdf7415e3eecf464fd653f919d538ee078b749ffd1cf10ac84a6f9"
+    },
+    {
+      "id": "031",
+      "original_path": "work_order/031_natural_scene_assets.md",
+      "path": "work_order/archive/legacy/031_natural_scene_assets.md",
+      "status_at_archive": "planned",
+      "disposition": "transferred",
+      "successors": [
+        "051"
+      ],
+      "open_items": 8,
+      "original_sha256": "79b75a1ce2223a03a69e50a5bfc24c6ec7e130fbc8a023c72231b79d9c355627",
+      "archive_sha256": "fb21fc2830f55e541d922d111a03836821ae29023c7971cbfacb1a8bca9d4829"
+    },
+    {
+      "id": "032",
+      "original_path": "work_order/032_world_revision_identity.md",
+      "path": "work_order/archive/legacy/032_world_revision_identity.md",
+      "status_at_archive": "planned",
+      "disposition": "transferred",
+      "successors": [
+        "048",
+        "052"
+      ],
+      "open_items": 9,
+      "original_sha256": "2223a4538bde206c029306c227329090ffe2501f0fa705077d8c21eafef0646d",
+      "archive_sha256": "c91a85a4f174834a602fe3e597b0c0c76e067a0ad91df1fd4c1c7485833fbcd1"
+    },
+    {
+      "id": "033",
+      "original_path": "work_order/033_scoped_scene_revision.md",
+      "path": "work_order/archive/legacy/033_scoped_scene_revision.md",
+      "status_at_archive": "planned",
+      "disposition": "transferred",
+      "successors": [
+        "052"
+      ],
+      "open_items": 9,
+      "original_sha256": "29ebfc9aee7265521d26f250f82ee48a214427165b6a807ef1e30243acee14e1",
+      "archive_sha256": "424a19dff1b987d23eb950a7b35358c5fe672a44a79ce7947504cb8bbba7a416"
+    },
+    {
+      "id": "034",
+      "original_path": "work_order/034_feedback_workbench.md",
+      "path": "work_order/archive/legacy/034_feedback_workbench.md",
+      "status_at_archive": "planned",
+      "disposition": "transferred",
+      "successors": [
+        "052"
+      ],
+      "open_items": 9,
+      "original_sha256": "bf14a99fd3f93dec9b32b2229b1a01a1d6c5822b15ec599ebb1b0a87b04bccca",
+      "archive_sha256": "90b3b951808d03890bc86dd6a71acfb38f0c547ef0a9972818341f0ad17a763b"
+    },
+    {
+      "id": "035",
+      "original_path": "work_order/035_target_profiles_and_selection.md",
+      "path": "work_order/archive/legacy/035_target_profiles_and_selection.md",
+      "status_at_archive": "planned",
+      "disposition": "transferred",
+      "successors": [
+        "048",
+        "B06"
+      ],
+      "open_items": 8,
+      "original_sha256": "bea36057f2a7b5b23b240706f17f69f0277667985782d21f3bdb48536a569f1d",
+      "archive_sha256": "c0ca24b8c4c21b52eb180802dc2bb221d21cf265ce43cdc5ef734a625db38a95"
+    },
+    {
+      "id": "036",
+      "original_path": "work_order/036_unity_minecraft_scene_adapters.md",
+      "path": "work_order/archive/legacy/036_unity_minecraft_scene_adapters.md",
+      "status_at_archive": "planned",
+      "disposition": "transferred",
+      "successors": [
+        "050",
+        "051"
+      ],
+      "open_items": 9,
+      "original_sha256": "4c9ef2f3087a0e78507f4be6dd4dc9198dc6a92faedc83957086d80fb7ea142a",
+      "archive_sha256": "2e7dfa881adf1ee243f8f84531e15e5c48e4826b84b5ffb467dd259788243154"
+    },
+    {
+      "id": "037",
+      "original_path": "work_order/037_next_game_scene_adapter.md",
+      "path": "work_order/archive/legacy/037_next_game_scene_adapter.md",
+      "status_at_archive": "planned",
+      "disposition": "transferred",
+      "successors": [
+        "B06"
+      ],
+      "open_items": 6,
+      "original_sha256": "507917593e65dd90acdbdf73e044fe3c20fed7a39a31893a6bd04f5257f971da",
+      "archive_sha256": "507fa8117f6a455db5fa9f8fb7efc22b6eb518fe3176a8e1b7d1b4f058a9c0e7"
+    },
+    {
+      "id": "038",
+      "original_path": "work_order/038_historical_work_order_reconciliation.md",
+      "path": "work_order/archive/legacy/038_historical_work_order_reconciliation.md",
+      "status_at_archive": "planned",
+      "disposition": "transferred",
+      "successors": [
+        "047",
+        "B07"
+      ],
+      "open_items": 6,
+      "original_sha256": "ab80c1e703d7dc793f7ad5a3299f74d97868f710d95842037b84600b8f44d44d",
+      "archive_sha256": "ab80c1e703d7dc793f7ad5a3299f74d97868f710d95842037b84600b8f44d44d"
+    },
+    {
+      "id": "039",
+      "original_path": "work_order/039_core_document_alignment.md",
+      "path": "work_order/archive/legacy/039_core_document_alignment.md",
+      "status_at_archive": "done",
+      "disposition": "evidence",
+      "successors": [],
+      "open_items": 0,
+      "original_sha256": "cdcf81b792ee35875f892f978ed1dcbe78ecc7496301057555fe86f778925dfb",
+      "archive_sha256": "cdcf81b792ee35875f892f978ed1dcbe78ecc7496301057555fe86f778925dfb"
+    },
+    {
+      "id": "040",
+      "original_path": "work_order/040_remote_branch_publication.md",
+      "path": "work_order/archive/legacy/040_remote_branch_publication.md",
+      "status_at_archive": "done",
+      "disposition": "evidence",
+      "successors": [],
+      "open_items": 0,
+      "original_sha256": "dad2ce3694f8051c78e0cb141d2b567bc3aeca59b8ad5e3ddea561f016e4fba1",
+      "archive_sha256": "dad2ce3694f8051c78e0cb141d2b567bc3aeca59b8ad5e3ddea561f016e4fba1"
+    },
+    {
+      "id": "041",
+      "original_path": "work_order/041_client_figma_concept.md",
+      "path": "work_order/archive/legacy/041_client_figma_concept.md",
+      "status_at_archive": "done",
+      "disposition": "evidence",
+      "successors": [],
+      "open_items": 0,
+      "original_sha256": "458e3cdf9225f2a77dbea11112e970201a81e0b55cb171f6aeef2551067ce7c8",
+      "archive_sha256": "458e3cdf9225f2a77dbea11112e970201a81e0b55cb171f6aeef2551067ce7c8"
+    },
+    {
+      "id": "042",
+      "original_path": "work_order/042_agent_architecture_document_alignment.md",
+      "path": "work_order/archive/legacy/042_agent_architecture_document_alignment.md",
+      "status_at_archive": "done",
+      "disposition": "evidence",
+      "successors": [],
+      "open_items": 0,
+      "original_sha256": "d8e4daf316d8fecb0952e426b0c4d322f05e2de188222a29aed2ed0b1954c929",
+      "archive_sha256": "7b7fd90cb8beea61ec2dedb98bcec46adc0a84a37ccb0008c623b9a6107b0c4a"
+    },
+    {
+      "id": "043",
+      "original_path": "work_order/043_model_action_adapters.md",
+      "path": "work_order/archive/legacy/043_model_action_adapters.md",
+      "status_at_archive": "planned",
+      "disposition": "transferred",
+      "successors": [
+        "049"
+      ],
+      "open_items": 5,
+      "original_sha256": "d483810522a6bfb7c4e0eed84dadaa344b8a3ebd9958c1b9c30cea7fc4d4869b",
+      "archive_sha256": "859053eedbe8778f38236546aecfa281f3dd5e7134e6d7d7e3d8c2034ae58f23"
+    },
+    {
+      "id": "044",
+      "original_path": "work_order/044_tool_gateway_mcp.md",
+      "path": "work_order/archive/legacy/044_tool_gateway_mcp.md",
+      "status_at_archive": "planned",
+      "disposition": "transferred",
+      "successors": [
+        "049"
+      ],
+      "open_items": 6,
+      "original_sha256": "b31768e521b4f71347f4b3d05f3906449446408a98fd72fd3dbea32a9896ce92",
+      "archive_sha256": "2bc3a55a4d766e0c962c67093e7acf04f2a595cf9492f30418ad158829b36e33"
+    },
+    {
+      "id": "045",
+      "original_path": "work_order/045_context_knowledge_retrieval.md",
+      "path": "work_order/archive/legacy/045_context_knowledge_retrieval.md",
+      "status_at_archive": "planned",
+      "disposition": "transferred",
+      "successors": [
+        "051"
+      ],
+      "open_items": 6,
+      "original_sha256": "3aa3eec6a39a653428b252b7ac9a9e0b87d53c2d218aaf1507da5b07bf9aca42",
+      "archive_sha256": "34f5b13d44863a7dedb0f86671bd3a79fd416efede3a545e3fb3fff2c11db385"
+    },
+    {
+      "id": "046",
+      "original_path": "work_order/046_building_tool_loop.md",
+      "path": "work_order/archive/legacy/046_building_tool_loop.md",
+      "status_at_archive": "planned",
+      "disposition": "transferred",
+      "successors": [
+        "050"
+      ],
+      "open_items": 6,
+      "original_sha256": "386d682785cb3ae4d41e9de4c16fd579e6797ea77a34e2894597f2f99cff20e3",
+      "archive_sha256": "f4aab788e653df43f50d0fd216a34e6b885a43d2db3b5b381fe2c248b371075d"
+    }
+  ],
+  "snapshots": [
+    {
+      "path": "work_order/archive/legacy/000_project_master_plan.md",
+      "sha256": "26c918264ed74f660e30e6970dec868ea506a8ac1186d672a21d003af059fdba"
+    },
+    {
+      "path": "work_order/archive/legacy/README.md",
+      "sha256": "4c32830f47ede4542552446d7980f9937ba9ee20fe1073ef449437331f76fa51"
+    }
+  ]
+}

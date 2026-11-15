@@ -1,0 +1,408 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "World Builder critical command design subset",
+    "version": "design-2026-11-11",
+    "description": "Unreleased architecture review subset; all routes are proposed."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8765/api/design",
+      "description": "Illustrative local address; actual port is runtime allocated."
+    }
+  ],
+  "security": [
+    {
+      "localSession": []
+    }
+  ],
+  "paths": {
+    "/worlds/{world_id}/operations": {
+      "post": {
+        "operationId": "createOperation",
+        "parameters": [
+          {
+            "name": "world_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OperationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "请求接受或事务完成；不表示目标加载通过",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "结构化失败；不改变已接受世界",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/operations/{operation_id}/cancel": {
+      "post": {
+        "operationId": "cancelOperation",
+        "parameters": [
+          {
+            "name": "operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "请求接受或事务完成；不表示目标加载通过",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "结构化失败；不改变已接受世界",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/candidates/{candidate_id}/accept": {
+      "post": {
+        "operationId": "acceptCandidate",
+        "parameters": [
+          {
+            "name": "candidate_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "请求接受或事务完成；不表示目标加载通过",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Revision"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "结构化失败；不改变已接受世界",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "localSession": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Workbench-Token"
+      }
+    },
+    "schemas": {
+      "OperationRequest": {
+        "type": "object",
+        "properties": {
+          "contract_version": {
+            "const": "design-2026-11-11"
+          },
+          "intent": {
+            "type": "string",
+            "minLength": 1
+          },
+          "base_revision_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "expected_head_generation": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "scope": {
+            "type": "object",
+            "properties": {
+              "object_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "allow_create": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "object_ids",
+              "allow_create"
+            ],
+            "additionalProperties": false
+          },
+          "target_profile_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "budget": {
+            "type": "object",
+            "properties": {
+              "max_model_calls": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "max_tool_calls": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "max_wall_seconds": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "max_model_calls",
+              "max_tool_calls",
+              "max_wall_seconds"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "contract_version",
+          "intent",
+          "base_revision_id",
+          "expected_head_generation",
+          "scope",
+          "target_profile_ids",
+          "budget"
+        ],
+        "additionalProperties": false
+      },
+      "AcceptRequest": {
+        "type": "object",
+        "properties": {
+          "base_revision_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "expected_head_generation": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "validation_hash": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "base_revision_id",
+          "expected_head_generation",
+          "validation_hash"
+        ],
+        "additionalProperties": false
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          },
+          "request_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "retryable": {
+            "type": "boolean"
+          },
+          "diagnostics": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "request_id",
+          "retryable",
+          "diagnostics"
+        ],
+        "additionalProperties": false
+      },
+      "Operation": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "state": {
+            "enum": [
+              "queued",
+              "running",
+              "waiting_user",
+              "validating",
+              "succeeded",
+              "failed",
+              "cancelled"
+            ]
+          },
+          "state_version": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "operation_id",
+          "state",
+          "state_version"
+        ],
+        "additionalProperties": false
+      },
+      "Revision": {
+        "type": "object",
+        "properties": {
+          "world_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "revision_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "head_generation": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "world_id",
+          "revision_id",
+          "head_generation"
+        ],
+        "additionalProperties": false
+      },
+      "CancelRequest": {
+        "type": "object",
+        "properties": {
+          "expected_state_version": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "expected_state_version"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

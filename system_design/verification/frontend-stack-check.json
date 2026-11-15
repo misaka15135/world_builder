@@ -1,0 +1,16 @@
+{
+  "typecheck": {
+    "exit_code": 0,
+    "output": "\n> world-builder-workbench-design@0.0.0 typecheck\n> tsc --noEmit\n\n"
+  },
+  "build": {
+    "exit_code": 0,
+    "output": "\n> world-builder-workbench-design@0.0.0 build\n> vite build\n\nvite v8.3.8 building client environment for production...\ntransforming...\n✓ 16 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                  0.20 kB │ gzip:   0.17 kB\ndist/assets/index-ClvP__L1.js  366.22 kB │ gzip: 108.29 kB\n\n✓ built in 97ms\n"
+  },
+  "checked_at": "2026-11-12",
+  "scope": "minimal React/TypeScript/Three.js compile and Vite bundle; not product UI test",
+  "node": "v24.20.0",
+  "npm": "11.19.0",
+  "lock_sha256": "af9d8b3675a2218cd02947a4c7ee1f200498e1cc5a11ab9771e79a124e13d83b",
+  "errors": []
+}

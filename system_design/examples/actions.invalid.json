@@ -1,0 +1,44 @@
+[
+  {
+    "contract_version": "design-2026-11-11",
+    "operation_id": "op_001",
+    "task_id": "task_001",
+    "action_id": "action_1",
+    "type": "execute_shell",
+    "payload": {
+      "call_id": "call_001",
+      "tool_name": "geometry.build",
+      "tool_version": "draft1",
+      "arguments": {
+        "recipe_id": "house_box",
+        "width_m": 8
+      }
+    }
+  },
+  {
+    "contract_version": "design-2026-11-11",
+    "operation_id": "op_001",
+    "task_id": "task_001",
+    "action_id": "action_1",
+    "type": "tool_call",
+    "payload": {
+      "tool_name": "geometry.build",
+      "tool_version": "draft1",
+      "arguments": {
+        "recipe_id": "house_box",
+        "width_m": 8
+      }
+    }
+  },
+  {
+    "contract_version": "design-2026-11-11",
+    "operation_id": "op_001",
+    "task_id": "task_001",
+    "action_id": "action_2",
+    "type": "submit_candidate",
+    "payload": {
+      "candidate_id": "candidate_001"
+    },
+    "force": true
+  }
+]

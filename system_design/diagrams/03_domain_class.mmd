@@ -1,0 +1,55 @@
+classDiagram
+ direction TB
+ class World {
+ +String world_id
+ +String head_revision_id
+ +int head_generation
+ }
+ class Revision {
+ +String revision_id
+ +String parent_revision_id
+ +String snapshot_hash
+ }
+ class Operation {
+ +String operation_id
+ +String base_revision_id
+ +Budget budget
+ +cancel()
+ }
+ class Task {
+ +String task_id
+ +int task_version
+ +String capability
+ +Scope scope
+ }
+ class Candidate {
+ +String candidate_id
+ +String base_revision_id
+ +ReadSet reads
+ +WriteSet writes
+ }
+ class Artifact {
+ +String artifact_id
+ +String sha256
+ +String media_type
+ }
+ class ToolCall {
+ +String call_id
+ +String args_hash
+ +String status
+ }
+ class ObjectVersion {
+ +String object_id
+ +String content_hash
+ }
+ World "1" *-- "0..*" Revision
+ World "1" --> "0..*" Operation
+ Operation "1" *-- "1..*" Task
+ Task "1" --> "0..*" ToolCall
+ Operation "1" *-- "0..*" Candidate
+ Task "0..*" --> "0..*" Candidate : contributes
+ Task "0..*" --> "0..*" Task : depends on
+ Candidate "1" --> "1" Revision : based on
+ Candidate "1" --> "0..*" Artifact
+ Revision "1" --> "0..*" ObjectVersion
+ Revision "0..*" --> "0..*" Artifact

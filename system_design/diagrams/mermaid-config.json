@@ -1,0 +1,18 @@
+{
+  "theme": "base",
+  "themeVariables": {
+    "fontFamily": "PingFang SC, Noto Sans CJK SC, sans-serif",
+    "primaryColor": "#eaf2f8",
+    "primaryTextColor": "#183047",
+    "primaryBorderColor": "#537a95",
+    "lineColor": "#526778",
+    "secondaryColor": "#edf5ef",
+    "tertiaryColor": "#fff7e8",
+    "fontSize": "17px"
+  },
+  "flowchart": {
+    "htmlLabels": false,
+    "curve": "basis"
+  },
+  "securityLevel": "strict"
+}

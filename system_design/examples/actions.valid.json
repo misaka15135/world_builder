@@ -1,0 +1,66 @@
+[
+  {
+    "contract_version": "design-2026-11-11",
+    "operation_id": "op_001",
+    "task_id": "task_001",
+    "action_id": "action_1",
+    "type": "tool_call",
+    "payload": {
+      "call_id": "call_001",
+      "tool_name": "geometry.build",
+      "tool_version": "draft1",
+      "arguments": {
+        "recipe_id": "house_box",
+        "width_m": 8
+      }
+    }
+  },
+  {
+    "contract_version": "design-2026-11-11",
+    "operation_id": "op_001",
+    "task_id": "task_001",
+    "action_id": "action_2",
+    "type": "submit_candidate",
+    "payload": {
+      "candidate_id": "candidate_001"
+    }
+  },
+  {
+    "contract_version": "design-2026-11-11",
+    "operation_id": "op_001",
+    "task_id": "task_001",
+    "action_id": "action_3",
+    "type": "request_replan",
+    "payload": {
+      "reason": "入口与岸线冲突",
+      "affected_task_ids": [
+        "layout"
+      ]
+    }
+  },
+  {
+    "contract_version": "design-2026-11-11",
+    "operation_id": "op_001",
+    "task_id": "task_001",
+    "action_id": "action_4",
+    "type": "request_input",
+    "payload": {
+      "question": "所需资产能力未启用，是否调整范围？",
+      "options": [
+        "保留需求并暂停",
+        "明确移除可选对象"
+      ]
+    }
+  },
+  {
+    "contract_version": "design-2026-11-11",
+    "operation_id": "op_001",
+    "task_id": "task_001",
+    "action_id": "action_5",
+    "type": "report_gap",
+    "payload": {
+      "capability": "curved_roof",
+      "reason": "当前工具只支持已注册盒体原语"
+    }
+  }
+]

@@ -1,6 +1,11 @@
 # API 驱动 A—F 多智能体流水线
 
-版本：0.1.0；日期：2026-09-29；当前产品分支：`main`（2026-10-10 由 `codex/api-agent-pipeline` 重命名，已同步 origin/main）；实现工单：[023](../work_order/023_api_agent_pipeline.md)；分支调整：[027](../work_order/027_branch_role_alignment.md)；推送记录：[040](../work_order/040_remote_branch_publication.md)。
+工单入口更新（2026-10-29）：文内 001—046 编号为已归档的原始实现/规划记录，当前执行改由 [048—052 主工单](../work_order/README.md)承接；本版本运行行为不变。
+
+适用范围更新（2026-10-29）：本文继续描述当前已实现版本；[Agent 目标架构](08_agent_target_architecture.md)与[迁移方案](09_agent_migration_plan.md)均为待实施设计。新增工具循环、MCP、知识检索和局部修订不能按本文宣称已支持；D01/D02 已确认分阶段交付和首批双协议，但尚未改变本版本。
+
+
+版本：0.1.0；日期：2026-09-29；当前产品分支：`main`（2026-10-10 由 `codex/api-agent-pipeline` 重命名，已同步 origin/main）；实现工单：[023](../work_order/archive/legacy/023_api_agent_pipeline.md)；分支调整：[027](../work_order/archive/legacy/027_branch_role_alignment.md)；推送记录：[040](../work_order/archive/legacy/040_remote_branch_publication.md)。
 
 ## 运行机制
 
@@ -119,4 +124,4 @@ Unity 导出为 GLB 静态网格，沿用已验证的坐标序列化器；本分
 
 当前能力限制：轴对齐整米构件、有限材质、格状地形、静态水；不支持通用曲面、布尔挖方、漂浮载具物理、自由旋转、细尺度楼梯或实际光照计算。地形上的场地要求干燥且由地面/地基支撑，因此旧主线的船只/干船坞能力不能直接宣称已迁移。通路验证是一格宽、两格高、最多一格跳跃的离散几何检查，无法证明 Unity 常规角色自动爬上整格阶梯。
 
-这是当前 main 的模型规划产品入口；旧规则路线在 codex/local-validation 保留作对照。替换用户 API 可以保持契约、校验和导出规则，无法保证不同模型给出相同方案或美术质量。真实模型稳定性、成本与目标实走由 [024](../work_order/024_api_agent_live_evaluation.md) 分批预登记验收；后续自然/混合场景和用户修改批次随 031/034/036 的实现增加。当前离线证据与旧规则目标证据不能代替这些验收。
+这是当前 main 的模型规划产品入口；旧规则路线在 codex/local-validation 保留作对照。替换用户 API 可以保持契约、校验和导出规则，无法保证不同模型给出相同方案或美术质量。真实模型稳定性、成本与目标实走由 [024](../work_order/archive/legacy/024_api_agent_live_evaluation.md) 分批预登记验收；后续自然/混合场景和用户修改批次随 031/034/036 的实现增加。当前离线证据与旧规则目标证据不能代替这些验收。

@@ -1,0 +1,108 @@
+{
+  "cli_version": "11.12.0",
+  "design_version": "design-2026-11-11",
+  "diagrams": [
+    {
+      "source": "01_system_context.mmd",
+      "source_sha256": "2389d32e959fd5b3c31bc4dfee7bd4eb99a7223de9a6b97bb625eff0d586c51d",
+      "svg": "01_system_context.svg",
+      "svg_sha256": "5fc73240717cf951c603db0f04501d6c60f0f16c24d1b13157b243fee4569b65"
+    },
+    {
+      "source": "02_components.mmd",
+      "source_sha256": "190a9b3793245216e8cb401dd51936b47d41e294aabf6d8f71ecd8ef23e3e7bd",
+      "svg": "02_components.svg",
+      "svg_sha256": "7e268c13dc627c339dfc64cea4cdb10ff6677e19f4a2806719c6da39be3693f1"
+    },
+    {
+      "source": "03_domain_class.mmd",
+      "source_sha256": "dcb8805a578348cb114f0e4f4cc1bb9731fbe17b38ec3a75402262a8b77e91c3",
+      "svg": "03_domain_class.svg",
+      "svg_sha256": "974b8b7b76767df169c29bfba22fdd769fd5bca0be86ef84a80499b403f55846"
+    },
+    {
+      "source": "04_storage_er.mmd",
+      "source_sha256": "84c67b933c668d58a70ff09ce7c94d8706bdba4f7e81c3e9f2b270292d2b5914",
+      "svg": "04_storage_er.svg",
+      "svg_sha256": "b2f5156a4959fabd0625c403c6963d5c063d0d306cd51718b6d96eea42672d4d"
+    },
+    {
+      "source": "05_agent_sequence.mmd",
+      "source_sha256": "88ee6cf654bc3e556880a128151ea41700c46f4bcb771f52e6099b23e7308490",
+      "svg": "05_agent_sequence.svg",
+      "svg_sha256": "a333fbc166799ffa4262592ed2fbf2cc885f238e3068d7ab4da5e5526a210f46"
+    },
+    {
+      "source": "06_task_state.mmd",
+      "source_sha256": "917f072b11597d4a8742034c21f43520c0e0eff78ed1a205bfaaca1f40a71fbc",
+      "svg": "06_task_state.svg",
+      "svg_sha256": "4a8ca917ea5373421d3a4c0c08876c7caf9d99de0b1c7bfcc6998302e7873c5e"
+    },
+    {
+      "source": "07_tool_recovery.mmd",
+      "source_sha256": "6b92265f9fe6c34d804a10613620b6fdee36f3459bd53ea059127b34a67054d8",
+      "svg": "07_tool_recovery.svg",
+      "svg_sha256": "19cf7f0bf64843d45899da3754bb5d42d3ab2a5dd88b6d4b6f5eb6108c9f63ad"
+    },
+    {
+      "source": "08_commit_sequence.mmd",
+      "source_sha256": "5986ba3b04b56138d04110807465b83a6c7a23bf2253a8ac5abebc9dbbb31a2a",
+      "svg": "08_commit_sequence.svg",
+      "svg_sha256": "ddec7e02044d2a77398369b5390650a3788efbcb2845d68ad7459ee17ce30da3"
+    },
+    {
+      "source": "09_geometry_pipeline.mmd",
+      "source_sha256": "6c0662e75cb024ab802a9b9813995c496ed40addad1f397399b6098e626a98cb",
+      "svg": "09_geometry_pipeline.svg",
+      "svg_sha256": "8bd016e77288e32b3ac211464e9d818a21ac5ecb24da7113f2b98395b9198c86"
+    },
+    {
+      "source": "10_export_pipeline.mmd",
+      "source_sha256": "39ef9c833c59e6166b89781968584f58a41b8d491366dfe6423c64a1876c7c8a",
+      "svg": "10_export_pipeline.svg",
+      "svg_sha256": "6b3deff7db2df94292eb9108e47cb7a4b98750e988d1b6e1765ec21d209cd2b1"
+    },
+    {
+      "source": "11_deployment.mmd",
+      "source_sha256": "5fefe802bde30cec6aab5197deae5b6a7cc8d1597f95d6e524710477255ede09",
+      "svg": "11_deployment.svg",
+      "svg_sha256": "baf441312ba99885a6acb165ad6647489e926b18dcfdd839a63b1e585733694a"
+    },
+    {
+      "source": "12_workbench_flow.mmd",
+      "source_sha256": "5c4fcc1a34d2c4a29110854cadc7896efaf307166bfa2ee74f118d8ca05152ff",
+      "svg": "12_workbench_flow.svg",
+      "svg_sha256": "387e06f06dff398108c2fc87e0d55561970abe42a38e7eb214b15d4f9395816f"
+    },
+    {
+      "source": "13_threat_boundaries.mmd",
+      "source_sha256": "2d3476a5e56cc84075894dd6190054328731656eaa2bffaaa408eb3b32a8257a",
+      "svg": "13_threat_boundaries.svg",
+      "svg_sha256": "35cfbf15eeec75503a42f40ee094b66b53e04eabd74a03432d3d06a5f31f5d0d"
+    },
+    {
+      "source": "14_delivery.mmd",
+      "source_sha256": "8ab7ce689f9a110938dcf66f7587dbbbcc28907bb64bfa6cce48868cc0777950",
+      "svg": "14_delivery.svg",
+      "svg_sha256": "5b1c493210b9d14c93caac4fb595b7455d8c069fc655153eeb503ac10e3a80e2"
+    },
+    {
+      "source": "15_candidate_state.mmd",
+      "source_sha256": "afe738861f8c1ee1189b1799e0dc3bdb83ae3fd922ba6b102d42ccbd50906b3e",
+      "svg": "15_candidate_state.svg",
+      "svg_sha256": "d1f17a2ba0965f55a6482cbe883030161f2215411e340cd6fc4d2eee4af73cd5"
+    },
+    {
+      "source": "16_revision_edit_sequence.mmd",
+      "source_sha256": "064799fec16554ae97ca431cf94046debdfe202f142f50212047f18cd0b8b64c",
+      "svg": "16_revision_edit_sequence.svg",
+      "svg_sha256": "07d7537c55d070fbfd339b0ce60c290a4efa2a0af658c968ac6e8e4359638f4e"
+    },
+    {
+      "source": "17_technology_stack.mmd",
+      "source_sha256": "326023d903d937306ac53914a2af50f277440521c7ab5be473ffa9839c7fc132",
+      "svg": "17_technology_stack.svg",
+      "svg_sha256": "1f97870517b314c7b88608e292a066b3a0354029c8f49c6ae8f48199761b075d"
+    }
+  ]
+}

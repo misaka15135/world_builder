@@ -1,0 +1,14 @@
+{
+  "scope": "design structure, examples, DAG coverage, links and SVG XML; no product/target execution",
+  "counts": {
+    "actions_valid": 5,
+    "actions_invalid": 3,
+    "graphs_valid": 3,
+    "graphs_invalid": 5,
+    "openapi_paths": 3,
+    "markdown_files": 20,
+    "local_links": 223,
+    "diagrams": 17
+  },
+  "errors": []
+}

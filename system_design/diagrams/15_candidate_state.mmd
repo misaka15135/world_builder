@@ -1,0 +1,14 @@
+stateDiagram-v2
+ [*] --> draft
+ draft --> validated: 冻结内容并通过检查
+ validated --> draft: 内容修改后检查失效
+ draft --> rejected: 不可修复或无能力
+ draft --> abandoned: 取消 / 主动丢弃
+ validated --> accepted: CAS / 锁 / 依赖复核通过
+ validated --> stale: 基础修订或依赖变化
+ validated --> rejected: 最终规则阻断
+ validated --> abandoned: 提交前取消
+ stale --> [*]: 新候选重新校验
+ rejected --> [*]
+ abandoned --> [*]
+ accepted --> [*]

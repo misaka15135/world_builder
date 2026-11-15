@@ -1,0 +1,14 @@
+flowchart TB
+ revision["已接受 WIR 修订 + 资源摘要"] --> profile["锁定 target profile / 工具版本"]
+ profile --> preflight["能力交集 / 关键损失预检"]
+ preflight --> unity["Unity 路径 · 几何与材料映射"]
+ preflight --> mc["Minecraft 路径 · 体素化与 palette"]
+ unity --> files["派生文件 + 对象映射 + 损失报告"]
+ mc --> files
+ files --> structure["结构 / 资源完整性检查"]
+ structure --> load["目标环境加载与重开"]
+ load --> walk["碰撞 / 角色通行 / 视觉评审"]
+ files --> evidence["逐项证据 · 未执行保持未验"]
+ structure --> evidence
+ load --> evidence
+ walk --> evidence

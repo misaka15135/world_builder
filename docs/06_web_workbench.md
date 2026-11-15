@@ -1,8 +1,13 @@
 # 本地网页测试台
 
-版本：HTTP API v1 / UI 0.1；工单：[025](../work_order/025_modular_web_workbench.md)。
+工单入口更新（2026-10-29）：文内 001—046 编号为已归档的原始实现/规划记录，当前执行改由 [048—052 主工单](../work_order/README.md)承接；本版本运行行为不变。
 
-适用范围（2026-10-10）：当前 main 的只读场景构建与诊断入口，产品定位见 [项目基线](00_project_baseline.md)。[034](../work_order/034_feedback_workbench.md) 将接入后端局部修改服务，007 保留完整手工编辑；这些规划尚未扩展本文的 HTTP API v1。当前预览中的拾取只显示对象信息，不会修改世界。
+适用范围更新（2026-10-29）：本文继续描述当前已实现版本；[Agent 目标架构](08_agent_target_architecture.md)与[迁移方案](09_agent_migration_plan.md)均为待实施设计。新增工具循环、MCP、知识检索和局部修订不能按本文宣称已支持；D01/D02 已确认分阶段交付和首批双协议，但尚未改变本版本。
+
+
+版本：HTTP API v1 / UI 0.1；工单：[025](../work_order/archive/legacy/025_modular_web_workbench.md)。
+
+适用范围（2026-10-10）：当前 main 的只读场景构建与诊断入口，产品定位见 [项目基线](00_project_baseline.md)。[034](../work_order/archive/legacy/034_feedback_workbench.md) 将接入后端局部修改服务，007 保留完整手工编辑；这些规划尚未扩展本文的 HTTP API v1。当前预览中的拾取只显示对象信息，不会修改世界。
 
 ## 启动与使用
 
@@ -101,4 +106,4 @@ python -m pytest -q tests/test_workbench.py tests/test_agent_pipeline.py --baset
 python tools/check_project_docs.py
 ```
 
-025 验收证据见 [记录](../artifacts/workbench-025/validation.json)。真实模型、各供应商兼容性和 Unity/Minecraft 内连续通行仍在 [024](../work_order/024_api_agent_live_evaluation.md) 验收；当前网页验证使用人工样例、真实本地任务和离线回放，没有调用付费模型。
+025 验收证据见 [记录](../artifacts/workbench-025/validation.json)。真实模型、各供应商兼容性和 Unity/Minecraft 内连续通行仍在 [024](../work_order/archive/legacy/024_api_agent_live_evaluation.md) 验收；当前网页验证使用人工样例、真实本地任务和离线回放，没有调用付费模型。

@@ -2,7 +2,7 @@
 
 版本：0.1.0。日期：2026-09-26。实现：`src/world_builder/planning/siting.py`、`settings/*/districts.json`、`tools/plan_districts.py`。状态：**离线规则路径已实现并测试；街区是矩形、本地路网仍在轴上。**
 
-本文是流水线阶段 D（[016](../../work_order/016_district_siting.md)）的合同。上游见 [scene-brief-v0.1.md](scene-brief-v0.1.md)（简报与目录）与 [terrain-plan-v0.1.md](terrain-plan-v0.1.md)（地形）。
+本文是流水线阶段 D（[016](../../work_order/archive/legacy/016_district_siting.md)）的合同。上游见 [scene-brief-v0.1.md](scene-brief-v0.1.md)（简报与目录）与 [terrain-plan-v0.1.md](terrain-plan-v0.1.md)（地形）。
 
 ## 1. `districts.json`
 
